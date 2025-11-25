@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  
   // Retrieve role from localStorage, default to 'student' if not found
   const role = (localStorage.getItem('role') as 'student' | 'manager') || 'student';
 
@@ -119,7 +122,7 @@ const Settings: React.FC = () => {
         {/* Action Area */}
         <div className="mt-8">
           <button 
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             className="flex h-12 w-full items-center justify-center rounded-xl bg-red-50 text-base font-bold text-red-600 shadow-sm transition-colors hover:bg-red-100"
           >
             Đăng xuất
@@ -128,6 +131,16 @@ const Settings: React.FC = () => {
       </div>
 
       <BottomNav role={role} />
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+        title="Đăng xuất"
+        message="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?"
+        confirmLabel="Đăng xuất"
+        variant="danger"
+      />
     </div>
   );
 };
