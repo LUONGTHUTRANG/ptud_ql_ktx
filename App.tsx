@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Notifications from './pages/Notifications';
 import ManagerHome from './pages/ManagerHome';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 
 const App: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ const App: React.FC = () => {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/manager-home" element={<ManagerHome />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

@@ -37,7 +37,10 @@ const Settings: React.FC = () => {
           <p className="px-4 pb-1 pt-2 text-sm font-semibold text-slate-500">Tài khoản</p>
           <div className="overflow-hidden rounded-xl bg-white shadow-sm">
             {/* List Item: Account Info */}
-            <div className="flex min-h-[56px] cursor-pointer items-center justify-between gap-4 p-4 hover:bg-slate-50 transition-colors">
+            <div 
+              onClick={() => navigate('/profile')}
+              className="flex min-h-[56px] cursor-pointer items-center justify-between gap-4 p-4 hover:bg-slate-50 transition-colors"
+            >
               <div className="flex items-center gap-4">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <span className="material-symbols-outlined text-2xl">person</span>
@@ -90,9 +93,9 @@ const Settings: React.FC = () => {
                 </p>
               </div>
               <div className="shrink-0">
-                <label className="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full bg-primary p-0.5 transition-colors">
+                <label className="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full bg-slate-200 p-0.5 transition-colors has-[:checked]:bg-primary">
                   <input type="checkbox" defaultChecked className="peer sr-only" />
-                  <span className="absolute right-0.5 h-[24px] w-[24px] rounded-full bg-white shadow transition-transform peer-checked:translate-x-0 peer-[:not(:checked)]:translate-x-[-20px] peer-[:not(:checked)]:bg-white"></span>
+                  <span className="h-[24px] w-[24px] rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-[20px]"></span>
                 </label>
               </div>
             </div>
