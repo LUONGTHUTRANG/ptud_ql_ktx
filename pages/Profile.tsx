@@ -62,7 +62,7 @@ const Profile: React.FC = () => {
                     className="aspect-square w-32 min-h-32 rounded-full bg-cover bg-center bg-no-repeat ring-4 ring-white shadow-lg" 
                     style={{ backgroundImage: `url("${data.avatar}")` }}
                   ></div>
-                  <button className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-background-light bg-slate-200 text-slate-800 hover:bg-slate-300 transition-colors">
+                  <button className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-background-light bg-slate-200 text-slate-900 hover:bg-slate-300 transition-colors">
                     <span className="material-symbols-outlined text-lg">photo_camera</span>
                   </button>
                 </div>
@@ -97,13 +97,6 @@ const Profile: React.FC = () => {
           </div>
         </div>
       </main>
-
-      <footer className="sticky bottom-0 border-t border-slate-200/80 bg-background-light/80 p-4 backdrop-blur-sm">
-        <button className="flex h-12 w-full min-w-[84px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary px-4 text-base font-bold text-white hover:bg-primary/90 transition-colors shadow-sm">
-          <span className="material-symbols-outlined">edit</span>
-          <span className="truncate">Chỉnh sửa thông tin</span>
-        </button>
-      </footer>
     </div>
   );
 };

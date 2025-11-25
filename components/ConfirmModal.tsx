@@ -88,13 +88,15 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </div>
           
           {/* Actions */}
-          <div className="mt-8 grid grid-cols-2 gap-3">
-            <button
-              onClick={onClose}
-              className="flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100"
-            >
-              {cancelLabel}
-            </button>
+          <div className={`mt-8 grid gap-3 ${cancelLabel ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {cancelLabel && (
+              <button
+                onClick={onClose}
+                className="flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100"
+              >
+                {cancelLabel}
+              </button>
+            )}
             <button
               onClick={() => {
                 onConfirm();

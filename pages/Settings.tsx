@@ -36,7 +36,7 @@ const Settings: React.FC = () => {
         <div className="space-y-2">
           <p className="px-4 pb-1 pt-2 text-sm font-semibold text-slate-500">Tài khoản</p>
           <div className="overflow-hidden rounded-xl bg-white shadow-sm">
-            {/* List Item: Account Info */}
+            {/* List Item: Personal Info */}
             <div 
               onClick={() => navigate('/profile')}
               className="flex min-h-[56px] cursor-pointer items-center justify-between gap-4 p-4 hover:bg-slate-50 transition-colors"
@@ -46,7 +46,7 @@ const Settings: React.FC = () => {
                   <span className="material-symbols-outlined text-2xl">person</span>
                 </div>
                 <p className="flex-1 truncate text-base font-medium leading-normal text-slate-800">
-                  Thông tin tài khoản
+                  Thông tin cá nhân
                 </p>
               </div>
               <div className="shrink-0">
@@ -60,7 +60,10 @@ const Settings: React.FC = () => {
             <hr className="ml-16 border-slate-100" />
             
             {/* List Item: Change Password */}
-            <div className="flex min-h-[56px] cursor-pointer items-center justify-between gap-4 p-4 hover:bg-slate-50 transition-colors">
+            <div 
+              onClick={() => navigate('/change-password')}
+              className="flex min-h-[56px] cursor-pointer items-center justify-between gap-4 p-4 hover:bg-slate-50 transition-colors"
+            >
               <div className="flex items-center gap-4">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <span className="material-symbols-outlined text-2xl">lock</span>

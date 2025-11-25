@@ -86,7 +86,7 @@ const Login: React.FC = () => {
                 className="absolute right-0 top-0 flex h-full items-center px-4 text-slate-500 hover:text-primary"
               >
                 <span className="material-symbols-outlined">
-                  {showPassword ? 'visibility_off' : 'visibility'}
+                  {showPassword ? 'visibility' : 'visibility_off'}
                 </span>
               </button>
             </div>
