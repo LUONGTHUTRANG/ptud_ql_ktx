@@ -1,3 +1,4 @@
+
 import React from 'react';
 import BottomNav from '../components/BottomNav';
 import { Bill, MenuItem, User } from '../types';
@@ -15,7 +16,7 @@ const Home: React.FC = () => {
     { icon: 'cottage', title: 'Đăng ký ở', subtitle: 'Tìm phòng mới' },
     { icon: 'support_agent', title: 'Gửi yêu cầu', subtitle: 'Hỗ trợ & sửa chữa' },
     { icon: 'autorenew', title: 'Gia hạn', subtitle: 'Kéo dài hợp đồng' },
-    { icon: 'search', title: 'Tra cứu', subtitle: 'Thông tin & hóa đơn' },
+    { icon: 'apartment', title: 'Tòa nhà & phòng', subtitle: 'Thông tin KTX' },
   ];
 
   const bills: Bill[] = [
@@ -98,45 +99,47 @@ const Home: React.FC = () => {
         <div>
           <h3 className="mb-3 text-lg font-bold text-slate-900">Hóa đơn cần thanh toán</h3>
           <div className="space-y-3">
-            {bills.map((bill) => (
-              <div
-                key={bill.id}
-                className={`flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm ${
-                  bill.status === 'overdue' ? 'border-red-500/50' : 'border-border-light'
-                }`}
-              >
+            {bills.length > 0 ? (
+              bills.map((bill) => (
                 <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${
-                    bill.status === 'overdue' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'
+                  key={bill.id}
+                  className={`flex items-center gap-4 rounded-xl border bg-white p-4 shadow-sm ${
+                    bill.status === 'overdue' ? 'border-red-500/50' : 'border-border-light'
                   }`}
                 >
-                  <span className="material-symbols-outlined">receipt_long</span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-900 line-clamp-1">{bill.title}</p>
-                  <p
-                    className={`text-xs ${
-                      bill.status === 'overdue' ? 'font-medium text-red-600' : 'text-on-surface-light'
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${
+                      bill.status === 'overdue' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'
                     }`}
                   >
-                    {bill.status === 'overdue' ? 'Đã quá hạn' : 'Sắp đến hạn'}
-                  </p>
+                    <span className="material-symbols-outlined">receipt_long</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-slate-900 line-clamp-1">{bill.title}</p>
+                    <p
+                      className={`text-xs ${
+                        bill.status === 'overdue' ? 'font-medium text-red-600' : 'text-on-surface-light'
+                      }`}
+                    >
+                      {bill.status === 'overdue' ? 'Đã quá hạn' : 'Sắp đến hạn'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-slate-900">{bill.amount}</p>
+                    <p className="text-xs text-on-surface-light">Hạn: {bill.dueDate}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-slate-900">{bill.amount}</p>
-                  <p className="text-xs text-on-surface-light">Hạn: {bill.dueDate}</p>
-                </div>
-              </div>
-            ))}
-
-            {/* Empty State / All Paid (Visual example from image) */}
-             <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border-light bg-white p-6 text-center">
+              ))
+            ) : (
+              /* Empty State / All Paid */
+              <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border-light bg-white p-6 text-center">
                 <span className="material-symbols-outlined text-4xl text-green-500">check_circle</span>
                 <div>
-                   <p className="font-bold text-slate-900">Không có hóa đơn mới</p>
-                   <p className="text-xs text-on-surface-light">Bạn đã thanh toán hết các hóa đơn.</p>
+                  <p className="font-bold text-slate-900">Không có hóa đơn mới</p>
+                  <p className="text-xs text-on-surface-light">Bạn đã thanh toán hết các hóa đơn.</p>
                 </div>
-             </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
