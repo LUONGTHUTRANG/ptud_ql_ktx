@@ -17,6 +17,10 @@ import BuildingList from './pages/BuildingList';
 import RoomList from './pages/RoomList';
 import RequestHistory from './pages/RequestHistory';
 import CreateRequest from './pages/CreateRequest';
+import RequestDetail from './pages/RequestDetail';
+import RegisterAccommodation from './pages/RegisterAccommodation';
+import RegularRequest from './pages/RegularRequest';
+import SpecialRequest from './pages/SpecialRequest';
 
 const App: React.FC = () => {
   return (
@@ -32,6 +36,7 @@ const App: React.FC = () => {
           <Route path="/buildings" element={<BuildingList />} />
           <Route path="/buildings/:id" element={<RoomList />} />
           <Route path="/requests" element={<RequestHistory />} />
+          <Route path="/requests/:id" element={<RequestDetail />} />
           <Route path="/create-request" element={<CreateRequest />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/notifications/:id" element={<NotificationDetail />} />
@@ -39,6 +44,9 @@ const App: React.FC = () => {
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/register-accommodation" element={<RegisterAccommodation />} />
+          <Route path="/register-regular" element={<RegularRequest />} />
+          <Route path="/register-special" element={<SpecialRequest />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

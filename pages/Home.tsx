@@ -1,9 +1,11 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import BottomNav from '../components/BottomNav';
 import { Bill, MenuItem, User } from '../types';
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   const user: User = {
     name: "An",
     room: "404",
@@ -12,11 +14,11 @@ const Home: React.FC = () => {
     avatarUrl: "https://picsum.photos/100/100" // Placeholder
   };
 
-  const menuItems: MenuItem[] = [
-    { icon: 'cottage', title: 'Đăng ký ở', subtitle: 'Tìm phòng mới' },
-    { icon: 'support_agent', title: 'Gửi yêu cầu', subtitle: 'Hỗ trợ & sửa chữa' },
-    { icon: 'autorenew', title: 'Gia hạn', subtitle: 'Kéo dài hợp đồng' },
-    { icon: 'apartment', title: 'Tòa nhà & phòng', subtitle: 'Thông tin KTX' },
+  const menuItems: (MenuItem & { path: string })[] = [
+    { icon: 'cottage', title: 'Đăng ký ở', subtitle: 'Tìm phòng mới', path: '/register-accommodation' },
+    { icon: 'support_agent', title: 'Gửi yêu cầu', subtitle: 'Hỗ trợ & sửa chữa', path: '/requests' },
+    { icon: 'autorenew', title: 'Gia hạn', subtitle: 'Kéo dài hợp đồng', path: '#' },
+    { icon: 'apartment', title: 'Tòa nhà & phòng', subtitle: 'Thông tin KTX', path: '/buildings' },
   ];
 
   const bills: Bill[] = [
@@ -60,6 +62,7 @@ const Home: React.FC = () => {
           {menuItems.map((item, index) => (
             <button
               key={index}
+              onClick={() => navigate(item.path)}
               className="flex flex-col items-start gap-3 rounded-xl border border-border-light bg-white p-4 text-left transition-colors hover:border-primary/30 hover:bg-slate-50"
             >
               <span className="material-symbols-outlined text-3xl text-primary">{item.icon}</span>

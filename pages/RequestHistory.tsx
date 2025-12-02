@@ -142,6 +142,7 @@ const RequestHistory: React.FC = () => {
             return (
               <div 
                 key={req.id}
+                onClick={() => navigate(`/requests/${req.id}`)}
                 className="flex cursor-pointer flex-col gap-3 rounded-xl bg-white p-4 shadow-sm border border-slate-100 transition-all hover:bg-slate-50 hover:shadow-md"
               >
                 <div className="flex items-center justify-between">

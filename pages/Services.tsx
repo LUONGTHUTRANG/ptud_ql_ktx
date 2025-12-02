@@ -13,7 +13,7 @@ const Services: React.FC = () => {
       icon: 'sensor_door',
       iconColor: 'text-blue-600',
       iconBg: 'bg-blue-100',
-      path: '#'
+      path: '/register-accommodation'
     },
     {
       title: 'Gia hạn chỗ ở',
