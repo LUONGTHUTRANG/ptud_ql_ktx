@@ -14,6 +14,10 @@ CREATE TABLE semesters (
     -- Thời gian đăng ký ở mới
     registration_open_date DATETIME,
     registration_close_date DATETIME,
+
+    -- Thời gian đăng ký ưu tiên
+    registration_special_open_date DATETIME,
+    registration_special_close_date DATETIME,
     
     -- Thời gian đăng ký gia hạn
     renewal_open_date DATETIME,
@@ -48,6 +52,7 @@ CREATE TABLE managers (
     phone_number VARCHAR(15),
     is_first_login BOOLEAN DEFAULT TRUE COMMENT 'Bắt buộc đổi mật khẩu lần đầu',
     building_id INT, -- 1 Cán bộ quản lý 1 tòa
+    fcm_token VARCHAR(255) DEFAULT NULL,
     FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE SET NULL
 );
 
@@ -58,7 +63,6 @@ CREATE TABLE rooms (
     room_number VARCHAR(10) NOT NULL COMMENT 'Số phòng, vd: 301',
     floor INT NOT NULL COMMENT 'Tầng',
     max_capacity INT NOT NULL DEFAULT 4, -- Số người tối đa
-    current_occupancy INT DEFAULT 0, -- Số người đang ở hiện tại
     price_per_semester DECIMAL(10, 2) NOT NULL,
     
     -- Tiện ích
@@ -82,7 +86,9 @@ CREATE TABLE students (
     phone_number VARCHAR(15),
     gender ENUM('MALE', 'FEMALE') NOT NULL,
     class_name VARCHAR(50), -- Lớp sinh hoạt
-    
+    student_status ENUM('STUDYING', 'GRADUATED') DEFAULT 'STUDYING' COMMENT 'Trạng thái sinh viên hiện tại',
+    stay_status ENUM('NOT_STAYING', 'STAYING', 'APPLIED') DEFAULT 'NOT_STAYING' COMMENT 'Trạng thái lưu trú hiện tại',
+    fcm_token VARCHAR(255) DEFAULT NULL COMMENT 'Lưu Device Token để bắn thông báo',
     -- Trạng thái ở hiện tại
     current_room_id INT DEFAULT NULL,
     FOREIGN KEY (current_room_id) REFERENCES rooms(id) ON DELETE SET NULL
@@ -151,6 +157,7 @@ CREATE TABLE invoices (
     type ENUM('ROOM_FEE', 'UTILITY_FEE') NOT NULL,
     
     semester_id INT NOT NULL,
+    time_invoiced DATETIME, -- Hóa đơn thu vào thời gian nào
     room_id INT NOT NULL, -- Hóa đơn luôn gắn với phòng
     student_id INT, -- Nếu là Tiền phòng -> Gắn với sinh viên cụ thể. Nếu Điện nước -> NULL (hoặc người đại diện)
     
@@ -190,7 +197,7 @@ CREATE TABLE support_requests (
     FOREIGN KEY (processed_by_manager_id) REFERENCES managers(id)
 );
 
--- Bảng Thông báo (Notifications)
+-- 1. Bảng chứa nội dung thông báo
 CREATE TABLE notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(150) NOT NULL,
@@ -198,63 +205,37 @@ CREATE TABLE notifications (
     attachment_path VARCHAR(255),
     
     sender_role ENUM('ADMIN', 'MANAGER') NOT NULL,
-    sender_id INT NOT NULL, -- ID của Admin hoặc Manager tùy role
+    sender_id INT NOT NULL,
     
-    -- Logic gửi thông báo
+    -- Scope vẫn giữ để Backend biết cách xử lý logic
+    -- ALL: Gửi tất cả (không cần insert vào bảng recipients)
     target_scope ENUM('ALL', 'BUILDING', 'ROOM', 'INDIVIDUAL') NOT NULL,
+    type ENUM('ANNOUNCEMENT', 'REMINDER') DEFAULT 'ANNOUNCEMENT',
     
-    -- Các trường ID đích (Chỉ điền 1 trong các trường này tùy scope)
-    target_building_id INT DEFAULT NULL,
-    target_room_id INT DEFAULT NULL,
-    target_student_id INT DEFAULT NULL,
-    
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (target_building_id) REFERENCES buildings(id),
-    FOREIGN KEY (target_room_id) REFERENCES rooms(id),
-    FOREIGN KEY (target_student_id) REFERENCES students(id)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. INSERT DỮ LIỆU MẪU (DEMO DATA)
+-- 2. Bảng trung gian lưu người nhận (Danh sách nhiều người/phòng/tòa)
+CREATE TABLE notification_recipients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    notification_id INT NOT NULL,
 
--- Thêm Học kỳ
-INSERT INTO semesters (name, start_date, end_date, is_active) 
-VALUES ('Học kỳ 1 2024-2025', '2024-09-01', '2025-01-15', TRUE);
-
--- Thêm Admin
-INSERT INTO admins (username, password_hash, full_name) 
-VALUES ('admin', 'hashed_password_secret', 'Quản Trị Viên Hệ Thống');
-
--- Thêm Tòa nhà
-INSERT INTO buildings (name, location, gender_restriction) VALUES 
-('Tòa A1', 'Khu A - Phía Đông', 'MALE'),
-('Tòa B1', 'Khu B - Phía Tây', 'FEMALE');
-
--- Thêm Cán bộ quản lý
-INSERT INTO managers (username, email, password_hash, full_name, phone_number, building_id) VALUES 
-('quanlyA1', 'managerA1@school.edu.vn', 'hashed_password_123', 'Nguyễn Văn Quản Lý', '0987654321', 1),
-('quanlyB1', 'managerB1@school.edu.vn', 'hashed_password_456', 'Trần Thị Quản Lý', '0912345678', 2);
-
--- Thêm Phòng
-INSERT INTO rooms (building_id, room_number, floor, max_capacity, price_per_semester, has_ac, has_heater) VALUES 
-(1, '101', 1, 4, 2500000, FALSE, TRUE), -- Phòng tòa A1
-(1, '102', 1, 4, 2500000, FALSE, TRUE),
-(2, '201', 2, 6, 1800000, FALSE, FALSE); -- Phòng tòa B1
-
--- Thêm Sinh viên
-INSERT INTO students (mssv, password_hash, full_name, email, gender, class_name) VALUES 
-('SV001', 'student_pass_hash', 'Lê Văn Sinh Viên', 'sv001@st.school.edu.vn', 'MALE', 'CNTT-K64'),
-('SV002', 'student_pass_hash', 'Phạm Thị Sinh Viên', 'sv002@st.school.edu.vn', 'FEMALE', 'KT-K64');
-
-INSERT INTO registrations (student_id, semester_id, registration_type, desired_room_id, status, created_at)
-VALUES (1, 1, 'NORMAL', 1, 'AWAITING_PAYMENT', NOW());
-
--- Thêm Hóa đơn điện nước (Ví dụ phòng 101 tòa A1)
-INSERT INTO invoices (invoice_code, type, semester_id, room_id, amount, description, status)
-VALUES ('INV-101-OCT', 'UTILITY_FEE', 1, 1, 500000, 'Tiền điện tháng 10/2024', 'UNPAID');
-
-ALTER TABLE students 
-ADD COLUMN fcm_token VARCHAR(255) DEFAULT NULL COMMENT 'Lưu Device Token để bắn thông báo';
-
-ALTER TABLE managers 
-ADD COLUMN fcm_token VARCHAR(255) DEFAULT NULL;
+    student_id INT, 
+    room_id INT,
+    building_id INT,
+    
+    is_read BOOLEAN DEFAULT FALSE, -- Quản lý trạng thái đã đọc riêng cho từng người
+    read_at DATETIME,
+    
+    FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    FOREIGN KEY (room_id) REFERENCES rooms(id),
+    FOREIGN KEY (building_id) REFERENCES buildings(id),
+    
+    -- Ràng buộc: Một dòng chỉ được điền 1 trong 3 loại ID đích
+    CHECK (
+        (student_id IS NOT NULL AND room_id IS NULL AND building_id IS NULL) OR
+        (student_id IS NULL AND room_id IS NOT NULL AND building_id IS NULL) OR
+        (student_id IS NULL AND room_id IS NULL AND building_id IS NOT NULL)
+    )
+);
