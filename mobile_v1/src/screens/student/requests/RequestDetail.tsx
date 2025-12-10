@@ -7,12 +7,15 @@ import {
   ScrollView,
   Image,
   StatusBar,
+  ActivityIndicator,
+  Modal,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../../types";
+import { getSupportRequestById } from "../../../services/requestApi";
 
 type RequestDetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -31,6 +34,9 @@ interface Props {
 const RequestDetail = ({ navigation, route }: Props) => {
   const { id } = route.params;
   const [role, setRole] = useState<"student" | "manager">("student");
+  const [request, setRequest] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadRole = async () => {
@@ -46,41 +52,161 @@ const RequestDetail = ({ navigation, route }: Props) => {
     loadRole();
   }, []);
 
-  // Mock Data matching the design
-  const request = {
-    id: id || "YC-12345",
-    code: "YC-12345",
-    type: "Sửa chữa điện",
-    date: "25/10/2023",
-    status: "pending",
-    statusText: "Đang chờ xử lý",
-    description:
-      "Bóng đèn trong phòng tắm bị cháy và không thể sử dụng được. Vui lòng hỗ trợ thay thế bóng đèn mới. Xin cảm ơn.",
-    images: [
-      "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1542435503-956c469947f6?q=80&w=200&auto=format&fit=crop",
-    ],
-    timeline: [
-      {
-        status: "Đang xử lý",
-        time: "26/10/2023 09:15",
-        user: "Lê Minh",
-        comment:
-          "Đã tiếp nhận và sẽ cử nhân viên kỹ thuật đến kiểm tra trong hôm nay.",
-        active: true,
-        icon: "autorenew",
-        color: "blue",
-      },
-      {
-        status: "Đã gửi yêu cầu",
-        time: "25/10/2023 20:30",
-        user: "Bạn",
-        active: false,
-        icon: "receipt-long", // receipt_long -> receipt-long
-        color: "slate",
-      },
-    ],
+  useEffect(() => {
+    const fetchRequestDetail = async () => {
+      try {
+        const data = await getSupportRequestById(id);
+
+        // Map backend data to UI format
+        const mappedRequest = {
+          id: data.id.toString(),
+          code: `REQ${data.id}`,
+          type: getTypeText(data.type), // Map from data.type to Vietnamese
+          title: data.title, // Add title
+          date: new Date(data.created_at).toLocaleDateString("vi-VN"),
+          status: data.status.toLowerCase(),
+          statusText: getStatusText(data.status),
+          description: data.content,
+          images: data.attachment_url ? [data.attachment_url] : [],
+          timeline: [
+            // Create timeline based on status and dates
+            ...(data.status === "COMPLETED" ||
+            data.status === "PROCESSING" ||
+            data.status === "CANCELLED"
+              ? [
+                  {
+                    status: getStatusText(data.status),
+                    time: new Date(
+                      data.updated_at || data.created_at
+                    ).toLocaleString("vi-VN"),
+                    user: data.manager_name || "Quản lý",
+                    comment:
+                      data.response_content || getStatusComment(data.status),
+                    active: true,
+                    icon: getStatusIcon(data.status),
+                    color: getStatusColor(data.status),
+                  },
+                ]
+              : []),
+            {
+              status: "Đã gửi yêu cầu",
+              time: new Date(data.created_at).toLocaleString("vi-VN"),
+              user: data.student_name || "Bạn",
+              active: data.status === "PENDING",
+              icon: "receipt-long",
+              color: "slate",
+            },
+          ],
+        };
+
+        setRequest(mappedRequest);
+      } catch (error) {
+        console.error("Failed to fetch request detail", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchRequestDetail();
+    }
+  }, [id]);
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "Đang chờ xử lý";
+      case "PROCESSING":
+        return "Đang xử lý";
+      case "COMPLETED":
+        return "Hoàn thành";
+      case "CANCELLED":
+        return "Đã hủy/Từ chối";
+      default:
+        return status;
+    }
   };
+
+  const getStatusComment = (status: string) => {
+    switch (status) {
+      case "PROCESSING":
+        return "Yêu cầu đang được xử lý.";
+      case "COMPLETED":
+        return "Yêu cầu đã được giải quyết.";
+      case "CANCELLED":
+        return "Yêu cầu đã bị từ chối hoặc hủy bỏ.";
+      default:
+        return "";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "PROCESSING":
+        return "autorenew";
+      case "COMPLETED":
+        return "check-circle";
+      case "CANCELLED":
+        return "cancel";
+      default:
+        return "info";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "PROCESSING":
+        return "blue";
+      case "COMPLETED":
+        return "green";
+      case "CANCELLED":
+        return "red";
+      default:
+        return "slate";
+    }
+  };
+
+  const getTypeText = (type: string) => {
+    switch (type) {
+      case "repair":
+      case "REPAIR":
+        return "Sửa chữa";
+      case "complaint":
+      case "COMPLAINT":
+        return "Khiếu nại";
+      case "proposal":
+      case "PROPOSAL":
+        return "Đề xuất";
+      default:
+        return type;
+    }
+  };
+
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color="#0ea5e9" />
+      </View>
+    );
+  }
+
+  if (!request) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text>Không tìm thấy thông tin yêu cầu</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -125,22 +251,35 @@ const RequestDetail = ({ navigation, route }: Props) => {
 
         {/* Content Section Card */}
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Tiêu đề</Text>
+          <Text
+            style={[
+              styles.description,
+              { marginBottom: 16, fontWeight: "600" },
+            ]}
+          >
+            {request.title}
+          </Text>
+
           <Text style={styles.sectionTitle}>Mô tả chi tiết</Text>
           <Text style={styles.description}>{request.description}</Text>
 
           {/* Image Gallery */}
-          <View style={styles.galleryContainer}>
-            <Text style={styles.sectionTitle}>Ảnh đính kèm</Text>
-            <View style={styles.galleryGrid}>
-              {request.images.map((img, idx) => (
-                <Image
-                  key={idx}
-                  source={{ uri: img }}
-                  style={styles.galleryImage}
-                />
-              ))}
+          {request.images && request.images.length > 0 && (
+            <View style={styles.galleryContainer}>
+              <Text style={styles.sectionTitle}>Ảnh đính kèm</Text>
+              <View style={styles.galleryGrid}>
+                {request.images.map((img: any, idx: any) => (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => setSelectedImage(img)}
+                  >
+                    <Image source={{ uri: img }} style={styles.galleryImage} />
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
+          )}
         </View>
 
         {/* Timeline/History Log Card */}
@@ -150,7 +289,7 @@ const RequestDetail = ({ navigation, route }: Props) => {
             {/* Vertical Line */}
             <View style={styles.timelineLine} />
 
-            {request.timeline.map((item, index) => (
+            {request.timeline.map((item: any, index: any) => (
               <View key={index} style={styles.timelineItem}>
                 <View
                   style={[
@@ -204,6 +343,26 @@ const RequestDetail = ({ navigation, route }: Props) => {
           )}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={selectedImage !== null}
+        transparent={true}
+        onRequestClose={() => setSelectedImage(null)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setSelectedImage(null)}
+          >
+            <MaterialIcons name="close" size={30} color="white" />
+          </TouchableOpacity>
+          <Image
+            source={{ uri: selectedImage || "" }}
+            style={styles.fullImage}
+            resizeMode="contain"
+          />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -306,7 +465,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   galleryImage: {
-    width: "30%",
+    width: 100,
+    height: 100,
     aspectRatio: 1,
     borderRadius: 8,
     backgroundColor: "#f1f5f9",
@@ -404,6 +564,23 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalCloseButton: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    zIndex: 1,
+    padding: 10,
+  },
+  fullImage: {
+    width: "100%",
+    height: "80%",
   },
 });
 

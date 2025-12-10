@@ -5,14 +5,18 @@ import managerRoutes from "./managerRoutes.js";
 import roomRoutes from "./roomRoutes.js";
 import invoiceRoutes from "./invoiceRoutes.js";
 import studentRoutes from "./studentRoutes.js";
+import supportRequestRoutes from "./supportRequestRoutes.js";
+import authRoutes from "./authRoutes.js";
 
 const router = express.Router();
 
+router.use("/auth", authRoutes);
 router.use("/semesters", semesterRoutes);
 router.use("/buildings", buildingRoutes);
 router.use("/managers", managerRoutes);
 router.use("/rooms", roomRoutes);
 router.use("/invoices", invoiceRoutes);
 router.use("/students", studentRoutes);
+router.use("/support-requests", supportRequestRoutes);
 
 export default router;

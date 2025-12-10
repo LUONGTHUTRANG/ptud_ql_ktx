@@ -8,11 +8,15 @@ import {
   ScrollView,
   Alert,
   StatusBar,
+  Image,
+  ActivityIndicator,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { RootStackParamList } from "../../../types";
 import ConfirmModal from "../../../components/ConfirmModal";
+import { createSupportRequest } from "../../../services/requestApi";
 
 type CreateRequestScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -27,15 +31,84 @@ const CreateRequest = ({ navigation }: Props) => {
   const [requestType, setRequestType] = useState<
     "repair" | "complaint" | "suggestion"
   >("repair");
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageAspectRatio, setImageAspectRatio] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      setSelectedImage(asset.uri);
+      setImageAspectRatio(asset.width / asset.height);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!title.trim()) {
+      Alert.alert("Lỗi", "Vui lòng nhập tiêu đề");
+      return;
+    }
+
     if (!description.trim()) {
       Alert.alert("Lỗi", "Vui lòng nhập mô tả chi tiết");
       return;
     }
-    setShowSuccessModal(true);
+
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+
+      // Map frontend types to backend enums
+      let backendType = "REPAIR";
+
+      if (requestType === "complaint") {
+        backendType = "COMPLAINT";
+      } else if (requestType === "suggestion") {
+        backendType = "PROPOSAL";
+      }
+
+      // TODO: Get actual student ID from auth context/storage
+      formData.append("student_id", "1");
+      formData.append("type", backendType);
+      formData.append("title", title);
+      formData.append("content", description);
+
+      if (selectedImage) {
+        const filename = selectedImage.split("/").pop() || "photo.jpg";
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image`;
+
+        // @ts-ignore
+        formData.append("attachment", {
+          uri: selectedImage,
+          name: filename,
+          type,
+        });
+      }
+
+      await createSupportRequest(formData);
+
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Error creating request:", error);
+      Alert.alert("Lỗi", "Không thể gửi yêu cầu. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCloseSuccess = () => {
@@ -94,6 +167,18 @@ const CreateRequest = ({ navigation }: Props) => {
           </View>
         </View>
 
+        {/* Title Input */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Tiêu đề</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập tiêu đề yêu cầu..."
+            placeholderTextColor="#94a3b8"
+            value={title}
+            onChangeText={setTitle}
+          />
+        </View>
+
         {/* Description Input */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Mô tả chi tiết sự việc</Text>
@@ -112,17 +197,48 @@ const CreateRequest = ({ navigation }: Props) => {
         {/* Image Upload */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Đính kèm ảnh minh họa</Text>
-          <TouchableOpacity style={styles.uploadButton}>
-            <MaterialIcons name="photo-camera" size={32} color="#94a3b8" />
-            <Text style={styles.uploadText}>Nhấn để tải ảnh lên</Text>
-          </TouchableOpacity>
+          {selectedImage ? (
+            <View
+              style={[
+                styles.imagePreviewContainer,
+                { aspectRatio: imageAspectRatio },
+              ]}
+            >
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.imagePreview}
+              />
+              <TouchableOpacity
+                style={styles.removeImageButton}
+                onPress={removeImage}
+              >
+                <MaterialIcons name="close" size={20} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+              <MaterialIcons name="photo-camera" size={32} color="#94a3b8" />
+              <Text style={styles.uploadText}>Nhấn để tải ảnh lên</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
 
       {/* Submit Button */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Gửi Yêu Cầu</Text>
+        <TouchableOpacity
+          style={[
+            styles.submitButton,
+            isLoading && styles.submitButtonDisabled,
+          ]}
+          onPress={handleSubmit}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={styles.submitButtonText}>Gửi Yêu Cầu</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -228,6 +344,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#0f172a",
   },
+  input: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: "#0f172a",
+  },
   textArea: {
     backgroundColor: "#ffffff",
     borderWidth: 1,
@@ -254,6 +379,29 @@ const styles = StyleSheet.create({
     color: "#64748b",
     fontWeight: "500",
   },
+  imagePreviewContainer: {
+    position: "relative",
+    width: "100%",
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#f1f5f9",
+  },
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   footer: {
     padding: 16,
     backgroundColor: "#f8fafc",
@@ -271,6 +419,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
+  },
+  submitButtonDisabled: {
+    backgroundColor: "#94a3b8",
+    shadowOpacity: 0,
+    elevation: 0,
   },
   submitButtonText: {
     color: "#ffffff",

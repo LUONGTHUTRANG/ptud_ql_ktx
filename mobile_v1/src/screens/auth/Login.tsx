@@ -8,11 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../types";
+import api from "../../services/api";
 
 type LoginScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -30,17 +32,36 @@ const Login = ({ navigation }: Props) => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    // Save role to AsyncStorage to persist state
-    try {
-      await AsyncStorage.setItem("role", activeTab);
-    } catch (e) {
-      console.error("Failed to save role", e);
+    if (!email || !password) {
+      Alert.alert("Thông báo", "Vui lòng nhập đầy đủ thông tin");
+      return;
     }
 
-    if (activeTab === "manager") {
-      navigation.navigate("ManagerHome");
-    } else {
-      navigation.navigate("Home");
+    try {
+      const response = await api.post("/auth/login", {
+        username: email,
+        password: password,
+        role: activeTab,
+      });
+
+      const { token, user } = response.data;
+
+      await AsyncStorage.setItem("token", token);
+      await AsyncStorage.setItem("user", JSON.stringify(user));
+      await AsyncStorage.setItem("role", activeTab);
+
+      if (activeTab === "manager") {
+        navigation.navigate("ManagerHome");
+      } else {
+        navigation.navigate("Home");
+      }
+    } catch (error: any) {
+      console.error("Login failed", error);
+      Alert.alert(
+        "Đăng nhập thất bại",
+        error.response?.data?.message ||
+          "Thông tin tài khoản chưa đúng. Vui lòng kiểm tra lại"
+      );
     }
   };
 

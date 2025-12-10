@@ -17,6 +17,7 @@ export interface RequestItem {
   id: string;
   code: string;
   type: "repair" | "complaint" | "proposal";
+  title?: string; // Add title
   studentName?: string;
   room: string;
   date: string;
@@ -182,7 +183,20 @@ const SupportRequestList = ({
             />
           </View>
           <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>
+            {/* Add Title here */}
+            {item.title && (
+              <Text
+                style={[styles.cardTitle, { fontSize: 16, marginBottom: 4 }]}
+              >
+                {item.title}
+              </Text>
+            )}
+            <Text
+              style={[
+                styles.cardSubtitle,
+                { color: "#64748b", fontWeight: "500" },
+              ]}
+            >
               {typeInfo.label} #{item.code}
             </Text>
             {role === "manager" && (

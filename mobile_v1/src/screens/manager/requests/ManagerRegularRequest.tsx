@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { useFocusEffect } from "@react-navigation/native";
+import { getSupportRequests } from "@/src/services/requestApi";
 import { RootStackParamList } from "../../../types";
 import SupportRequestList, {
   RequestItem,
@@ -15,53 +17,51 @@ interface Props {
 }
 
 const ManagerRegularRequest = ({ navigation }: Props) => {
-  const requests: RequestItem[] = [
-    {
-      id: "1",
-      code: "SC123",
-      type: "repair",
-      studentName: "Nguyễn Văn A",
-      room: "P.404 A2",
-      date: "18/07/2024",
-      status: "pending",
-    },
-    {
-      id: "2",
-      code: "KN456",
-      type: "complaint",
-      studentName: "Trần Thị B",
-      room: "P.201 B1",
-      date: "17/07/2024",
-      status: "completed",
-    },
-    {
-      id: "3",
-      code: "DX789",
-      type: "proposal",
-      studentName: "Lê Văn C",
-      room: "P.1103 C2",
-      date: "16/07/2024",
-      status: "new",
-    },
-    {
-      id: "4",
-      code: "SC125",
-      type: "repair",
-      studentName: "Phạm Thị D",
-      room: "P.505 A1",
-      date: "15/07/2024",
-      status: "rejected",
-    },
-    {
-      id: "5",
-      code: "KN457",
-      type: "complaint",
-      studentName: "Vũ Minh E",
-      room: "P.701 B2",
-      date: "14/07/2024",
-      status: "completed",
-    },
-  ];
+  const [requests, setRequests] = useState<RequestItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchRequests = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getSupportRequests();
+
+      const mappedData: RequestItem[] = response.data.data.map((item: any) => {
+        let type: RequestItem["type"] = "repair";
+        if (item.type === "COMPLAINT") type = "complaint";
+        if (item.type === "PROPOSAL") type = "proposal";
+
+        let status: RequestItem["status"] = "new";
+        if (item.status === "PROCESSING") status = "pending";
+        if (item.status === "COMPLETED") status = "completed";
+        if (item.status === "CANCELLED") status = "rejected";
+
+        return {
+          id: item.id.toString(),
+          code: `REQ${item.id}`,
+          type,
+          title: item.title, // Add title
+          room: item.room_number
+            ? `${item.room_number} ${item.building_name || ""}`
+            : "N/A",
+          date: new Date(item.created_at).toLocaleDateString("vi-VN"),
+          status,
+          studentName: item.student_name,
+        };
+      });
+
+      setRequests(mappedData);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchRequests();
+    }, [])
+  );
 
   return (
     <SupportRequestList

@@ -16,7 +16,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
-import { fetchRooms } from "../../../services/api";
+import { fetchRooms } from "../../../services/roomApi";
 
 type RoomListScreenNavigationProp = StackNavigationProp<
   RootStackParamList,

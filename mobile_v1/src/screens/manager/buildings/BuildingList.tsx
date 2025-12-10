@@ -12,7 +12,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
-import { fetchBuildings } from "../../../services/api";
+import { fetchBuildings } from "../../../services/buildingApi";
 
 type BuildingListScreenNavigationProp = StackNavigationProp<
   RootStackParamList,

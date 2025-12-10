@@ -1,12 +1,16 @@
 import express from "express";
 import * as managerController from "../controllers/managerController.js";
+import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", managerController.getAllManagers);
-router.get("/:id", managerController.getManagerById);
-router.post("/", managerController.createManager);
-router.put("/:id", managerController.updateManager);
-router.delete("/:id", managerController.deleteManager);
+// Protect all routes
+router.use(verifyToken);
+
+router.get("/", authorizeRoles("admin"), managerController.getAllManagers);
+router.get("/:id", authorizeRoles("admin"), managerController.getManagerById);
+router.post("/", authorizeRoles("admin"), managerController.createManager);
+router.put("/:id", authorizeRoles("admin"), managerController.updateManager);
+router.delete("/:id", authorizeRoles("admin"), managerController.deleteManager);
 
 export default router;
