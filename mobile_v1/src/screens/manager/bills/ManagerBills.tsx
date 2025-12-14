@@ -116,9 +116,7 @@ const ManagerBills = ({ navigation }: Props) => {
             <MaterialIcons name="arrow-back" size={24} color="#0f172a" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Quản lý Hóa đơn</Text>
-          <TouchableOpacity style={styles.iconButton}>
-            <MaterialIcons name="add" size={24} color="#136dec" />
-          </TouchableOpacity>
+          <View style={styles.iconButton}></View>
         </View>
 
         <View style={styles.tabs}>
@@ -173,9 +171,6 @@ const ManagerBills = ({ navigation }: Props) => {
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
-            <TouchableOpacity>
-              <MaterialIcons name="tune" size={20} color="#94a3b8" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -314,6 +309,11 @@ const ManagerBills = ({ navigation }: Props) => {
                     styles.utilityCard,
                     bill.status === "completed" && styles.utilityCardCompleted,
                   ]}
+                  onPress={() =>
+                    navigation.navigate("RecordMeterReading", {
+                      period: bill.month,
+                    })
+                  }
                 >
                   <View
                     style={[
@@ -405,11 +405,6 @@ const ManagerBills = ({ navigation }: Props) => {
               ))}
         </View>
       </ScrollView>
-
-      {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab}>
-        <MaterialIcons name="add" size={28} color="#ffffff" />
-      </TouchableOpacity>
     </View>
   );
 };
@@ -493,7 +488,6 @@ const styles = StyleSheet.create({
   filterContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    gap: 8,
   },
   filterChip: {
     paddingHorizontal: 16,
@@ -503,8 +497,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   activeFilterChip: {
-    backgroundColor: "#0f172a",
-    borderColor: "#0f172a",
+    backgroundColor: "#136dec",
+    borderColor: "#136dec",
   },
   inactiveFilterChip: {
     backgroundColor: "#ffffff",
@@ -621,7 +615,6 @@ const styles = StyleSheet.create({
   utilityCard: {
     backgroundColor: "#ffffff",
     borderRadius: 12,
-    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -676,7 +669,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: "row",
     gap: 8,
-    marginTop: 12,
+    marginTop: 4,
   },
   statBox: {
     flex: 1,
@@ -723,7 +716,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 8,
   },
   completedStatus: {
     flexDirection: "row",

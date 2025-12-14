@@ -32,4 +32,5 @@ export type RootStackParamList = {
   ManagerServices: undefined;
   ManagerTerm: undefined;
   ManagerTermDetail: { mode: "create" | "edit"; term?: any };
+  RecordMeterReading: { period: string };
 };

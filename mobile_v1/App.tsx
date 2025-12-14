@@ -38,6 +38,7 @@ import ManagerRegularRequest from "./src/screens/manager/requests/ManagerRegular
 import ManagerServices from "./src/screens/manager/services/ManagerServices";
 import ManagerTerm from "./src/screens/manager/terms/ManagerTerm";
 import ManagerTermDetail from "./src/screens/manager/terms/ManagerTermDetail";
+import RecordMeterReading from "./src/screens/manager/bills/RecordMeterReading";
 import { RootStackParamList } from "./src/types";
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -118,6 +119,10 @@ const App = () => {
             <Stack.Screen
               name="ManagerTermDetail"
               component={ManagerTermDetail}
+            />
+            <Stack.Screen
+              name="RecordMeterReading"
+              component={RecordMeterReading}
             />
           </Stack.Navigator>
           <StatusBar style="auto" />
