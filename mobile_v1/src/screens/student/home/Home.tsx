@@ -30,6 +30,7 @@ const Home = ({ navigation }: Props) => {
   const [user, setUser] = useState<User | null>(null);
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
+  console.log("Rendering Home Screen");
 
   useEffect(() => {
     const loadData = async () => {
@@ -37,6 +38,7 @@ const Home = ({ navigation }: Props) => {
         setLoading(true);
         // 1. Get current user
         const userData = await getMe();
+        console.log("User Data:", userData);
 
         let roomName = "Chưa có";
         let buildingName = "Chưa có";
@@ -73,10 +75,11 @@ const Home = ({ navigation }: Props) => {
         });
 
         // 4. Get invoices
-        const allInvoices = await fetchInvoices();
+        const allInvoices = await fetchInvoices(userData.id);
+        console.log("All Invoices:", allInvoices, userData.id);
         // Filter invoices for this student
         const myInvoices = allInvoices.filter(
-          (inv: any) => inv.student_id === userData.id && inv.status !== "PAID"
+          (inv: any) => inv.status !== "PAID"
         );
 
         const formattedBills: Bill[] = myInvoices.map((inv: any) => ({
