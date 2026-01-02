@@ -3,11 +3,20 @@ export type RootStackParamList = {
   Home: undefined;
   Services: undefined;
   Bills: undefined;
-  BillDetail: { bill: any };
+  BillDetail: { invoiceId: string};
   PaymentDetail: { bill: any };
   TransactionHistory: undefined;
   BuildingList: undefined;
-  RoomList: { id: string; name: string };
+  RoomList: { 
+    id: string; 
+    name: string;
+    selectMode?: boolean;
+    onSelectRoom?: (room: {
+      id: string;
+      name: string;
+      price: number;
+    }) => void;
+  };
   RequestHistory: undefined;
   RequestDetail: { id: string };
   CreateRequest: undefined;

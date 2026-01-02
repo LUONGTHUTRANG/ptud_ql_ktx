@@ -41,7 +41,7 @@ interface RoomItem {
 }
 
 const RoomList = ({ navigation, route }: Props) => {
-  const { id, name } = route.params;
+  const { id, name, selectMode, onSelectRoom } = route.params;
   const [searchQuery, setSearchQuery] = useState("");
   const [rooms, setRooms] = useState<RoomItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,82 +171,185 @@ const RoomList = ({ navigation, route }: Props) => {
     }
   };
 
+  // const renderItem = ({ item }: { item: RoomItem }) => {
+  //   const statusStyle = getStatusBadge(item.status);
+  //   return (
+  //     <View style={styles.itemContainer}>
+  //       <View style={styles.itemHeader}>
+  //         <View style={styles.itemInfo}>
+  //           <Text style={styles.itemName}>{item.name}</Text>
+  //           <Text style={styles.itemPrice}>
+  //             Giá: {item.price.toLocaleString()} VNĐ/kỳ
+  //           </Text>
+  //         </View>
+  //         <View
+  //           style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}
+  //         >
+  //           <Text style={[styles.statusText, { color: statusStyle.text }]}>
+  //             {statusStyle.label}
+  //           </Text>
+  //         </View>
+  //       </View>
+
+  //       <View style={styles.amenitiesGrid}>
+  //         <View style={styles.amenityItem}>
+  //           <MaterialIcons name="group" size={18} color="#64748b" />
+  //           <Text style={styles.amenityText}>
+  //             Sức chứa: {item.capacity} người
+  //           </Text>
+  //         </View>
+  //         <View style={styles.amenityItem}>
+  //           <MaterialIcons
+  //             name="ac-unit"
+  //             size={18}
+  //             color={item.hasAC ? "#334155" : "#94a3b8"}
+  //           />
+  //           <Text
+  //             style={[
+  //               styles.amenityText,
+  //               !item.hasAC && styles.amenityDisabled,
+  //             ]}
+  //           >
+  //             Điều hòa: {item.hasAC ? "Có" : "Không"}
+  //           </Text>
+  //         </View>
+  //         <View style={styles.amenityItem}>
+  //           <MaterialIcons
+  //             name="water-drop"
+  //             size={18}
+  //             color={item.hasHeater ? "#334155" : "#94a3b8"}
+  //           />
+  //           <Text
+  //             style={[
+  //               styles.amenityText,
+  //               !item.hasHeater && styles.amenityDisabled,
+  //             ]}
+  //           >
+  //             Nóng lạnh: {item.hasHeater ? "Có" : "Không"}
+  //           </Text>
+  //         </View>
+  //         <View style={styles.amenityItem}>
+  //           <MaterialIcons
+  //             name="local-laundry-service"
+  //             size={18}
+  //             color={item.hasWasher ? "#334155" : "#94a3b8"}
+  //           />
+  //           <Text
+  //             style={[
+  //               styles.amenityText,
+  //               !item.hasWasher && styles.amenityDisabled,
+  //             ]}
+  //           >
+  //             Máy giặt: {item.hasWasher ? "Có" : "Không"}
+  //           </Text>
+  //         </View>
+  //       </View>
+  //     </View>
+  //   );
+  // };
+
   const renderItem = ({ item }: { item: RoomItem }) => {
-    const statusStyle = getStatusBadge(item.status);
-    return (
-      <View style={styles.itemContainer}>
-        <View style={styles.itemHeader}>
-          <View style={styles.itemInfo}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Text style={styles.itemPrice}>
-              Giá: {item.price.toLocaleString()} VNĐ/kỳ
-            </Text>
-          </View>
-          <View
-            style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}
-          >
-            <Text style={[styles.statusText, { color: statusStyle.text }]}>
-              {statusStyle.label}
-            </Text>
-          </View>
+  const statusStyle = getStatusBadge(item.status);
+  const isSelectable = item.status === "AVAILABLE" && selectMode;
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      disabled={!isSelectable}
+      onPress={() => {
+        if (!selectMode || !onSelectRoom) return;
+
+        onSelectRoom({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+        });
+
+        navigation.goBack();
+      }}
+      style={[
+        styles.itemContainer,
+        !isSelectable && selectMode && styles.disabledItem,
+      ]}
+    >
+      {/* HEADER */}
+      <View style={styles.itemHeader}>
+        <View style={styles.itemInfo}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          <Text style={styles.itemPrice}>
+            Giá: {item.price.toLocaleString()} VNĐ/kỳ
+          </Text>
         </View>
 
-        <View style={styles.amenitiesGrid}>
-          <View style={styles.amenityItem}>
-            <MaterialIcons name="group" size={18} color="#64748b" />
-            <Text style={styles.amenityText}>
-              Sức chứa: {item.capacity} người
-            </Text>
-          </View>
-          <View style={styles.amenityItem}>
-            <MaterialIcons
-              name="ac-unit"
-              size={18}
-              color={item.hasAC ? "#334155" : "#94a3b8"}
-            />
-            <Text
-              style={[
-                styles.amenityText,
-                !item.hasAC && styles.amenityDisabled,
-              ]}
-            >
-              Điều hòa: {item.hasAC ? "Có" : "Không"}
-            </Text>
-          </View>
-          <View style={styles.amenityItem}>
-            <MaterialIcons
-              name="water-drop"
-              size={18}
-              color={item.hasHeater ? "#334155" : "#94a3b8"}
-            />
-            <Text
-              style={[
-                styles.amenityText,
-                !item.hasHeater && styles.amenityDisabled,
-              ]}
-            >
-              Nóng lạnh: {item.hasHeater ? "Có" : "Không"}
-            </Text>
-          </View>
-          <View style={styles.amenityItem}>
-            <MaterialIcons
-              name="local-laundry-service"
-              size={18}
-              color={item.hasWasher ? "#334155" : "#94a3b8"}
-            />
-            <Text
-              style={[
-                styles.amenityText,
-                !item.hasWasher && styles.amenityDisabled,
-              ]}
-            >
-              Máy giặt: {item.hasWasher ? "Có" : "Không"}
-            </Text>
-          </View>
+        <View
+          style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}
+        >
+          <Text style={[styles.statusText, { color: statusStyle.text }]}>
+            {statusStyle.label}
+          </Text>
         </View>
       </View>
-    );
-  };
+
+      {/* AMENITIES GRID (GIỮ NGUYÊN, KHÔNG COMPONENT RIÊNG) */}
+      <View style={styles.amenitiesGrid}>
+        <View style={styles.amenityItem}>
+          <MaterialIcons name="group" size={18} color="#64748b" />
+          <Text style={styles.amenityText}>
+            Sức chứa: {item.capacity} người
+          </Text>
+        </View>
+
+        <View style={styles.amenityItem}>
+          <MaterialIcons
+            name="ac-unit"
+            size={18}
+            color={item.hasAC ? "#334155" : "#94a3b8"}
+          />
+          <Text
+            style={[
+              styles.amenityText,
+              !item.hasAC && styles.amenityDisabled,
+            ]}
+          >
+            Điều hòa: {item.hasAC ? "Có" : "Không"}
+          </Text>
+        </View>
+
+        <View style={styles.amenityItem}>
+          <MaterialIcons
+            name="water-drop"
+            size={18}
+            color={item.hasHeater ? "#334155" : "#94a3b8"}
+          />
+          <Text
+            style={[
+              styles.amenityText,
+              !item.hasHeater && styles.amenityDisabled,
+            ]}
+          >
+            Nóng lạnh: {item.hasHeater ? "Có" : "Không"}
+          </Text>
+        </View>
+
+        <View style={styles.amenityItem}>
+          <MaterialIcons
+            name="local-laundry-service"
+            size={18}
+            color={item.hasWasher ? "#334155" : "#94a3b8"}
+          />
+          <Text
+            style={[
+              styles.amenityText,
+              !item.hasWasher && styles.amenityDisabled,
+            ]}
+          >
+            Máy giặt: {item.hasWasher ? "Có" : "Không"}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
   if (loading) {
     return (
@@ -642,6 +745,17 @@ const styles = StyleSheet.create({
   amenityDisabled: {
     color: "#94a3b8",
   },
+  disabledItem: {
+  opacity: 0.5,
+},
+
+tapHint: {
+  marginTop: 12,
+  textAlign: "center",
+  fontSize: 13,
+  fontWeight: "600",
+  color: "#0ea5e9",
+},
 });
 
 export default RoomList;

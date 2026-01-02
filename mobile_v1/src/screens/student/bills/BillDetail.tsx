@@ -22,19 +22,19 @@ type BillDetailRouteProp = RouteProp<RootStackParamList, "BillDetail">;
 const BillDetail = () => {
   const navigation = useNavigation();
   const route = useRoute<BillDetailRouteProp>();
-  const { bill } = route.params || {};
+  const { invoiceId } = route.params || {};
   const [detail, setDetail] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (bill?.id) {
+    if (invoiceId) {
       fetchDetail();
     }
-  }, [bill]);
+  }, [invoiceId]);
 
   const fetchDetail = async () => {
     try {
-      const data = await getInvoiceDetail(bill.id);
+      const data = await getInvoiceDetail(invoiceId!);
       setDetail(data);
     } catch (error) {
       console.error("Error fetching invoice detail:", error);
@@ -62,7 +62,7 @@ const BillDetail = () => {
     );
   }
 
-  const displayData = detail || bill;
+  const displayData = detail || {};
   const isUtility = displayData.type === "UTILITY_FEE" || displayData.usage_id;
 
   const formatCurrency = (amount: number) => {

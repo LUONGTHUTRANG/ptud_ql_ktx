@@ -1,11 +1,14 @@
 import Registration from "../models/registrationModel.js";
 import Semester from "../models/semesterModel.js";
+import Invoice from "../models/invoiceModel.js";
+import Room from "../models/roomModel.js";
+import { generateInvoiceCode } from "../utils/invoiceCode.js";
 
 export const createRegistration = async (req, res) => {
   try {
     const {
       student_id,
-      registration_type, // 'NORMAL', 'PRIORITY', 'RENEWAL'
+      registration_type, // NORMAL | PRIORITY | RENEWAL
       desired_room_id,
       desired_building_id,
       priority_category,
@@ -36,18 +39,64 @@ export const createRegistration = async (req, res) => {
       evidence_file_path = req.file.path.replace(/\\/g, "/");
     }
 
+    // 4. Validate theo loại đăng ký
+    const isPriority = registration_type === "PRIORITY";
+
+    if (!isPriority && !desired_room_id) {
+      return res
+        .status(400)
+        .json({ message: "Vui lòng chọn phòng để đăng ký." });
+    }
+
+    // 5. Create registration
     const registrationId = await Registration.create({
       student_id,
       semester_id: activeSemester.id,
       registration_type,
-      desired_room_id: desired_room_id || null,
+      desired_room_id: isPriority ? null : desired_room_id,
       desired_building_id: desired_building_id || null,
-      priority_category: priority_category || "NONE",
-      priority_description: priority_description || null,
+      priority_category: isPriority ? priority_category || "NONE" : "NONE",
+      priority_description: isPriority ? priority_description || null : null,
       evidence_file_path,
+      status: "PENDING",
     });
 
-    res.status(201).json({ message: "Đăng ký thành công", id: registrationId });
+    // 6. Nếu PRIORITY → kết thúc
+    if (isPriority) {
+      return res.status(201).json({
+        message: "Đăng ký diện ưu tiên thành công. Vui lòng chờ xét duyệt.",
+        registration_id: registrationId,
+      });
+    }
+
+    // 7. Lấy giá phòng
+    const room = await Room.getById(desired_room_id);
+    if (!room) {
+      return res.status(404).json({ message: "Không tìm thấy phòng" });
+    }
+
+    // 8. Create invoice (24h)
+    const dueDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    const invoice = await Invoice.create({
+      invoice_code: generateInvoiceCode("R"),
+      type: "ROOM_FEE",
+      semester_id: activeSemester.id,
+      room_id: desired_room_id,
+      student_id,
+      amount: room.price_per_semester,
+      description: `Tiền phòng ${room.room_number} - HK ${activeSemester.term} ${activeSemester.academic_year}`,
+      status: "UNPAID",
+      due_date: dueDate,
+    });
+
+    res.status(201).json({
+      message: "Đăng ký thành công. Vui lòng thanh toán trong vòng 24 giờ.",
+      registration_id: registrationId,
+      invoice_id: invoice.id,
+      amount: room.price_per_semester,
+      due_date: dueDate,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

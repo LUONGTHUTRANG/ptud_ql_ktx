@@ -436,13 +436,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#64748b",
   },
-  dropdownList: {
+   dropdownList: {
     marginTop: 4,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#cbd5e1",
     borderRadius: 8,
     overflow: "hidden",
+    position: "absolute",
+    top: 115, 
+    left: 0,
+    right: 0,
+    zIndex: 1000,
   },
   dropdownItem: {
     flexDirection: "row",

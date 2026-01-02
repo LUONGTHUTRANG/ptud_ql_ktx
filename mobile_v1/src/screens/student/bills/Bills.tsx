@@ -129,7 +129,7 @@ const Bills = ({ navigation }: Props) => {
     } else {
       const bill = bills.find((b) => b.id === id);
       if (bill) {
-        navigation.navigate("BillDetail", { bill: bill.originalData });
+        navigation.navigate("BillDetail", { invoiceId: bill.originalData.id });
       }
     }
   };
