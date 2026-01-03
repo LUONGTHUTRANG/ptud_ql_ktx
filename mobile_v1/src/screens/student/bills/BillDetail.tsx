@@ -179,34 +179,34 @@ const BillDetail = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Summary Card */}
         <View style={styles.summaryCard}>
-  <View
-    style={[
-      styles.statusBadge,
-      billData.status === "paid"
-        ? styles.statusBadgePaid
-        : billData.status === "submitted"
-        ? styles.statusBadgeSubmitted
-        : styles.statusBadgeUnpaid,
-    ]}
-  >
-    <Text
-      style={[
-        styles.statusText,
-        billData.status === "paid"
-          ? styles.statusTextPaid
-          : billData.status === "submitted"
-          ? styles.statusTextSubmitted
-          : styles.statusTextUnpaid,
-      ]}
-    >
-      {billData.status === "paid"
-        ? t("invoice.paid")
-        : billData.status === "submitted"
-        ? "Đã nộp – chờ xác nhận"
-        : t("invoice.unpaid")}
-    </Text>
-  </View>
-</View>
+          <View
+            style={[
+              styles.statusBadge,
+              billData.status === "paid"
+                ? styles.statusBadgePaid
+                : billData.status === "submitted"
+                ? styles.statusBadgeSubmitted
+                : styles.statusBadgeUnpaid,
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusText,
+                billData.status === "paid"
+                  ? styles.statusTextPaid
+                  : billData.status === "submitted"
+                  ? styles.statusTextSubmitted
+                  : styles.statusTextUnpaid,
+              ]}
+            >
+              {billData.status === "paid"
+                ? t("invoice.paid")
+                : billData.status === "submitted"
+                ? "Đã nộp – chờ xác nhận"
+                : t("invoice.unpaid")}
+            </Text>
+          </View>
+        </View>
 
 
           <View style={styles.summaryContent}>
@@ -219,7 +219,6 @@ const BillDetail = () => {
               {t("common.dueDate")}: {billData.dueDate}
             </Text>
           </View>
-        </View>
 
         {/* General Info Grid */}
         <View style={styles.gridContainer}>
