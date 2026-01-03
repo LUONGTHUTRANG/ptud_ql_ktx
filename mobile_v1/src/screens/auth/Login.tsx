@@ -81,7 +81,7 @@ const Login = ({ navigation }: Props) => {
           </View>
 
           <Text style={styles.title}>{t("auth.login")}</Text>
-          <Text style={styles.subtitle}>{t("common.selectLanguage")}</Text>
+          <Text style={styles.subtitle}>{t("common.system")}</Text>
 
           {/* Tabs */}
           <View style={styles.tabContainer}>

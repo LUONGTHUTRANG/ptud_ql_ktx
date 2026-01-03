@@ -189,6 +189,7 @@
     "year": "Year"
   },
   "common": {
+    "system": "Dormitory Management System",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",

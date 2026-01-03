@@ -190,6 +190,7 @@
     "year": "Năm"
   },
   "common": {
+    "system": "Hệ thống Quản lý KTX",
     "save": "Lưu",
     "cancel": "Hủy",
     "delete": "Xóa",
