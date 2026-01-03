@@ -107,6 +107,15 @@ const ManagerServices = ({ navigation }: Props) => {
       path: "ManagerTerm",
       requiredRole: "admin",
     },
+    {
+      title: "Quản lý cán bộ",
+      description: "Quản lý thông tin cán bộ KTX.",
+      icon: "badge",
+      iconColor: "#6b21a8", // text-purple-700
+      iconBg: "#fce7f3", // bg-pink-100
+      path: "ManagerStaff",
+      requiredRole: "admin",
+    },
   ];
 
   const filteredServices = baseServices.filter((service) => {
@@ -124,54 +133,56 @@ const ManagerServices = ({ navigation }: Props) => {
       );
       return;
     }
-  }
-    return (
-      <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
-
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft} />
-          <Text style={styles.headerTitle}>Quản lý</Text>
-          <View style={styles.headerRight} />
-        </View>
-
-        {/* Main Content */}
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.grid}>
-            {filteredServices.map((service, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleNavigate(service)}
-                style={styles.card}
-              >
-                <View
-                  style={[
-                    styles.iconContainer,
-                    { backgroundColor: service.iconBg },
-                  ]}
-                >
-                  <MaterialIcons
-                    name={service.icon as any}
-                    size={32}
-                    color={service.iconColor}
-                  />
-                </View>
-                <View style={styles.textContainer}>
-                  <Text style={styles.cardTitle}>{service.title}</Text>
-                  <Text style={styles.cardDescription}>
-                    {service.description}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-
-        <BottomNav role="manager" />
-      </View>
-    );
+    navigation.navigate(service.path as any);
   };
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft} />
+        <Text style={styles.headerTitle}>Quản lý</Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      {/* Main Content */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.grid}>
+          {filteredServices.map((service, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleNavigate(service)}
+              style={styles.card}
+            >
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: service.iconBg },
+                ]}
+              >
+                <MaterialIcons
+                  name={service.icon as any}
+                  size={32}
+                  color={service.iconColor}
+                />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={styles.cardTitle}>{service.title}</Text>
+                <Text style={styles.cardDescription}>
+                  {service.description}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+
+      <BottomNav role="manager" />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

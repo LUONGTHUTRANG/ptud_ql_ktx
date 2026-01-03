@@ -163,14 +163,6 @@ const ManagerHome = ({ navigation }: Props) => {
       path: "ManagerRegularRequest",
       requiredRole: undefined,
     },
-    {
-      title: "Quản lý kỳ ở",
-      icon: "date-range",
-      bgColor: "#e0e7ff",
-      iconColor: "#4f46e5",
-      path: "ManagerTerm",
-      requiredRole: "admin",
-    },
   ];
 
   const quickAccessItems = baseQuickAccessItems.filter((item) => {
@@ -357,6 +349,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#0f172a",
+    maxWidth: width - 140,
   },
   notificationButton: {
     width: 40,

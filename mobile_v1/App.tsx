@@ -36,6 +36,8 @@ import ManagerNotifications from "./src/screens/manager/notifications/ManagerNot
 import ManagerNotificationDetail from "./src/screens/manager/notifications/ManagerNotificationDetail";
 import ManagerRegularRequest from "./src/screens/manager/requests/ManagerRegularRequest";
 import ManagerServices from "./src/screens/manager/services/ManagerServices";
+import ManagerStaff from "./src/screens/manager/staff/ManagerStaff";
+import AddManagerScreen from "./src/screens/manager/staff/AddManager";
 import ManagerTerm from "./src/screens/manager/terms/ManagerTerm";
 import ManagerTermDetail from "./src/screens/manager/terms/ManagerTermDetail";
 import RecordMeterReading from "./src/screens/manager/bills/RecordMeterReading";
@@ -116,6 +118,8 @@ const App = () => {
               component={ManagerRegularRequest}
             />
             <Stack.Screen name="ManagerServices" component={ManagerServices} />
+            <Stack.Screen name="ManagerStaff" component={ManagerStaff} />
+            <Stack.Screen name="AddManager" component={AddManagerScreen} />
             <Stack.Screen name="ManagerTerm" component={ManagerTerm} />
             <Stack.Screen
               name="ManagerTermDetail"

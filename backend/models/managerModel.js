@@ -13,7 +13,6 @@ const Manager = {
 
   create: async (data) => {
     const {
-      username,
       email,
       password_hash,
       full_name,
@@ -23,9 +22,8 @@ const Manager = {
       fcm_token,
     } = data;
     const [result] = await db.query(
-      "INSERT INTO managers (username, email, password_hash, full_name, phone_number, is_first_login, building_id, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO managers (email, password_hash, full_name, phone_number, is_first_login, building_id, fcm_token) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
-        username,
         email,
         password_hash,
         full_name,
@@ -39,29 +37,10 @@ const Manager = {
   },
 
   update: async (id, data) => {
-    const {
-      username,
-      email,
-      password_hash,
-      full_name,
-      phone_number,
-      is_first_login,
-      building_id,
-      fcm_token,
-    } = data;
+    const { email, full_name, phone_number, building_id, is_active } = data;
     await db.query(
-      "UPDATE managers SET username = ?, email = ?, password_hash = ?, full_name = ?, phone_number = ?, is_first_login = ?, building_id = ?, fcm_token = ? WHERE id = ?",
-      [
-        username,
-        email,
-        password_hash,
-        full_name,
-        phone_number,
-        is_first_login,
-        building_id,
-        fcm_token,
-        id,
-      ]
+      "UPDATE managers SET email = ?, full_name = ?, phone_number = ?, is_active = ?, building_id = ? WHERE id = ?",
+      [email, full_name, phone_number, is_active, building_id, id]
     );
     return { id, ...data };
   },
