@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
 import { Bill, MenuItem, User } from "../../../models";
@@ -29,6 +30,7 @@ interface Props {
 }
 
 const Home = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,9 +54,9 @@ const Home = ({ navigation }: Props) => {
           setUnreadCount(0);
         }
 
-        let roomName = "Chưa có";
-        let buildingName = "Chưa có";
-        let roommateName = "Không có";
+        let roomName = t("common.noData");
+        let buildingName = t("common.noData");
+        let roommateName = t("common.noData");
 
         // 2. Get room and building info if user has a room
         if (userData.current_room_id) {
@@ -122,26 +124,26 @@ const Home = ({ navigation }: Props) => {
   const menuItems: (MenuItem & { path: keyof RootStackParamList | "#" })[] = [
     {
       icon: "cottage",
-      title: "Đăng ký ở",
-      subtitle: "Tìm phòng mới",
+      title: t("common.add"),
+      subtitle: t("student.studentList"),
       path: "RegisterAccommodation",
     },
     {
       icon: "support-agent",
-      title: "Gửi yêu cầu",
-      subtitle: "Hỗ trợ & sửa chữa",
+      title: t("supportRequest.createRequest"),
+      subtitle: t("supportRequest.supportRequestList"),
       path: "RequestHistory",
     },
     {
       icon: "autorenew",
-      title: "Gia hạn",
-      subtitle: "Kéo dài hợp đồng",
+      title: t("semester.semesterName"),
+      subtitle: t("semester.endDate"),
       path: "ExtendAccommodation",
     },
     {
       icon: "apartment",
-      title: "Tòa nhà & phòng",
-      subtitle: "Thông tin KTX",
+      title: t("building.buildingList"),
+      subtitle: t("building.buildingDetails"),
       path: "BuildingList",
     },
   ];
@@ -167,7 +169,7 @@ const Home = ({ navigation }: Props) => {
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <Text>Không thể tải thông tin người dùng</Text>
+        <Text>{t("common.error")}</Text>
       </View>
     );
   }
@@ -199,7 +201,9 @@ const Home = ({ navigation }: Props) => {
               </View>
             )}
           </View>
-          <Text style={styles.greeting}>Chào buổi sáng, {user.name}!</Text>
+          <Text style={styles.greeting}>
+            {t("common.greeting")} {user.name}!
+          </Text>
         </View>
         <TouchableOpacity
           style={styles.notificationButton}
@@ -215,14 +219,13 @@ const Home = ({ navigation }: Props) => {
         <View style={styles.warningCard}>
           <View style={styles.warningHeader}>
             <MaterialIcons name="warning" size={20} color="#ca8a04" />
-            <Text style={styles.warningTitle}>Thông báo khẩn</Text>
+            <Text style={styles.warningTitle}>{t("common.warning")}</Text>
           </View>
           <Text style={styles.warningSubject}>
-            Lịch cắt điện tòa B2 ngày 25/10
+            {t("notification.powerCutTitle")}
           </Text>
           <Text style={styles.warningText}>
-            Sẽ có lịch cắt điện để bảo trì hệ thống từ 8:00 đến 11:00. Vui lòng
-            lưu ý.
+            {t("notification.powerCutDescription")}
           </Text>
         </View>
 
@@ -258,16 +261,17 @@ const Home = ({ navigation }: Props) => {
         >
           <View style={styles.roomInfo}>
             <View>
-              <Text style={styles.roomTitle}>Phòng của bạn</Text>
+              <Text style={styles.roomTitle}>{t("building.yourRoom")}</Text>
               <Text style={styles.roomDetail}>
-                Tòa {user.building} - Phòng {user.room}
+                {t("building.buildingShort")} {user.building} -{" "}
+                {t("room.roomName")} {user.room}
               </Text>
               <Text style={styles.roomDetail}>
-                Bạn cùng phòng: {user.roommate}
+                {t("student.roommate")}: {user.roommate}
               </Text>
             </View>
             <View style={styles.detailButton}>
-              <Text style={styles.detailButtonText}>Chi tiết</Text>
+              <Text style={styles.detailButtonText}>{t("common.details")}</Text>
               <MaterialIcons name="arrow-forward" size={14} color="#0ea5e9" />
             </View>
           </View>
@@ -279,7 +283,9 @@ const Home = ({ navigation }: Props) => {
 
         {/* Bills */}
         <View style={styles.billsSection}>
-          <Text style={styles.sectionTitle}>Hóa đơn cần thanh toán</Text>
+          <Text style={styles.sectionTitle}>
+            {t("invoice.billsNeedPayment")}
+          </Text>
           <View style={styles.billsList}>
             {bills.length > 0 ? (
               bills.map((bill) => (
@@ -316,12 +322,16 @@ const Home = ({ navigation }: Props) => {
                           : styles.billStatusPending,
                       ]}
                     >
-                      {bill.status === "overdue" ? "Đã quá hạn" : "Sắp đến hạn"}
+                      {bill.status === "overdue"
+                        ? t("invoice.overdue")
+                        : t("invoice.upcomingDue")}
                     </Text>
                   </View>
                   <View style={styles.billAmount}>
                     <Text style={styles.amountText}>{bill.amount}</Text>
-                    <Text style={styles.dueDateText}>Hạn: {bill.dueDate}</Text>
+                    <Text style={styles.dueDateText}>
+                      {t("common.dueDate")}: {bill.dueDate}
+                    </Text>
                   </View>
                 </View>
               ))
@@ -329,9 +339,9 @@ const Home = ({ navigation }: Props) => {
               <View style={styles.emptyState}>
                 <MaterialIcons name="check-circle" size={40} color="#22c55e" />
                 <View>
-                  <Text style={styles.emptyTitle}>Không có hóa đơn mới</Text>
+                  <Text style={styles.emptyTitle}>{t("invoice.noBills")}</Text>
                   <Text style={styles.emptyText}>
-                    Bạn đã thanh toán hết các hóa đơn.
+                    {t("invoice.billsPaidAll")}
                   </Text>
                 </View>
               </View>

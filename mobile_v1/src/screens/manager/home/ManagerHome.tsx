@@ -13,6 +13,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
 import { managerApi } from "../../../services/managerApi";
@@ -29,6 +30,7 @@ interface Props {
 }
 
 const ManagerHome = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [user, setUser] = useState({
     name: "",
     avatarUrl: "",
@@ -88,22 +90,22 @@ const ManagerHome = ({ navigation }: Props) => {
 
   const stats = [
     {
-      label: "Tổng sinh viên",
+      label: t("manager.totalStudents"),
       value: statsData.totalStudents.toString(),
       color: "#0f172a",
     },
     {
-      label: "Phòng trống",
+      label: t("manager.emptyRooms"),
       value: statsData.emptyRooms.toString(),
       color: "#0f172a",
     },
     {
-      label: "Đơn đăng ký mới",
+      label: t("manager.newRegistrations"),
       value: statsData.newRegistrations.toString(),
       color: "#eab308",
     },
     {
-      label: "Yêu cầu cần xử lý",
+      label: t("manager.pendingRequests"),
       value: statsData.pendingRequests.toString(),
       color: "#ef4444",
     },
@@ -116,7 +118,7 @@ const ManagerHome = ({ navigation }: Props) => {
 
   const baseQuickAccessItems = [
     {
-      title: "Quản lý Tòa nhà",
+      title: t("manager.manageBuildings"),
       icon: "apartment",
       bgColor: "#dbeafe",
       iconColor: "#2563eb",
@@ -124,7 +126,7 @@ const ManagerHome = ({ navigation }: Props) => {
       requiredRole: undefined,
     },
     {
-      title: "Quản lý Sinh viên",
+      title: t("manager.manageStudents"),
       icon: "groups",
       bgColor: "#dcfce7",
       iconColor: "#16a34a",
@@ -132,7 +134,7 @@ const ManagerHome = ({ navigation }: Props) => {
       requiredRole: undefined,
     },
     {
-      title: "Quản lý Hóa đơn",
+      title: t("manager.manageBills"),
       icon: "receipt-long",
       bgColor: "#ffedd5",
       iconColor: "#ea580c",
@@ -140,7 +142,7 @@ const ManagerHome = ({ navigation }: Props) => {
       requiredRole: undefined,
     },
     {
-      title: "Duyệt Đơn",
+      title: t("manager.approveRequest"),
       icon: "checklist",
       bgColor: "#f3e8ff",
       iconColor: "#9333ea",
@@ -148,7 +150,7 @@ const ManagerHome = ({ navigation }: Props) => {
       requiredRole: undefined,
     },
     {
-      title: "Quản lý Thông báo",
+      title: t("manager.manageNotifications"),
       icon: "campaign",
       bgColor: "#fee2e2",
       iconColor: "#dc2626",
@@ -156,7 +158,7 @@ const ManagerHome = ({ navigation }: Props) => {
       requiredRole: undefined,
     },
     {
-      title: "Quản lý yêu cầu hỗ trợ",
+      title: t("manager.manageSupportRequest"),
       icon: "build",
       bgColor: "#e0e7ff",
       iconColor: "#4f46e5",
@@ -197,7 +199,9 @@ const ManagerHome = ({ navigation }: Props) => {
               <Text style={styles.avatarText}>?</Text>
             </View>
           )}
-          <Text style={styles.welcomeText}>Chào buổi sáng, {user.name}!</Text>
+          <Text style={styles.welcomeText}>
+            {t("common.greeting")} {user.name}!
+          </Text>
         </View>
         <TouchableOpacity
           style={styles.notificationButton}
@@ -227,17 +231,17 @@ const ManagerHome = ({ navigation }: Props) => {
         {/* Warning Section */}
         {statsData.overdueInvoices > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Cảnh báo</Text>
+            <Text style={styles.sectionTitle}>{t("common.warning")}</Text>
             <TouchableOpacity style={styles.warningCard}>
               <View style={styles.warningIconContainer}>
                 <MaterialIcons name="receipt-long" size={24} color="#dc2626" />
               </View>
               <View style={styles.warningContent}>
                 <Text style={styles.warningTitle}>
-                  {statsData.overdueInvoices} hóa đơn đã quá hạn
+                  {statsData.overdueInvoices} {t("manager.overdueInvoices")}
                 </Text>
                 <Text style={styles.warningSubtitle}>
-                  Nhấn để xem chi tiết danh sách
+                  {t("manager.viewDetails")}
                 </Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color="#64748b" />
@@ -247,26 +251,26 @@ const ManagerHome = ({ navigation }: Props) => {
 
         {/* Occupancy Rate */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tỷ lệ lấp đầy phòng</Text>
+          <Text style={styles.sectionTitle}>{t("manager.occupancyRate")}</Text>
           <View style={styles.occupancyCard}>
             <View style={styles.chartContainer}>
               {/* Simple Circular Progress Representation */}
               <View style={styles.chartCircle}>
                 <Text style={styles.chartPercentage}>{occupancyRate}%</Text>
-                <Text style={styles.chartLabel}>Đã lấp đầy</Text>
+                <Text style={styles.chartLabel}>{t("manager.occupied")}</Text>
               </View>
             </View>
             <View style={styles.occupancyStats}>
               <View style={styles.occupancyRow}>
                 <View style={[styles.dot, { backgroundColor: "#0ea5e9" }]} />
                 <Text style={styles.occupancyText}>
-                  Đã có người ở: {statsData.totalStudents}
+                  {t("manager.hasOccupants")}: {statsData.totalStudents}
                 </Text>
               </View>
               <View style={styles.occupancyRow}>
                 <View style={[styles.dot, { backgroundColor: "#e2e8f0" }]} />
                 <Text style={styles.occupancyText}>
-                  Còn trống: {emptySlots}
+                  {t("manager.vacant")}: {emptySlots}
                 </Text>
               </View>
             </View>
@@ -275,7 +279,7 @@ const ManagerHome = ({ navigation }: Props) => {
 
         {/* Quick Access */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Truy cập nhanh</Text>
+          <Text style={styles.sectionTitle}>{t("manager.quickAccess")}</Text>
           <View style={styles.quickAccessGrid}>
             {quickAccessItems.map((item, index) => (
               <TouchableOpacity

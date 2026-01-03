@@ -12,6 +12,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
 
@@ -25,6 +26,7 @@ interface Props {
 }
 
 const ManagerServices = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [userRole, setUserRole] = useState<"admin" | "manager" | null>(null);
 
   useFocusEffect(
@@ -45,74 +47,74 @@ const ManagerServices = ({ navigation }: Props) => {
 
   const baseServices = [
     {
-      title: "Quản lý sinh viên",
-      description: "Danh sách sinh viên và thông tin chi tiết.",
+      title: t("manager.manageStudents"),
+      description: t("manager.manageStudentsDesc"),
       icon: "people",
-      iconColor: "#2563eb", // text-blue-600
-      iconBg: "#dbeafe", // bg-blue-100
+      iconColor: "#2563eb",
+      iconBg: "#dbeafe",
       path: "StudentList",
       requiredRole: undefined,
     },
     {
-      title: "Quản lý phòng",
-      description: "Danh sách tòa nhà và phòng ở.",
+      title: t("manager.manageRooms"),
+      description: t("manager.manageRoomsDesc"),
       icon: "apartment",
-      iconColor: "#0d9488", // text-teal-600
-      iconBg: "#ccfbf1", // bg-teal-100
+      iconColor: "#0d9488",
+      iconBg: "#ccfbf1",
       path: "BuildingList",
       requiredRole: undefined,
     },
     {
-      title: "Yêu cầu hỗ trợ",
-      description: "Xử lý các yêu cầu hỗ trợ từ sinh viên.",
+      title: t("manager.supportRequest"),
+      description: t("manager.supportRequestDesc"),
       icon: "support-agent",
-      iconColor: "#ea580c", // text-orange-600
-      iconBg: "#ffedd5", // bg-orange-100
+      iconColor: "#ea580c",
+      iconBg: "#ffedd5",
       path: "ManagerRegularRequest",
       requiredRole: undefined,
     },
     {
-      title: "Duyệt đơn đặc biệt",
-      description: "Duyệt đơn đăng ký ở cho hoàn cảnh đặc biệt.",
+      title: t("manager.approveSpecialRequest"),
+      description: t("manager.approveSpecialRequestDesc"),
       icon: "assignment-late",
-      iconColor: "#db2777", // text-pink-600
-      iconBg: "#fce7f3", // bg-pink-100
+      iconColor: "#db2777",
+      iconBg: "#fce7f3",
       path: "ManagerSpecialRequest",
       requiredRole: undefined,
     },
     {
-      title: "Quản lý hóa đơn",
-      description: "Theo dõi tình hình thanh toán điện nước.",
+      title: t("manager.manageBills"),
+      description: t("manager.manageBillsDesc"),
       icon: "receipt-long",
-      iconColor: "#9333ea", // text-purple-600
-      iconBg: "#f3e8ff", // bg-purple-100
+      iconColor: "#9333ea",
+      iconBg: "#f3e8ff",
       path: "ManagerBills",
       requiredRole: undefined,
     },
     {
-      title: "Quản lý thông báo",
-      description: "Tạo và gửi thông báo đến sinh viên.",
+      title: t("manager.manageNotifications"),
+      description: t("manager.manageNotificationsDesc"),
       icon: "notifications",
-      iconColor: "#ca8a04", // text-yellow-600
-      iconBg: "#fef9c3", // bg-yellow-100
+      iconColor: "#ca8a04",
+      iconBg: "#fef9c3",
       path: "ManagerNotifications",
       requiredRole: undefined,
     },
     {
-      title: "Quản lý kỳ ở",
-      description: "Thiết lập thời gian và hạn đăng ký.",
+      title: t("manager.manageTerm"),
+      description: t("manager.manageTermDesc"),
       icon: "date-range",
-      iconColor: "#4f46e5", // text-indigo-600
-      iconBg: "#e0e7ff", // bg-indigo-100
+      iconColor: "#4f46e5",
+      iconBg: "#e0e7ff",
       path: "ManagerTerm",
       requiredRole: "admin",
     },
     {
-      title: "Quản lý cán bộ",
-      description: "Quản lý thông tin cán bộ KTX.",
+      title: t("manager.manageStaff"),
+      description: t("manager.manageStaffDesc"),
       icon: "badge",
-      iconColor: "#6b21a8", // text-purple-700
-      iconBg: "#fce7f3", // bg-pink-100
+      iconColor: "#6b21a8",
+      iconBg: "#fce7f3",
       path: "ManagerStaff",
       requiredRole: "admin",
     },
@@ -127,10 +129,7 @@ const ManagerServices = ({ navigation }: Props) => {
 
   const handleNavigate = (service: (typeof baseServices)[0]) => {
     if (service.requiredRole === "admin" && userRole !== "admin") {
-      Alert.alert(
-        "Quyền hạn",
-        "Chỉ quản trị viên mới có thể truy cập chức năng này."
-      );
+      Alert.alert(t("manager.permission"), t("manager.permissionDesc"));
       return;
     }
     navigation.navigate(service.path as any);
@@ -143,7 +142,7 @@ const ManagerServices = ({ navigation }: Props) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft} />
-        <Text style={styles.headerTitle}>Quản lý</Text>
+        <Text style={styles.headerTitle}>{t("manager.managerServices")}</Text>
         <View style={styles.headerRight} />
       </View>
 

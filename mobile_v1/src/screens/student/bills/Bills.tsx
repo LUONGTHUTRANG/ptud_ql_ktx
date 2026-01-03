@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import { fetchInvoices } from "../../../services/invoiceApi";
 import { getMe } from "../../../services/authApi";
@@ -38,6 +39,7 @@ interface BillItem {
 }
 
 const Bills = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"unpaid" | "paid" | "overdue">(
     "unpaid"
   );
@@ -78,7 +80,9 @@ const Bills = ({ navigation }: Props) => {
 
         let title = item.description || `Hóa đơn ${item.invoice_code}`;
         if (item.type === "UTILITY_FEE" && item.room_number) {
-          title = `Điện nước phòng ${item.room_number}`;
+          title = `${t("monthlyUsage.water")} ${t(
+            "monthlyUsage.electricity"
+          )} ${t("room.roomName")} ${item.room_number}`;
           if (item.description) title += ` - ${item.description}`;
         }
 
@@ -180,13 +184,13 @@ const Bills = ({ navigation }: Props) => {
     if (status === "overdue") {
       return (
         <View style={[styles.badge, styles.badgeOverdue]}>
-          <Text style={styles.badgeTextOverdue}>Quá hạn</Text>
+          <Text style={styles.badgeTextOverdue}>{t("invoice.overdue")}</Text>
         </View>
       );
     }
     return (
       <View style={[styles.badge, styles.badgePending]}>
-        <Text style={styles.badgeTextPending}>Chưa TT</Text>
+        <Text style={styles.badgeTextPending}>{t("invoice.unpaid")}</Text>
       </View>
     );
   };
@@ -228,8 +232,8 @@ const Bills = ({ navigation }: Props) => {
 
         <Text style={styles.headerTitle}>
           {isSelectionMode
-            ? `Đã chọn ${selectedBills.length}`
-            : "Hóa đơn & Thanh toán"}
+            ? `${t("common.select")} ${selectedBills.length}`
+            : t("invoice.billsNeedPayment")}
         </Text>
 
         {isSelectionMode ? (
@@ -239,8 +243,8 @@ const Bills = ({ navigation }: Props) => {
           >
             <Text style={styles.headerRightText}>
               {selectedBills.length === filteredBills.length
-                ? "Bỏ chọn"
-                : "Tất cả"}
+                ? t("common.deselect")
+                : t("common.selectAll")}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -263,7 +267,7 @@ const Bills = ({ navigation }: Props) => {
               activeTab === "unpaid" && styles.activeTabText,
             ]}
           >
-            Chưa thanh toán
+            {t("invoice.unpaid")}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -279,7 +283,7 @@ const Bills = ({ navigation }: Props) => {
               activeTab === "paid" && styles.activeTabText,
             ]}
           >
-            Đã thanh toán
+            {t("invoice.paid")}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -295,7 +299,7 @@ const Bills = ({ navigation }: Props) => {
               activeTab === "overdue" && styles.activeTabText,
             ]}
           >
-            Quá hạn
+            {t("invoice.overdue")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -347,7 +351,7 @@ const Bills = ({ navigation }: Props) => {
                     bill.status === "overdue" && styles.textRed,
                   ]}
                 >
-                  Hạn cuối: {bill.dueDate}
+                  {t("common.dueDate")}: {bill.dueDate}
                 </Text>
               </View>
 
@@ -364,7 +368,7 @@ const Bills = ({ navigation }: Props) => {
               size={48}
               color="#64748b"
             />
-            <Text style={styles.emptyText}>Không có hóa đơn nào</Text>
+            <Text style={styles.emptyText}>{t("invoice.noBills")}</Text>
           </View>
         )}
       </ScrollView>
@@ -374,7 +378,7 @@ const Bills = ({ navigation }: Props) => {
         <View style={styles.bottomBar}>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>
-              Tổng tiền ({selectedBills.length} hóa đơn)
+              {t("common.total")} ({selectedBills.length} {t("invoice.bills")})
             </Text>
             <Text style={styles.totalAmount}>
               {formatCurrency(totalAmount)}
@@ -394,7 +398,9 @@ const Bills = ({ navigation }: Props) => {
               const combinedBill = {
                 ...firstBill,
                 amount: total,
-                description: `Thanh toán ${selectedBills.length} hóa đơn`,
+                description: `${t("invoice.payment")} ${
+                  selectedBills.length
+                } ${t("invoice.bills")}`,
                 invoice_code: selectedBillObjects
                   .map((b) => b.originalData.invoice_code)
                   .join(", "),
@@ -404,7 +410,7 @@ const Bills = ({ navigation }: Props) => {
             }}
             style={styles.payButton}
           >
-            <Text style={styles.payButtonText}>Thanh toán</Text>
+            <Text style={styles.payButtonText}>{t("invoice.payment")}</Text>
           </TouchableOpacity>
         </View>
       )}

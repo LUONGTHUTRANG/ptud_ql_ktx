@@ -13,6 +13,7 @@ import {
 import * as Clipboard from "expo-clipboard";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import { getInvoiceDetail } from "../../../services/invoiceApi";
 import moment from "moment";
@@ -20,6 +21,7 @@ import moment from "moment";
 type BillDetailRouteProp = RouteProp<RootStackParamList, "BillDetail">;
 
 const BillDetail = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const route = useRoute<BillDetailRouteProp>();
   const { invoiceId } = route.params || {};
@@ -38,7 +40,7 @@ const BillDetail = () => {
       setDetail(data);
     } catch (error) {
       console.error("Error fetching invoice detail:", error);
-      Alert.alert("Lỗi", "Không thể tải chi tiết hóa đơn");
+      Alert.alert(t("common.error"), t("invoice.loadDetailError"));
     } finally {
       setLoading(false);
     }
@@ -46,7 +48,7 @@ const BillDetail = () => {
 
   const copyToClipboard = async (text: string) => {
     await Clipboard.setStringAsync(text);
-    Alert.alert("Đã sao chép", text);
+    Alert.alert(t("common.success"), text);
   };
 
   if (loading) {
@@ -79,7 +81,9 @@ const BillDetail = () => {
     room: displayData.room_number || "N/A",
     building: displayData.building_name || "N/A",
     period: displayData.usage_month
-      ? `Tháng ${displayData.usage_month}/${displayData.usage_year}`
+      ? `${t("monthlyUsage.month")} ${displayData.usage_month}/${
+          displayData.usage_year
+        }`
       : displayData.description || "N/A",
     issueDate: moment(displayData.time_invoiced).format("DD/MM/YYYY"),
     electricity: {
@@ -153,18 +157,20 @@ const BillDetail = () => {
                 ]}
               >
                 {billData.status === "paid"
-                  ? "Đã thanh toán"
-                  : "Chưa thanh toán"}
+                  ? t("invoice.paid")
+                  : t("invoice.unpaid")}
               </Text>
             </View>
           </View>
           <View style={styles.summaryContent}>
-            <Text style={styles.summaryLabel}>Tổng thanh toán</Text>
+            <Text style={styles.summaryLabel}>{t("common.total")}</Text>
             <Text style={styles.summaryAmount}>{billData.amount}</Text>
           </View>
           <View style={styles.dueDateContainer}>
             <MaterialIcons name="warning" size={16} color="#f97316" />
-            <Text style={styles.dueDateText}>Hạn đóng: {billData.dueDate}</Text>
+            <Text style={styles.dueDateText}>
+              {t("common.dueDate")}: {billData.dueDate}
+            </Text>
           </View>
         </View>
 
@@ -172,22 +178,22 @@ const BillDetail = () => {
         <View style={styles.gridContainer}>
           <View style={styles.gridRow}>
             <View style={[styles.gridItem, styles.gridItemBorderRight]}>
-              <Text style={styles.gridLabel}>Phòng</Text>
+              <Text style={styles.gridLabel}>{t("room.roomNumber")}</Text>
               <Text style={styles.gridValue}>{billData.room}</Text>
             </View>
             <View style={styles.gridItem}>
-              <Text style={styles.gridLabel}>Tòa nhà</Text>
+              <Text style={styles.gridLabel}>{t("building.buildingName")}</Text>
               <Text style={styles.gridValue}>{billData.building}</Text>
             </View>
           </View>
           <View style={styles.gridDivider} />
           <View style={styles.gridRow}>
             <View style={[styles.gridItem, styles.gridItemBorderRight]}>
-              <Text style={styles.gridLabel}>Kỳ thanh toán</Text>
+              <Text style={styles.gridLabel}>{t("invoice.paymentPeriod")}</Text>
               <Text style={styles.gridValue}>{billData.period}</Text>
             </View>
             <View style={styles.gridItem}>
-              <Text style={styles.gridLabel}>Ngày phát hành</Text>
+              <Text style={styles.gridLabel}>{t("invoice.issueDate")}</Text>
               <Text style={styles.gridValue}>{billData.issueDate}</Text>
             </View>
           </View>
@@ -201,37 +207,43 @@ const BillDetail = () => {
                 <View style={[styles.iconCircle, styles.bgYellow]}>
                   <MaterialIcons name="bolt" size={16} color="#ca8a04" />
                 </View>
-                <Text style={styles.sectionTitle}>Tiền Điện</Text>
+                <Text style={styles.sectionTitle}>
+                  {t("monthlyUsage.electricity")}
+                </Text>
               </View>
               <View style={styles.card}>
                 <View style={styles.detailsGrid}>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Số cũ</Text>
+                    <Text style={styles.detailLabel}>
+                      {t("invoice.oldIndex")}
+                    </Text>
                     <Text style={styles.detailValue}>
                       {billData.electricity.old}
                     </Text>
                   </View>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Số mới</Text>
+                    <Text style={styles.detailLabel}>
+                      {t("invoice.newIndex")}
+                    </Text>
                     <Text style={styles.detailValue}>
                       {billData.electricity.new}
                     </Text>
                   </View>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Tiêu thụ</Text>
+                    <Text style={styles.detailLabel}>{t("invoice.usage")}</Text>
                     <Text style={styles.detailValue}>
                       {billData.electricity.usage}
                     </Text>
                   </View>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Đơn giá</Text>
+                    <Text style={styles.detailLabel}>{t("invoice.rate")}</Text>
                     <Text style={styles.detailValue}>
                       {billData.electricity.rate}
                     </Text>
                   </View>
                 </View>
                 <View style={styles.cardFooter}>
-                  <Text style={styles.footerLabel}>Thành tiền</Text>
+                  <Text style={styles.footerLabel}>{t("invoice.total")}</Text>
                   <Text style={styles.footerValue}>
                     {billData.electricity.total}
                   </Text>
@@ -244,26 +256,32 @@ const BillDetail = () => {
                 <View style={[styles.iconCircle, styles.bgBlue]}>
                   <MaterialIcons name="water-drop" size={16} color="#2563eb" />
                 </View>
-                <Text style={styles.sectionTitle}>Tiền Nước</Text>
+                <Text style={styles.sectionTitle}>
+                  {t("monthlyUsage.water")}
+                </Text>
               </View>
               <View style={styles.card}>
                 <View style={styles.detailsGrid}>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Số cũ</Text>
+                    <Text style={styles.detailLabel}>
+                      {t("invoice.oldIndex")}
+                    </Text>
                     <Text style={styles.detailValue}>{billData.water.old}</Text>
                   </View>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Số mới</Text>
+                    <Text style={styles.detailLabel}>
+                      {t("invoice.newIndex")}
+                    </Text>
                     <Text style={styles.detailValue}>{billData.water.new}</Text>
                   </View>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Tiêu thụ</Text>
+                    <Text style={styles.detailLabel}>{t("invoice.usage")}</Text>
                     <Text style={styles.detailValue}>
                       {billData.water.usage}
                     </Text>
                   </View>
                   <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Đơn giá</Text>
+                    <Text style={styles.detailLabel}>{t("invoice.rate")}</Text>
                     <Text style={styles.detailValue}>
                       {billData.water.rate}
                     </Text>
@@ -272,14 +290,14 @@ const BillDetail = () => {
                 <View style={styles.cardFooterColumn}>
                   <View style={styles.footerRow}>
                     <Text style={styles.footerLabelSmall}>
-                      Phí vệ sinh môi trường
+                      {t("invoice.envFee")}
                     </Text>
                     <Text style={styles.footerValueSmall}>
                       {billData.water.envFee}
                     </Text>
                   </View>
                   <View style={[styles.footerRow, { marginTop: 4 }]}>
-                    <Text style={styles.footerLabel}>Thành tiền</Text>
+                    <Text style={styles.footerLabel}>{t("invoice.total")}</Text>
                     <Text style={styles.footerValue}>
                       {billData.water.total}
                     </Text>
@@ -292,7 +310,7 @@ const BillDetail = () => {
 
         {/* QR Payment Section */}
         <View style={styles.qrSection}>
-          <Text style={styles.qrTitle}>Thanh toán VietQR</Text>
+          <Text style={styles.qrTitle}>{t("invoice.vietQRPayment")}</Text>
           <View style={styles.qrCard}>
             <View style={styles.qrHeader}>
               <MaterialIcons name="qr-code-scanner" size={16} color="#136dec" />

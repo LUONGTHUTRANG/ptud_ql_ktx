@@ -11,6 +11,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
@@ -27,6 +28,7 @@ interface Props {
 }
 
 const Notifications = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -195,7 +197,9 @@ const Notifications = ({ navigation }: Props) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft} />
-        <Text style={styles.headerTitle}>Thông báo</Text>
+        <Text style={styles.headerTitle}>
+          {t("notification.notifications")}
+        </Text>
         <TouchableOpacity style={styles.searchButton}>
           <MaterialIcons name="search" size={24} color="#334155" />
         </TouchableOpacity>
@@ -205,7 +209,9 @@ const Notifications = ({ navigation }: Props) => {
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialIcons name="notifications-none" size={48} color="#cbd5e1" />
-          <Text style={styles.emptyText}>Bạn chưa nhận được thông báo nào</Text>
+          <Text style={styles.emptyText}>
+            {t("notification.noNotifications")}
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -222,7 +228,8 @@ const Notifications = ({ navigation }: Props) => {
         <View style={styles.selectionFooter}>
           <View style={styles.selectionInfo}>
             <Text style={styles.selectionText}>
-              Đã chọn {selectedIds.size} thông báo
+              {t("common.select")} {selectedIds.size}{" "}
+              {t("notification.notifications")}
             </Text>
             <TouchableOpacity
               onPress={() => {
@@ -230,7 +237,9 @@ const Notifications = ({ navigation }: Props) => {
                 setSelectedIds(new Set());
               }}
             >
-              <Text style={styles.cancelSelectionText}>Hủy</Text>
+              <Text style={styles.cancelSelectionText}>
+                {t("common.cancel")}
+              </Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity
@@ -242,7 +251,7 @@ const Notifications = ({ navigation }: Props) => {
             disabled={selectedIds.size === 0}
           >
             <MaterialIcons name="delete" size={24} color="#ffffff" />
-            <Text style={styles.deleteButtonText}>Xóa</Text>
+            <Text style={styles.deleteButtonText}>{t("common.delete")}</Text>
           </TouchableOpacity>
         </View>
       )}

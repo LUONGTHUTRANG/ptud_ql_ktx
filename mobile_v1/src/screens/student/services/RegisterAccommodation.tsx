@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
 
@@ -21,6 +22,7 @@ interface Props {
 }
 
 const RegisterAccommodation = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
@@ -33,14 +35,16 @@ const RegisterAccommodation = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Đăng ký ký túc xá</Text>
+        <Text style={styles.headerTitle}>
+          {t("semester.registerAccommodation")}
+        </Text>
         <View style={styles.headerRight} />
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Chọn loại đơn đăng ký</Text>
+        <Text style={styles.title}>{t("semester.selectRequestType")}</Text>
         <Text style={styles.subtitle}>
-          Vui lòng chọn loại đơn phù hợp với bạn để bắt đầu quá trình đăng ký.
+          {t("semester.selectRequestTypeDesc")}
         </Text>
 
         <View style={styles.optionsContainer}>
@@ -53,9 +57,11 @@ const RegisterAccommodation = ({ navigation }: Props) => {
               <MaterialIcons name="home" size={32} color="#0ea5e9" />
             </View>
             <View style={styles.optionContent}>
-              <Text style={styles.optionTitle}>Đăng ký chỗ ở thông thường</Text>
+              <Text style={styles.optionTitle}>
+                {t("semester.regularAccommodation")}
+              </Text>
               <Text style={styles.optionDescription}>
-                Dành cho sinh viên đăng ký theo quy trình chuẩn.
+                {t("semester.regularAccommodationDesc")}
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
@@ -74,9 +80,11 @@ const RegisterAccommodation = ({ navigation }: Props) => {
               />
             </View>
             <View style={styles.optionContent}>
-              <Text style={styles.optionTitle}>Đăng ký hoàn cảnh đặc biệt</Text>
+              <Text style={styles.optionTitle}>
+                {t("semester.specialAccommodation")}
+              </Text>
               <Text style={styles.optionDescription}>
-                Dành cho sinh viên thuộc diện ưu tiên, cần cung cấp minh chứng.
+                {t("semester.specialAccommodationDesc")}
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
