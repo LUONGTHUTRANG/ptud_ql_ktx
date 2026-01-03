@@ -3,7 +3,11 @@ export type RootStackParamList = {
   Home: undefined;
   Services: undefined;
   Bills: undefined;
-  BillDetail: { invoiceId: string };
+  BillDetail: { 
+    invoiceId: string;
+    source?: "HOME" | "REGISTER_SUCCESS" | "BILLS";
+    onRefresh?: () => void;
+  };
   PaymentDetail: { bill: any };
   TransactionHistory: undefined;
   BuildingList: undefined;
@@ -29,8 +33,10 @@ export type RootStackParamList = {
   RoomMembers: undefined;
   StudentList: undefined;
   ManagerBills: undefined;
-  ManagerSpecialRequest: undefined;
-  ManagerSpecialRequestDetail: { id: string };
+  ManagerBillDetail: { invoice: any };
+  ManageRegistration: undefined;
+  ManageRegistrationDetail: { id: string };
+  ManageAssignRoom: { registration: any };
   ManagerNotifications: undefined;
   ManagerNotificationDetail: { id?: string };
   ManagerRegularRequest: undefined;

@@ -93,7 +93,7 @@ const Home = ({ navigation }: Props) => {
         console.log("All Invoices:", allInvoices, userData.id);
         // Filter invoices for this student
         const myInvoices = allInvoices.filter(
-          (inv: any) => inv.status !== "PAID"
+          (inv: any) => inv.status == "UNPAID" || inv.status == "OVERDUE"
         );
 
         const formattedBills: Bill[] = myInvoices.map((inv: any) => ({
@@ -289,7 +289,13 @@ const Home = ({ navigation }: Props) => {
           <View style={styles.billsList}>
             {bills.length > 0 ? (
               bills.map((bill) => (
-                <View
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("BillDetail", {
+                      invoiceId: bill.id,
+                      source: "HOME",
+                    })
+                  }
                   key={bill.id}
                   style={[
                     styles.billCard,
@@ -333,7 +339,7 @@ const Home = ({ navigation }: Props) => {
                       {t("common.dueDate")}: {bill.dueDate}
                     </Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))
             ) : (
               <View style={styles.emptyState}>

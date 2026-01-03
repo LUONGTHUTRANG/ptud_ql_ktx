@@ -32,8 +32,10 @@ import SpecialRequest from "./src/screens/student/requests/SpecialRequest";
 import RoomMembers from "./src/screens/student/room/RoomMembers";
 import StudentList from "./src/screens/manager/students/StudentList";
 import ManagerBills from "./src/screens/manager/bills/ManagerBills";
-import ManagerSpecialRequest from "./src/screens/manager/requests/ManagerSpecialRequest";
-import ManagerSpecialRequestDetail from "./src/screens/manager/requests/ManagerSpecialRequestDetail";
+import ManagerBillDetail from "./src/screens/manager/bills/ManagerBillDetail";
+import ManageRegistration from "./src/screens/manager/requests/ManageRegistration";
+import ManageRegistrationDetail from "./src/screens/manager/requests/ManageRegistrationDetail";
+import ManageAssignRoom from "./src/screens/manager/requests/ManageAsignRoom";
 import ManagerNotifications from "./src/screens/manager/notifications/ManagerNotifications";
 import ManagerNotificationDetail from "./src/screens/manager/notifications/ManagerNotificationDetail";
 import ManagerRegularRequest from "./src/screens/manager/requests/ManagerRegularRequest";
@@ -122,13 +124,18 @@ const App = () => {
               <Stack.Screen name="RoomMembers" component={RoomMembers} />
               <Stack.Screen name="StudentList" component={StudentList} />
               <Stack.Screen name="ManagerBills" component={ManagerBills} />
+              <Stack.Screen name="ManagerBillDetail" component={ManagerBillDetail} />
               <Stack.Screen
-                name="ManagerSpecialRequest"
-                component={ManagerSpecialRequest}
+                name="ManageRegistration"
+                component={ManageRegistration}
               />
               <Stack.Screen
-                name="ManagerSpecialRequestDetail"
-                component={ManagerSpecialRequestDetail}
+                name="ManageRegistrationDetail"
+                component={ManageRegistrationDetail}
+              />
+              <Stack.Screen
+                name="ManageAssignRoom"
+                component={ManageAssignRoom}
               />
               <Stack.Screen
                 name="ManagerNotifications"

@@ -1,5 +1,6 @@
 {
     "tailwindCSS.experimental.classRegex": [
         "className=\"([^\"]*)\""
-    ]
+    ],
+    "postman.settings.dotenv-detection-notification-visibility": false
 }

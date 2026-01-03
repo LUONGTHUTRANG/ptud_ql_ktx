@@ -159,6 +159,11 @@ const Invoice = {
     return { id, ...data };
   },
 
+  updateStatus: async (invoice_code, status) => {
+    await db.query("UPDATE invoices SET status = ? WHERE invoice_code = ?", [status, invoice_code]);
+    return { invoice_code, status };
+  },
+
   delete: async (id) => {
     await db.query("DELETE FROM invoices WHERE id = ?", [id]);
     return { id };

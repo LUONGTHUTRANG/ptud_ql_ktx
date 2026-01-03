@@ -74,13 +74,15 @@ const ManagerServices = ({ navigation }: Props) => {
       requiredRole: undefined,
     },
     {
+    {
       title: t("manager.approveSpecialRequest"),
       description: t("manager.approveSpecialRequestDesc"),
       icon: "assignment-late",
       iconColor: "#db2777",
       iconBg: "#fce7f3",
-      path: "ManagerSpecialRequest",
+      path: "ManageRegistration", // giữ path cũ
       requiredRole: undefined,
+    }
     },
     {
       title: t("manager.manageBills"),

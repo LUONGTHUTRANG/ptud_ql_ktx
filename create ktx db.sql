@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `invoices` (
   `usage_id` int DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('UNPAID','PAID','CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'UNPAID',
+  `status` enum('UNPAID','PAID','SUBMITTED','CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'UNPAID',
   `due_date` date DEFAULT NULL,
   `paid_at` datetime DEFAULT NULL,
   `paid_by_student_id` int DEFAULT NULL COMMENT 'Người đại diện thanh toán (quan trọng với hóa đơn điện nước)',

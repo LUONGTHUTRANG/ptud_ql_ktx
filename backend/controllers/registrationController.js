@@ -90,6 +90,9 @@ export const createRegistration = async (req, res) => {
       due_date: dueDate,
     });
 
+    // 9. Add invoice_id to registration
+    await Registration.addInvoiceId(registrationId, invoice.id);
+
     res.status(201).json({
       message: "Đăng ký thành công. Vui lòng thanh toán trong vòng 24 giờ.",
       registration_id: registrationId,
@@ -109,6 +112,38 @@ export const getStudentRegistrations = async (req, res) => {
     const registrations = await Registration.getByStudentId(studentId);
     res.json(registrations);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getManagerRegistrations = async (req, res) => {
+  try {
+    const type = req.query.type || "NORMAL"; // NORMAL | PRIORITY
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;  
+    const filters = {
+      status: req.query.status,
+      search: req.query.search,
+    };
+    const registrations = await Registration.getByType(
+      type,
+      limit,
+      offset,
+      filters
+    );
+    const total = await Registration.countByType(type, filters);
+    res.json({
+      data: registrations,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+    } catch (err) {
+    console.error("Error fetching manager registrations:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -153,7 +188,7 @@ export const getRegistrationById = async (req, res) => {
     if (!registration) {
       return res.status(404).json({ message: "Không tìm thấy đơn đăng ký" });
     }
-
+    console.log("Registration details:", registration);
     res.json(registration);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -165,7 +200,7 @@ export const updateRegistrationStatus = async (req, res) => {
     const { id } = req.params;
     const { status, admin_note } = req.body;
 
-    if (!["APPROVED", "REJECTED", "PENDING", "RETURN"].includes(status)) {
+    if (!["APPROVED", "REJECTED", "PENDING", "RETURN", "COMPLETED"].includes(status)) {
       return res.status(400).json({ message: "Trạng thái không hợp lệ" });
     }
 
@@ -176,6 +211,26 @@ export const updateRegistrationStatus = async (req, res) => {
     }
 
     res.json({ message: "Cập nhật trạng thái thành công" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const assignRoomToRegistration = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { room_id } = req.body;
+    const registration = await Registration.getById(id);
+
+    if (!registration) {
+      return res.status(404).json({ message: "Không tìm thấy đơn đăng ký" });
+    }
+    if (registration.registration_type !== "PRIORITY") {
+      return res.status(400).json({ message: "Chỉ có thể gán phòng cho đơn ưu tiên" });
+    }
+
+    await Registration.assignRoomToRegistration(id, room_id);
+    res.json({ message: "Gán phòng thành công" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
