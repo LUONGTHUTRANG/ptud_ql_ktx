@@ -13,6 +13,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../types";
 import api from "../../services/api";
 
@@ -26,20 +27,23 @@ interface Props {
 }
 
 const Login = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<"student" | "manager">("student");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Thông báo", "Vui lòng nhập đầy đủ thông tin");
+    const identifier = activeTab === "student" ? username : email;
+    if (!identifier || !password) {
+      Alert.alert(t("common.warning"), t("auth.invalidCredentials"));
       return;
     }
-
+    console.log("Logging in as", activeTab, "with identifier:", identifier);
     try {
       const response = await api.post("/auth/login", {
-        username: email,
+        username: identifier,
         password: password,
         role: activeTab,
       });
@@ -48,19 +52,19 @@ const Login = ({ navigation }: Props) => {
 
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
-      await AsyncStorage.setItem("role", activeTab);
+      await AsyncStorage.setItem("role", user.role);
 
-      if (activeTab === "manager") {
+      if (user.role === "admin" || user.role === "manager") {
         navigation.navigate("ManagerHome");
-      } else {
+      }
+      if (user.role === "student") {
         navigation.navigate("Home");
       }
     } catch (error: any) {
       console.error("Login failed", error);
       Alert.alert(
-        "Đăng nhập thất bại",
-        error.response?.data?.message ||
-          "Thông tin tài khoản chưa đúng. Vui lòng kiểm tra lại"
+        t("common.error"),
+        error.response?.data?.message || t("auth.invalidCredentials")
       );
     }
   };
@@ -76,10 +80,8 @@ const Login = ({ navigation }: Props) => {
             <MaterialIcons name="apartment" size={48} color="#0ea5e9" />
           </View>
 
-          <Text style={styles.title}>Chào mừng trở lại</Text>
-          <Text style={styles.subtitle}>
-            Đăng nhập để tiếp tục quản lý ký túc xá.
-          </Text>
+          <Text style={styles.title}>{t("auth.login")}</Text>
+          <Text style={styles.subtitle}>{t("common.system")}</Text>
 
           {/* Tabs */}
           <View style={styles.tabContainer}>
@@ -96,7 +98,7 @@ const Login = ({ navigation }: Props) => {
                   activeTab === "student" && styles.activeTabText,
                 ]}
               >
-                Tài khoản sinh viên
+                {t("student.student")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -112,39 +114,45 @@ const Login = ({ navigation }: Props) => {
                   activeTab === "manager" && styles.activeTabText,
                 ]}
               >
-                Tài khoản quản lý
+                {t("manager.managerList")}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* Form */}
           <View style={styles.formContainer}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>
-                {activeTab === "manager"
-                  ? "Email hoặc Mã cán bộ"
-                  : "Email hoặc Mã sinh viên"}
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder={
-                  activeTab === "manager"
-                    ? "Nhập email hoặc mã cán bộ"
-                    : "Nhập email hoặc mã sinh viên"
-                }
-                placeholderTextColor="#94a3b8"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-              />
-            </View>
+            {activeTab === "student" ? (
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t("auth.username")}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("auth.username")}
+                  placeholderTextColor="#94a3b8"
+                  value={username}
+                  onChangeText={setUsername}
+                  autoCapitalize="none"
+                />
+              </View>
+            ) : (
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t("auth.email")}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("auth.email")}
+                  placeholderTextColor="#94a3b8"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                />
+              </View>
+            )}
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Mật khẩu</Text>
+              <Text style={styles.label}>{t("auth.password")}</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={styles.passwordInput}
-                  placeholder="Nhập mật khẩu của bạn"
+                  placeholder={t("auth.password")}
                   placeholderTextColor="#94a3b8"
                   secureTextEntry={!showPassword}
                   value={password}
@@ -164,11 +172,13 @@ const Login = ({ navigation }: Props) => {
             </View>
 
             <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
+              <Text style={styles.forgotPasswordText}>
+                {t("auth.forgotPassword")}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Đăng nhập</Text>
+              <Text style={styles.loginButtonText}>{t("auth.login")}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

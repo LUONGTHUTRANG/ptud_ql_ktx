@@ -7,11 +7,15 @@ import {
   ScrollView,
   Image,
   StatusBar,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../../types";
+import { getMe } from "../../../services/authApi";
+import { getAvatarInitials } from "../../../utils/avatarHelper";
 
 type ProfileScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -22,54 +26,134 @@ interface Props {
   navigation: ProfileScreenNavigationProp;
 }
 
+interface UserData {
+  id: number;
+  mssv?: string;
+  username?: string;
+  full_name: string;
+  email: string;
+  gender?: string;
+  class_name?: string;
+  current_room_id?: number;
+  phone_number?: string;
+  building_id?: number;
+  role: "student" | "manager" | "admin";
+}
+
+interface DetailItem {
+  icon: string;
+  label: string;
+  value: string;
+}
+
 const Profile = ({ navigation }: Props) => {
-  const [role, setRole] = useState<"student" | "manager">("student");
+  const [role, setRole] = useState<"student" | "manager" | "admin">("student");
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadRole = async () => {
+    const loadUserData = async () => {
       try {
+        setLoading(true);
+
+        // Load role from storage
         const storedRole = await AsyncStorage.getItem("role");
-        if (storedRole === "manager" || storedRole === "student") {
+        if (
+          storedRole === "manager" ||
+          storedRole === "student" ||
+          storedRole === "admin"
+        ) {
           setRole(storedRole);
         }
-      } catch (e) {
-        console.error("Failed to load role", e);
+
+        // Fetch user data from API
+        const user = await getMe();
+        setUserData(user);
+      } catch (error) {
+        console.error("Failed to load user data", error);
+        Alert.alert("Lỗi", "Không thể tải dữ liệu hồ sơ. Vui lòng thử lại.");
+      } finally {
+        setLoading(false);
       }
     };
-    loadRole();
+
+    loadUserData();
   }, []);
 
-  const studentData = {
-    avatar: "https://picsum.photos/200",
-    name: "Nguyễn Văn An",
-    roleText: "Sinh viên - K66",
-    details: [
-      { icon: "person", label: "Họ và tên", value: "Nguyễn Văn An" },
-      { icon: "badge", label: "Mã sinh viên", value: "20211234" },
-      { icon: "school", label: "Lớp", value: "CNTT-04" },
-      { icon: "calendar-today", label: "Ngày sinh", value: "01/01/2003" }, // calendar_month -> calendar-today
-      { icon: "phone", label: "Số điện thoại", value: "0987654321" },
-      { icon: "mail", label: "Email", value: "an.nv211234@sis.hust.edu.vn" },
-      { icon: "bed", label: "Phòng", value: "Tòa B2 - 404" },
-    ],
+  // Format data based on role and API response
+  const getDetailsList = (): DetailItem[] => {
+    if (!userData) return [];
+
+    const details: (DetailItem | null | false)[] = [];
+
+    if (role === "manager" || role === "admin") {
+      // Manager details
+      details.push(
+        { icon: "person", label: "Họ và tên", value: userData.full_name },
+        { icon: "mail", label: "Email", value: userData.email || "Chưa cập nhật" },
+        {
+          icon: "phone",
+          label: "Số điện thoại",
+          value: userData.phone_number || "Chưa cập nhật",
+        },
+        {
+          icon: "badge",
+          label: "Tên đăng nhập",
+          value: userData.username || "",
+        }
+      );
+      if (userData.building_id) {
+        details.push({
+          icon: "business",
+          label: "Tòa nhà phụ trách",
+          value: `Tòa ${userData.building_id}`,
+        });
+      }
+    } else {
+      // Student details
+      details.push(
+        { icon: "person", label: "Họ và tên", value: userData.full_name },
+        { icon: "badge", label: "Mã sinh viên", value: userData.mssv || "" },
+        {
+          icon: "school",
+          label: "Lớp",
+          value: userData.class_name || "Chưa cập nhật",
+        },
+        { icon: "mail", label: "Email", value: userData.email }
+      );
+      if (userData.gender) {
+        details.push({
+          icon: "wc",
+          label: "Giới tính",
+          value: userData.gender === "MALE" ? "Nam" : "Nữ",
+        });
+      }
+      details.push({
+        icon: "phone",
+        label: "Số điện thoại",
+        value: userData.phone_number || "Chưa cập nhật",
+      });
+      if (userData.current_room_id) {
+        details.push({
+          icon: "bed",
+          label: "Phòng",
+          value: `Phòng ${userData.current_room_id}`,
+        });
+      }
+    }
+
+    return details.filter(
+      (item): item is DetailItem => item !== null && item !== false
+    );
   };
 
-  const managerData = {
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD5fGTmbVq_ilZqybLg_MFxbrciC3Bwd2F1Ja5ljTMP2UoeHILChNE2GKPtJ_LRcJ0CKi27kpG0lYi-hUjVGJANzFBGFt7AoN00MyjeGpfcCVwGXuGLFysyzOai2Fa4UxCpx_eN3h7eVqdla8FMZHkiYhQYViAXRB0bPMjDJv76RmtQikYB5Bu6RD-WhvUO7JtANvxRhKku3vbnT-HphlCxXBglM6dWhJqPJIgL62r5K441QpTmGGqtnPpfxAE43qur3MAUoieQni8",
-    name: "Nguyễn Văn An",
-    roleText: "Quản lý Ký túc xá",
-    details: [
-      { icon: "person", label: "Họ và tên", value: "Nguyễn Văn An" },
-      { icon: "calendar-today", label: "Ngày sinh", value: "01/01/1985" },
-      { icon: "phone", label: "Số điện thoại", value: "0912345678" },
-      { icon: "mail", label: "Email", value: "nguyen.van.an@email.com" },
-      { icon: "badge", label: "Số CCCD", value: "*** *** 678" },
-      { icon: "business", label: "Tòa nhà phụ trách", value: "Tòa A1, Tòa B2" }, // corporate_fare -> business
-    ],
-  };
-
-  const data = role === "manager" ? managerData : studentData;
+  const details = getDetailsList();
+  const roleText =
+    role === "student"
+      ? "Sinh viên"
+      : role === "admin"
+      ? "Quản trị viên"
+      : "Quản lý Ký túc xá";
 
   return (
     <View style={styles.container}>
@@ -87,38 +171,68 @@ const Profile = ({ navigation }: Props) => {
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarWrapper}>
-            <Image source={{ uri: data.avatar }} style={styles.avatar} />
-            <TouchableOpacity style={styles.cameraButton}>
-              <MaterialIcons name="photo-camera" size={18} color="#0f172a" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>{data.name}</Text>
-            <Text style={styles.roleText}>{data.roleText}</Text>
-          </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0ea5e9" />
+          <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
         </View>
-
-        <View style={styles.detailsContainer}>
-          {data.details.map((item, index) => (
-            <View key={index} style={styles.detailItem}>
-              <View style={styles.iconContainer}>
-                <MaterialIcons
-                  name={item.icon as any}
-                  size={24}
-                  color="#0ea5e9"
-                />
-              </View>
-              <View style={styles.detailContent}>
-                <Text style={styles.detailLabel}>{item.label}</Text>
-                <Text style={styles.detailValue}>{item.value}</Text>
-              </View>
+      ) : userData ? (
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.profileHeader}>
+            <View style={styles.avatarWrapper}>
+              {userData ? (
+                <View
+                  style={[
+                    styles.avatar,
+                    {
+                      backgroundColor: getAvatarInitials(userData.full_name)
+                        .color,
+                    },
+                  ]}
+                >
+                  <Text style={styles.avatarText}>
+                    {getAvatarInitials(userData.full_name).initials}
+                  </Text>
+                </View>
+              ) : (
+                <View style={[styles.avatar, { backgroundColor: "#e2e8f0" }]}>
+                  <Text style={styles.avatarText}>?</Text>
+                </View>
+              )}
+              <TouchableOpacity style={styles.cameraButton}>
+                <MaterialIcons name="photo-camera" size={18} color="#0f172a" />
+              </TouchableOpacity>
             </View>
-          ))}
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>{userData.full_name}</Text>
+              <Text style={styles.roleText}>{roleText}</Text>
+            </View>
+          </View>
+
+          <View style={styles.detailsContainer}>
+            {details.map((item, index) => (
+              <View key={index} style={styles.detailItem}>
+                <View style={styles.iconContainer}>
+                  <MaterialIcons
+                    name={item?.icon as any}
+                    size={24}
+                    color="#0ea5e9"
+                  />
+                </View>
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>{item?.label}</Text>
+                  <Text style={styles.detailValue}>{item?.value}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      ) : (
+        <View style={styles.errorContainer}>
+          <MaterialIcons name="error-outline" size={48} color="#ef4444" />
+          <Text style={styles.errorText}>Không thể tải dữ liệu hồ sơ</Text>
         </View>
-      </ScrollView>
+      )}
     </View>
   );
 };
@@ -172,6 +286,13 @@ const styles = StyleSheet.create({
     borderRadius: 64,
     borderWidth: 4,
     borderColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    fontSize: 40,
+    fontWeight: "bold",
+    color: "#ffffff",
   },
   cameraButton: {
     position: "absolute",
@@ -231,6 +352,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     color: "#0f172a",
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#64748b",
+  },
+  errorContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#ef4444",
+    fontWeight: "500",
   },
 });
 

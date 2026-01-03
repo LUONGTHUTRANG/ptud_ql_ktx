@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../types";
 
@@ -14,7 +15,7 @@ interface NavItemProps {
 }
 
 interface BottomNavProps {
-  role?: "student" | "manager";
+  role?: "student" | "manager" | "admin";
 }
 
 const NavItem = ({
@@ -37,6 +38,7 @@ const NavItem = ({
 );
 
 const BottomNav = ({ role = "student" }: BottomNavProps) => {
+  const { t } = useTranslation();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute();
 
@@ -45,10 +47,14 @@ const BottomNav = ({ role = "student" }: BottomNavProps) => {
     label: string;
     screenName: keyof RootStackParamList;
   }[] = [
-    { icon: "home", label: "Trang chủ", screenName: "Home" },
-    { icon: "grid-view", label: "Dịch vụ", screenName: "Services" },
-    { icon: "notifications", label: "Thông báo", screenName: "Notifications" },
-    { icon: "settings", label: "Cài đặt", screenName: "Settings" },
+    { icon: "home", label: t("common.home"), screenName: "Home" },
+    { icon: "grid-view", label: t("common.services"), screenName: "Services" },
+    {
+      icon: "notifications",
+      label: t("notification.notifications"),
+      screenName: "Notifications",
+    },
+    { icon: "settings", label: t("common.settings"), screenName: "Settings" },
   ];
 
   const managerNavItems: {
@@ -56,16 +62,25 @@ const BottomNav = ({ role = "student" }: BottomNavProps) => {
     label: string;
     screenName: keyof RootStackParamList;
   }[] = [
-    { icon: "home", label: "Trang chủ", screenName: "ManagerHome" },
-    { icon: "dashboard", label: "Quản lý", screenName: "ManagerServices" },
-    { icon: "notifications", label: "Thông báo", screenName: "Notifications" },
-    { icon: "settings", label: "Cài đặt", screenName: "Settings" },
+    { icon: "home", label: t("common.home"), screenName: "ManagerHome" },
+    {
+      icon: "dashboard",
+      label: t("manager.managerList"),
+      screenName: "ManagerServices",
+    },
+    {
+      icon: "notifications",
+      label: t("notification.notifications"),
+      screenName: "Notifications",
+    },
+    { icon: "settings", label: t("common.settings"), screenName: "Settings" },
   ];
 
-  const navItems = role === "manager" ? managerNavItems : studentNavItems;
+  const navItems =
+    role === "manager" || role === "admin" ? managerNavItems : studentNavItems;
 
   const handleNavClick = (screenName: keyof RootStackParamList) => {
-    navigation.navigate(screenName);
+    navigation.navigate(screenName as any);
   };
 
   return (

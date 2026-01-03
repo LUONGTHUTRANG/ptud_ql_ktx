@@ -11,15 +11,11 @@ export type RootStackParamList = {
   PaymentDetail: { bill: any };
   TransactionHistory: undefined;
   BuildingList: undefined;
-  RoomList: { 
-    id: string; 
+  RoomList: {
+    id: string;
     name: string;
     selectMode?: boolean;
-    onSelectRoom?: (room: {
-      id: string;
-      name: string;
-      price: number;
-    }) => void;
+    onSelectRoom?: (room: { id: string; name: string; price: number }) => void;
   };
   RequestHistory: undefined;
   RequestDetail: { id: string };
@@ -45,6 +41,8 @@ export type RootStackParamList = {
   ManagerNotificationDetail: { id?: string };
   ManagerRegularRequest: undefined;
   ManagerServices: undefined;
+  ManagerStaff: undefined;
+  AddManager: undefined;
   ManagerTerm: undefined;
   ManagerTermDetail: { mode: "create" | "edit"; term?: any };
   RecordMeterReading: { period: string };

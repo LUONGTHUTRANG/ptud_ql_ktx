@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -26,10 +27,15 @@ const ConfirmModal = ({
   onConfirm,
   title,
   message,
-  confirmLabel = "Xác nhận",
-  cancelLabel = "Hủy",
+  confirmLabel,
+  cancelLabel,
   variant = "primary",
 }: ConfirmModalProps) => {
+  const { t } = useTranslation();
+
+  // Use translation keys as defaults if labels not provided
+  const finalConfirmLabel = confirmLabel || t("common.confirm");
+  const finalCancelLabel = cancelLabel || t("common.cancel");
   const getVariantStyles = () => {
     switch (variant) {
       case "danger":
@@ -94,12 +100,14 @@ const ConfirmModal = ({
               <Text style={styles.message}>{message}</Text>
 
               <View style={styles.buttonContainer}>
-                {cancelLabel ? (
+                {finalCancelLabel ? (
                   <TouchableOpacity
                     onPress={onClose}
                     style={styles.cancelButton}
                   >
-                    <Text style={styles.cancelButtonText}>{cancelLabel}</Text>
+                    <Text style={styles.cancelButtonText}>
+                      {finalCancelLabel}
+                    </Text>
                   </TouchableOpacity>
                 ) : null}
                 <TouchableOpacity
@@ -109,7 +117,9 @@ const ConfirmModal = ({
                     { backgroundColor: stylesConfig.btnBg },
                   ]}
                 >
-                  <Text style={styles.confirmButtonText}>{confirmLabel}</Text>
+                  <Text style={styles.confirmButtonText}>
+                    {finalConfirmLabel}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

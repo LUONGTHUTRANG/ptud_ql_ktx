@@ -40,7 +40,7 @@ interface Props {
 
 const RequestDetail = ({ navigation, route }: Props) => {
   const { id } = route.params;
-  const [role, setRole] = useState<"student" | "manager">("student");
+  const [role, setRole] = useState<"student" | "manager" | "admin">("student");
   const [userId, setUserId] = useState<number | null>(null);
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ const RequestDetail = ({ navigation, route }: Props) => {
         const storedRole = await AsyncStorage.getItem("role");
         const storedUser = await AsyncStorage.getItem("user");
 
-        if (storedRole === "manager" || storedRole === "student") {
+        if (storedRole === "manager" || storedRole === "admin" || storedRole === "student") {
           setRole(storedRole);
         }
 
@@ -399,7 +399,7 @@ const RequestDetail = ({ navigation, route }: Props) => {
           </View>
 
           {/* Action Buttons - Only visible to Managers */}
-          {role === "manager" && (
+          {(role === "manager" || role === "admin") && (
             <View style={styles.managerActions}>
               <TouchableOpacity
                 style={styles.rejectButton}

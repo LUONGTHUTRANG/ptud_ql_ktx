@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
 
@@ -22,53 +23,54 @@ interface Props {
 }
 
 const Services = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const services = [
     {
-      title: "Đăng ký ở",
-      description: "Bắt đầu quá trình đăng ký chỗ ở mới.",
+      title: t("semester.registerAccommodation"),
+      description: t("semester.registerAccommodationDesc"),
       icon: "sensor-door",
-      iconColor: "#2563eb", // text-blue-600
-      iconBg: "#dbeafe", // bg-blue-100
+      iconColor: "#2563eb",
+      iconBg: "#dbeafe",
       path: "RegisterAccommodation",
     },
     {
-      title: "Gia hạn chỗ ở",
-      description: "Tiếp tục hợp đồng cho kỳ học tiếp theo.",
+      title: t("semester.extendAccommodation"),
+      description: t("semester.extendAccommodationDesc"),
       icon: "autorenew",
-      iconColor: "#16a34a", // text-green-600
-      iconBg: "#dcfce7", // bg-green-100
+      iconColor: "#16a34a",
+      iconBg: "#dcfce7",
       path: "ExtendAccommodation",
     },
     {
-      title: "Yêu cầu hỗ trợ",
-      description: "Báo cáo sự cố hoặc yêu cầu giúp đỡ.",
+      title: t("supportRequest.supportRequest"),
+      description: t("supportRequest.supportRequestDesc"),
       icon: "support-agent",
-      iconColor: "#ea580c", // text-orange-600
-      iconBg: "#ffedd5", // bg-orange-100
+      iconColor: "#ea580c",
+      iconBg: "#ffedd5",
       path: "RequestHistory",
     },
     {
-      title: "Thanh toán",
-      description: "Xem và thanh toán các hóa đơn của bạn.",
+      title: t("invoice.payment"),
+      description: t("invoice.paymentDesc"),
       icon: "receipt-long",
-      iconColor: "#9333ea", // text-purple-600
-      iconBg: "#f3e8ff", // bg-purple-100
+      iconColor: "#9333ea",
+      iconBg: "#f3e8ff",
       path: "Bills",
     },
     {
-      title: "Lịch sử",
-      description: "Tra cứu các giao dịch thanh toán đã thực hiện.",
+      title: t("invoice.transactionHistory"),
+      description: t("invoice.transactionHistoryDesc"),
       icon: "history",
-      iconColor: "#dc2626", // text-red-600
-      iconBg: "#fee2e2", // bg-red-100
+      iconColor: "#dc2626",
+      iconBg: "#fee2e2",
       path: "TransactionHistory",
     },
     {
-      title: "Tòa nhà & phòng",
-      description: "Xem thông tin chi tiết về ký túc xá.",
+      title: t("building.buildingAndRoom"),
+      description: t("building.buildingAndRoomDesc"),
       icon: "apartment",
-      iconColor: "#0d9488", // text-teal-600
-      iconBg: "#ccfbf1", // bg-teal-100
+      iconColor: "#0d9488",
+      iconBg: "#ccfbf1",
       path: "BuildingList",
     },
   ];
@@ -80,7 +82,7 @@ const Services = ({ navigation }: Props) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft} />
-        <Text style={styles.headerTitle}>Dịch vụ</Text>
+        <Text style={styles.headerTitle}>{t("common.services")}</Text>
         <View style={styles.headerRight} />
       </View>
 

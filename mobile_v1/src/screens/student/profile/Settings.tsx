@@ -7,13 +7,17 @@ import {
   ScrollView,
   Switch,
   StatusBar,
+  Modal,
+  Alert,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
 import ConfirmModal from "../../../components/ConfirmModal";
+import { LanguageService } from "../../../services/languageService";
 
 type SettingsScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -25,17 +29,26 @@ interface Props {
 }
 
 const Settings = ({ navigation }: Props) => {
+  const { t, i18n } = useTranslation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [role, setRole] = useState<"student" | "manager">("student");
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [role, setRole] = useState<"student" | "manager" | "admin">("student");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [currentLanguage, setCurrentLanguage] = useState("vi");
 
   useEffect(() => {
     const loadRole = async () => {
       try {
         const storedRole = await AsyncStorage.getItem("role");
-        if (storedRole === "manager" || storedRole === "student") {
+        if (
+          storedRole === "manager" ||
+          storedRole === "admin" ||
+          storedRole === "student"
+        ) {
           setRole(storedRole);
         }
+        const lang = LanguageService.getCurrentLanguage();
+        setCurrentLanguage(lang);
       } catch (e) {
         console.error("Failed to load role", e);
       }
@@ -56,6 +69,16 @@ const Settings = ({ navigation }: Props) => {
     }
   };
 
+  const handleLanguageChange = async (language: string) => {
+    try {
+      await LanguageService.setLanguage(language);
+      setCurrentLanguage(language);
+      setShowLanguageModal(false);
+    } catch (error) {
+      console.error("Error changing language:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
@@ -63,14 +86,14 @@ const Settings = ({ navigation }: Props) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft} />
-        <Text style={styles.headerTitle}>Cài đặt</Text>
+        <Text style={styles.headerTitle}>{t("common.settings")}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Account Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionHeader}>Tài khoản</Text>
+          <Text style={styles.sectionHeader}>{t("common.profile")}</Text>
           <View style={styles.card}>
             {/* List Item: Personal Info */}
             <TouchableOpacity
@@ -81,7 +104,7 @@ const Settings = ({ navigation }: Props) => {
                 <View style={[styles.iconContainer, styles.iconPrimary]}>
                   <MaterialIcons name="person" size={24} color="#0ea5e9" />
                 </View>
-                <Text style={styles.listItemText}>Thông tin cá nhân</Text>
+                <Text style={styles.listItemText}>{t("common.profile")}</Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
             </TouchableOpacity>
@@ -97,7 +120,7 @@ const Settings = ({ navigation }: Props) => {
                 <View style={[styles.iconContainer, styles.iconPrimary]}>
                   <MaterialIcons name="lock" size={24} color="#0ea5e9" />
                 </View>
-                <Text style={styles.listItemText}>Đổi mật khẩu</Text>
+                <Text style={styles.listItemText}>{t("auth.password")}</Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
             </TouchableOpacity>
@@ -106,8 +129,31 @@ const Settings = ({ navigation }: Props) => {
 
         {/* General Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionHeader}>Chung</Text>
+          <Text style={styles.sectionHeader}>{t("common.language")}</Text>
           <View style={styles.card}>
+            {/* Language Setting */}
+            <TouchableOpacity
+              onPress={() => setShowLanguageModal(true)}
+              style={styles.listItem}
+            >
+              <View style={styles.listItemLeft}>
+                <View style={[styles.iconContainer, styles.iconPrimary]}>
+                  <MaterialIcons name="language" size={24} color="#0ea5e9" />
+                </View>
+                <View style={styles.languageInfo}>
+                  <Text style={styles.listItemText}>
+                    {t("common.selectLanguage")}
+                  </Text>
+                  <Text style={styles.languageValue}>
+                    {currentLanguage === "vi" ? "Tiếng Việt" : "English"}
+                  </Text>
+                </View>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
+            </TouchableOpacity>
+
+            <View style={styles.divider} />
+
             {/* List Item: Notification Settings */}
             <View style={styles.listItem}>
               <View style={styles.listItemLeft}>
@@ -118,7 +164,9 @@ const Settings = ({ navigation }: Props) => {
                     color="#0ea5e9"
                   />
                 </View>
-                <Text style={styles.listItemText}>Cài đặt thông báo</Text>
+                <Text style={styles.listItemText}>
+                  {t("notification.notifications")}
+                </Text>
               </View>
               <Switch
                 value={notificationsEnabled}
@@ -131,24 +179,31 @@ const Settings = ({ navigation }: Props) => {
             <View style={styles.divider} />
 
             {/* List Item: Language */}
-            <TouchableOpacity style={styles.listItem}>
+            <TouchableOpacity
+              onPress={() => setShowLanguageModal(true)}
+              style={styles.listItem}
+            >
               <View style={styles.listItemLeft}>
                 <View style={[styles.iconContainer, styles.iconPrimary]}>
                   <MaterialIcons name="language" size={24} color="#0ea5e9" />
                 </View>
-                <Text style={styles.listItemText}>Ngôn ngữ</Text>
+                <View style={styles.languageInfo}>
+                  <Text style={styles.listItemText}>
+                    {t("common.language")}
+                  </Text>
+                  <Text style={styles.languageValue}>
+                    {currentLanguage === "vi" ? "Tiếng Việt" : "English"}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.listItemRight}>
-                <Text style={styles.valueText}>Tiếng Việt</Text>
-                <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
-              </View>
+              <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Support Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionHeader}>Hỗ trợ</Text>
+          <Text style={styles.sectionHeader}>{t("common.warning")}</Text>
           <View style={styles.card}>
             <TouchableOpacity style={styles.listItem}>
               <View style={styles.listItemLeft}>
@@ -156,7 +211,7 @@ const Settings = ({ navigation }: Props) => {
                   <MaterialIcons name="help" size={24} color="#16a34a" />
                 </View>
                 <Text style={styles.listItemText}>
-                  Trợ giúp & Câu hỏi thường gặp
+                  {t("common.selectLanguage")}
                 </Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
@@ -169,7 +224,7 @@ const Settings = ({ navigation }: Props) => {
                 <View style={[styles.iconContainer, styles.iconOrange]}>
                   <MaterialIcons name="info" size={24} color="#ea580c" />
                 </View>
-                <Text style={styles.listItemText}>Về ứng dụng</Text>
+                <Text style={styles.listItemText}>{t("common.ok")}</Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
             </TouchableOpacity>
@@ -181,10 +236,10 @@ const Settings = ({ navigation }: Props) => {
           onPress={() => setShowLogoutModal(true)}
           style={styles.logoutButton}
         >
-          <Text style={styles.logoutText}>Đăng xuất</Text>
+          <Text style={styles.logoutText}>{t("auth.logout")}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>Phiên bản 1.0.0</Text>
+        <Text style={styles.versionText}>v 1.0.0</Text>
       </ScrollView>
 
       <BottomNav role={role} />
@@ -193,11 +248,80 @@ const Settings = ({ navigation }: Props) => {
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}
-        title="Đăng xuất"
-        message="Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?"
-        confirmLabel="Đăng xuất"
+        title={t("auth.logout")}
+        message={t("common.confirm")}
+        confirmLabel={t("auth.logout")}
         variant="danger"
       />
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={showLanguageModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {t("common.selectLanguage")}
+              </Text>
+              <TouchableOpacity onPress={() => setShowLanguageModal(false)}>
+                <MaterialIcons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.languageOptions}>
+              <TouchableOpacity
+                style={[
+                  styles.languageOption,
+                  currentLanguage === "vi" && styles.languageOptionActive,
+                ]}
+                onPress={() => handleLanguageChange("vi")}
+              >
+                <View
+                  style={[
+                    styles.radioButton,
+                    currentLanguage === "vi" && styles.radioButtonActive,
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.languageOptionText,
+                    currentLanguage === "vi" && styles.languageOptionTextActive,
+                  ]}
+                >
+                  Tiếng Việt
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.languageOption,
+                  currentLanguage === "en" && styles.languageOptionActive,
+                ]}
+                onPress={() => handleLanguageChange("en")}
+              >
+                <View
+                  style={[
+                    styles.radioButton,
+                    currentLanguage === "en" && styles.radioButtonActive,
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.languageOptionText,
+                    currentLanguage === "en" && styles.languageOptionTextActive,
+                  ]}
+                >
+                  English
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -206,6 +330,76 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 30,
+    minHeight: 250,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  languageOptions: {
+    paddingHorizontal: 20,
+    paddingTop: 15,
+  },
+  languageOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginVertical: 5,
+    backgroundColor: "#f5f5f5",
+  },
+  languageOptionActive: {
+    backgroundColor: "#e3f2fd",
+  },
+  radioButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#999",
+    marginRight: 15,
+  },
+  radioButtonActive: {
+    borderColor: "#0ea5e9",
+    backgroundColor: "#0ea5e9",
+  },
+  languageOptionText: {
+    fontSize: 16,
+    color: "#666",
+  },
+  languageOptionTextActive: {
+    color: "#0ea5e9",
+    fontWeight: "600",
+  },
+  languageInfo: {
+    flex: 1,
+  },
+  languageValue: {
+    fontSize: 12,
+    color: "#64748b",
+    marginTop: 4,
   },
   header: {
     flexDirection: "row",

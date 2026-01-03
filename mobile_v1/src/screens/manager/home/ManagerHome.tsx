@@ -13,9 +13,12 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
 import { managerApi } from "../../../services/managerApi";
+import { notificationApi } from "../../../services/notificationApi";
+import { getAvatarInitials } from "../../../utils/avatarHelper";
 
 type ManagerHomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -27,10 +30,14 @@ interface Props {
 }
 
 const ManagerHome = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [user, setUser] = useState({
     name: "",
-    avatarUrl: "https://ui-avatars.com/api/?background=random",
+    avatarUrl: "",
   });
+
+  const [userRole, setUserRole] = useState<"admin" | "manager" | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const [statsData, setStatsData] = useState({
     totalStudents: 0,
@@ -51,12 +58,20 @@ const ManagerHome = ({ navigation }: Props) => {
             console.log("Parsed User:", parsedUser);
             setUser({
               name: parsedUser.fullName,
-              avatarUrl:
-                parsedUser.avatarUrl ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  parsedUser.fullName
-                )}&background=random`,
+              avatarUrl: "", // Will be generated from initials
             });
+          }
+
+          const role = await AsyncStorage.getItem("role");
+          setUserRole(role as "admin" | "manager");
+
+          // Get unread notification count
+          try {
+            const count = await notificationApi.getUnreadCount();
+            setUnreadCount(count);
+          } catch (error) {
+            console.warn("Failed to fetch unread count:", error);
+            setUnreadCount(0);
           }
 
           const data = await managerApi.getDashboardStats();
@@ -75,22 +90,22 @@ const ManagerHome = ({ navigation }: Props) => {
 
   const stats = [
     {
-      label: "Tổng sinh viên",
+      label: t("manager.totalStudents"),
       value: statsData.totalStudents.toString(),
       color: "#0f172a",
     },
     {
-      label: "Phòng trống",
+      label: t("manager.emptyRooms"),
       value: statsData.emptyRooms.toString(),
       color: "#0f172a",
     },
     {
-      label: "Đơn đăng ký mới",
+      label: t("manager.newRegistrations"),
       value: statsData.newRegistrations.toString(),
       color: "#eab308",
     },
     {
-      label: "Yêu cầu cần xử lý",
+      label: t("manager.pendingRequests"),
       value: statsData.pendingRequests.toString(),
       color: "#ef4444",
     },
@@ -101,50 +116,64 @@ const ManagerHome = ({ navigation }: Props) => {
   );
   const emptySlots = statsData.totalCapacity - statsData.totalStudents;
 
-  const quickAccessItems = [
+  const baseQuickAccessItems = [
     {
-      title: "Quản lý Tòa nhà",
+      title: t("manager.manageBuildings"),
       icon: "apartment",
       bgColor: "#dbeafe",
       iconColor: "#2563eb",
       path: "BuildingList",
+      requiredRole: undefined,
     },
     {
-      title: "Quản lý Sinh viên",
+      title: t("manager.manageStudents"),
       icon: "groups",
       bgColor: "#dcfce7",
       iconColor: "#16a34a",
       path: "StudentList",
+      requiredRole: undefined,
     },
     {
-      title: "Quản lý Hóa đơn",
+      title: t("manager.manageBills"),
       icon: "receipt-long",
       bgColor: "#ffedd5",
       iconColor: "#ea580c",
       path: "ManagerBills",
+      requiredRole: undefined,
     },
     {
-      title: "Duyệt Đơn",
+      title: t("manager.approveRequest"),
       icon: "checklist",
       bgColor: "#f3e8ff",
       iconColor: "#9333ea",
       path: "ManageRegistration",
+      requiredRole: undefined,
+
     },
     {
-      title: "Quản lý Thông báo",
+      title: t("manager.manageNotifications"),
       icon: "campaign",
       bgColor: "#fee2e2",
       iconColor: "#dc2626",
       path: "ManagerNotifications",
+      requiredRole: undefined,
     },
     {
-      title: "Quản lý yêu cầu hỗ trợ",
+      title: t("manager.manageSupportRequest"),
       icon: "build",
       bgColor: "#e0e7ff",
       iconColor: "#4f46e5",
       path: "ManagerRegularRequest",
+      requiredRole: undefined,
     },
   ];
+
+  const quickAccessItems = baseQuickAccessItems.filter((item) => {
+    if (item.requiredRole === "admin" && userRole !== "admin") {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <View style={styles.container}>
@@ -153,15 +182,34 @@ const ManagerHome = ({ navigation }: Props) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
-          <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
-          <Text style={styles.welcomeText}>Chào buổi sáng, {user.name}!</Text>
+          {user && user.name ? (
+            <View
+              style={[
+                styles.avatar,
+                {
+                  backgroundColor: getAvatarInitials(user.name).color,
+                },
+              ]}
+            >
+              <Text style={styles.avatarText}>
+                {getAvatarInitials(user.name).initials}
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.avatar, { backgroundColor: "#e2e8f0" }]}>
+              <Text style={styles.avatarText}>?</Text>
+            </View>
+          )}
+          <Text style={styles.welcomeText}>
+            {t("common.greeting")} {user.name}!
+          </Text>
         </View>
         <TouchableOpacity
           style={styles.notificationButton}
           onPress={() => navigation.navigate("Notifications")}
         >
           <MaterialIcons name="notifications" size={24} color="#475569" />
-          <View style={styles.notificationBadge} />
+          {unreadCount > 0 && <View style={styles.notificationBadge} />}
         </TouchableOpacity>
       </View>
 
@@ -184,17 +232,17 @@ const ManagerHome = ({ navigation }: Props) => {
         {/* Warning Section */}
         {statsData.overdueInvoices > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Cảnh báo</Text>
+            <Text style={styles.sectionTitle}>{t("common.warning")}</Text>
             <TouchableOpacity style={styles.warningCard}>
               <View style={styles.warningIconContainer}>
                 <MaterialIcons name="receipt-long" size={24} color="#dc2626" />
               </View>
               <View style={styles.warningContent}>
                 <Text style={styles.warningTitle}>
-                  {statsData.overdueInvoices} hóa đơn đã quá hạn
+                  {statsData.overdueInvoices} {t("manager.overdueInvoices")}
                 </Text>
                 <Text style={styles.warningSubtitle}>
-                  Nhấn để xem chi tiết danh sách
+                  {t("manager.viewDetails")}
                 </Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color="#64748b" />
@@ -204,26 +252,26 @@ const ManagerHome = ({ navigation }: Props) => {
 
         {/* Occupancy Rate */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tỷ lệ lấp đầy phòng</Text>
+          <Text style={styles.sectionTitle}>{t("manager.occupancyRate")}</Text>
           <View style={styles.occupancyCard}>
             <View style={styles.chartContainer}>
               {/* Simple Circular Progress Representation */}
               <View style={styles.chartCircle}>
                 <Text style={styles.chartPercentage}>{occupancyRate}%</Text>
-                <Text style={styles.chartLabel}>Đã lấp đầy</Text>
+                <Text style={styles.chartLabel}>{t("manager.occupied")}</Text>
               </View>
             </View>
             <View style={styles.occupancyStats}>
               <View style={styles.occupancyRow}>
                 <View style={[styles.dot, { backgroundColor: "#0ea5e9" }]} />
                 <Text style={styles.occupancyText}>
-                  Đã có người ở: {statsData.totalStudents}
+                  {t("manager.hasOccupants")}: {statsData.totalStudents}
                 </Text>
               </View>
               <View style={styles.occupancyRow}>
                 <View style={[styles.dot, { backgroundColor: "#e2e8f0" }]} />
                 <Text style={styles.occupancyText}>
-                  Còn trống: {emptySlots}
+                  {t("manager.vacant")}: {emptySlots}
                 </Text>
               </View>
             </View>
@@ -232,7 +280,7 @@ const ManagerHome = ({ navigation }: Props) => {
 
         {/* Quick Access */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Truy cập nhanh</Text>
+          <Text style={styles.sectionTitle}>{t("manager.quickAccess")}</Text>
           <View style={styles.quickAccessGrid}>
             {quickAccessItems.map((item, index) => (
               <TouchableOpacity
@@ -294,11 +342,19 @@ const styles = StyleSheet.create({
     marginRight: 12,
     borderWidth: 1,
     borderColor: "#e2e8f0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#ffffff",
   },
   welcomeText: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#0f172a",
+    maxWidth: width - 140,
   },
   notificationButton: {
     width: 40,

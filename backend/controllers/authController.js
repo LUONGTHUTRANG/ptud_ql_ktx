@@ -33,9 +33,9 @@ export const login = async (req, res) => {
       ]);
       if (rows.length > 0) user = rows[0];
     } else if (role === "manager") {
-      // Check Manager table first
+      // Check Manager table first using email
       const [managers] = await db.query(
-        "SELECT * FROM managers WHERE username = ?",
+        "SELECT * FROM managers WHERE email = ?",
         [username]
       );
       if (managers.length > 0) {
@@ -63,9 +63,9 @@ export const login = async (req, res) => {
         user = admins[0];
         userRole = "admin";
       } else {
-        // Check Manager
+        // Check Manager using email
         const [managers] = await db.query(
-          "SELECT * FROM managers WHERE username = ?",
+          "SELECT * FROM managers WHERE email = ?",
           [username]
         );
         if (managers.length > 0) {
@@ -134,13 +134,13 @@ export const getMe = async (req, res) => {
       if (rows.length > 0) user = rows[0];
     } else if (role === "manager") {
       const [rows] = await db.query(
-        "SELECT id, username, email, full_name, building_id FROM managers WHERE id = ?",
+        "SELECT id, email, full_name, building_id, phone_number FROM managers WHERE id = ?",
         [id]
       );
       if (rows.length > 0) user = rows[0];
     } else if (role === "student") {
       const [rows] = await db.query(
-        "SELECT id, mssv, full_name, email, gender, class_name, current_room_id FROM students WHERE id = ?",
+        "SELECT id, mssv, full_name, email, gender, class_name, current_room_id, phone_number FROM students WHERE id = ?",
         [id]
       );
       if (rows.length > 0) user = rows[0];
