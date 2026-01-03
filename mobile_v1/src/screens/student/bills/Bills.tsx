@@ -284,72 +284,73 @@ const Bills = ({ navigation }: Props) => {
           contentContainerStyle={styles.tabContainer}
         >
           <TouchableOpacity
-  onPress={() => {
-    setActiveTab("unpaid");
-    cancelSelectionMode();
-  }}
-  style={[styles.tab, activeTab === "unpaid" && styles.activeTab]}
->
-  <Text
-    style={[
-      styles.tabText,
-      activeTab === "unpaid" && styles.activeTabText,
-    ]}
-  >
-    {t("invoice.unpaid")}
-  </Text>
-</TouchableOpacity>
+            onPress={() => {
+              setActiveTab("unpaid");
+              cancelSelectionMode();
+            }}
+            style={[styles.tab, activeTab === "unpaid" && styles.activeTab]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "unpaid" && styles.activeTabText,
+              ]}
+            >
+              {t("invoice.unpaid")}
+            </Text>
+          </TouchableOpacity>
 
-<TouchableOpacity
-  onPress={() => {
-    setActiveTab("submitted");
-    cancelSelectionMode();
-  }}
-  style={[styles.tab, activeTab === "submitted" && styles.activeTab]}
->
-  <Text
-    style={[
-      styles.tabText,
-      activeTab === "submitted" && styles.activeTabText,
-    ]}
-  >
-    Chờ xác nhận
-  </Text>
-</TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setActiveTab("submitted");
+              cancelSelectionMode();
+            }}
+            style={[styles.tab, activeTab === "submitted" && styles.activeTab]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "submitted" && styles.activeTabText,
+              ]}
+            >
+              Chờ xác nhận
+            </Text>
+          </TouchableOpacity>
 
-<TouchableOpacity
-  onPress={() => {
-    setActiveTab("paid");
-    cancelSelectionMode();
-  }}
-  style={[styles.tab, activeTab === "paid" && styles.activeTab]}
->
-  <Text
-    style={[
-      styles.tabText,
-      activeTab === "paid" && styles.activeTabText,
-    ]}
-  >
-    {t("invoice.paid")}
-  </Text>
-</TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setActiveTab("paid");
+              cancelSelectionMode();
+            }}
+            style={[styles.tab, activeTab === "paid" && styles.activeTab]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "paid" && styles.activeTabText,
+              ]}
+            >
+              {t("invoice.paid")}
+            </Text>
+          </TouchableOpacity>
 
-<TouchableOpacity
-  onPress={() => {
-    setActiveTab("overdue");
-    cancelSelectionMode();
-  }}
-  style={[styles.tab, activeTab === "overdue" && styles.activeTab]}
->
-  <Text
-    style={[
-      styles.tabText,
-      activeTab === "overdue" && styles.activeTabText,
-    ]}
-  >
-    {t("invoice.overdue")}
-  </Text>
-</TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setActiveTab("overdue");
+              cancelSelectionMode();
+            }}
+            style={[styles.tab, activeTab === "overdue" && styles.activeTab]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "overdue" && styles.activeTabText,
+              ]}
+            >
+              {t("invoice.overdue")}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
 
       {/* List */}
