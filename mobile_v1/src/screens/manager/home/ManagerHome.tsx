@@ -16,6 +16,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
 import { managerApi } from "../../../services/managerApi";
+import { notificationApi } from "../../../services/notificationApi";
+import { getAvatarInitials } from "../../../utils/avatarHelper";
 
 type ManagerHomeScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -29,8 +31,11 @@ interface Props {
 const ManagerHome = ({ navigation }: Props) => {
   const [user, setUser] = useState({
     name: "",
-    avatarUrl: "https://ui-avatars.com/api/?background=random",
+    avatarUrl: "",
   });
+
+  const [userRole, setUserRole] = useState<"admin" | "manager" | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const [statsData, setStatsData] = useState({
     totalStudents: 0,
@@ -51,12 +56,20 @@ const ManagerHome = ({ navigation }: Props) => {
             console.log("Parsed User:", parsedUser);
             setUser({
               name: parsedUser.fullName,
-              avatarUrl:
-                parsedUser.avatarUrl ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  parsedUser.fullName
-                )}&background=random`,
+              avatarUrl: "", // Will be generated from initials
             });
+          }
+
+          const role = await AsyncStorage.getItem("role");
+          setUserRole(role as "admin" | "manager");
+
+          // Get unread notification count
+          try {
+            const count = await notificationApi.getUnreadCount();
+            setUnreadCount(count);
+          } catch (error) {
+            console.warn("Failed to fetch unread count:", error);
+            setUnreadCount(0);
           }
 
           const data = await managerApi.getDashboardStats();
@@ -101,13 +114,14 @@ const ManagerHome = ({ navigation }: Props) => {
   );
   const emptySlots = statsData.totalCapacity - statsData.totalStudents;
 
-  const quickAccessItems = [
+  const baseQuickAccessItems = [
     {
       title: "Quản lý Tòa nhà",
       icon: "apartment",
       bgColor: "#dbeafe",
       iconColor: "#2563eb",
       path: "BuildingList",
+      requiredRole: undefined,
     },
     {
       title: "Quản lý Sinh viên",
@@ -115,6 +129,7 @@ const ManagerHome = ({ navigation }: Props) => {
       bgColor: "#dcfce7",
       iconColor: "#16a34a",
       path: "StudentList",
+      requiredRole: undefined,
     },
     {
       title: "Quản lý Hóa đơn",
@@ -122,6 +137,7 @@ const ManagerHome = ({ navigation }: Props) => {
       bgColor: "#ffedd5",
       iconColor: "#ea580c",
       path: "ManagerBills",
+      requiredRole: undefined,
     },
     {
       title: "Duyệt Đơn",
@@ -129,6 +145,7 @@ const ManagerHome = ({ navigation }: Props) => {
       bgColor: "#f3e8ff",
       iconColor: "#9333ea",
       path: "ManagerSpecialRequest",
+      requiredRole: undefined,
     },
     {
       title: "Quản lý Thông báo",
@@ -136,6 +153,7 @@ const ManagerHome = ({ navigation }: Props) => {
       bgColor: "#fee2e2",
       iconColor: "#dc2626",
       path: "ManagerNotifications",
+      requiredRole: undefined,
     },
     {
       title: "Quản lý yêu cầu hỗ trợ",
@@ -143,8 +161,24 @@ const ManagerHome = ({ navigation }: Props) => {
       bgColor: "#e0e7ff",
       iconColor: "#4f46e5",
       path: "ManagerRegularRequest",
+      requiredRole: undefined,
+    },
+    {
+      title: "Quản lý kỳ ở",
+      icon: "date-range",
+      bgColor: "#e0e7ff",
+      iconColor: "#4f46e5",
+      path: "ManagerTerm",
+      requiredRole: "admin",
     },
   ];
+
+  const quickAccessItems = baseQuickAccessItems.filter((item) => {
+    if (item.requiredRole === "admin" && userRole !== "admin") {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <View style={styles.container}>
@@ -153,7 +187,24 @@ const ManagerHome = ({ navigation }: Props) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
-          <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+          {user && user.name ? (
+            <View
+              style={[
+                styles.avatar,
+                {
+                  backgroundColor: getAvatarInitials(user.name).color,
+                },
+              ]}
+            >
+              <Text style={styles.avatarText}>
+                {getAvatarInitials(user.name).initials}
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.avatar, { backgroundColor: "#e2e8f0" }]}>
+              <Text style={styles.avatarText}>?</Text>
+            </View>
+          )}
           <Text style={styles.welcomeText}>Chào buổi sáng, {user.name}!</Text>
         </View>
         <TouchableOpacity
@@ -161,7 +212,7 @@ const ManagerHome = ({ navigation }: Props) => {
           onPress={() => navigation.navigate("Notifications")}
         >
           <MaterialIcons name="notifications" size={24} color="#475569" />
-          <View style={styles.notificationBadge} />
+          {unreadCount > 0 && <View style={styles.notificationBadge} />}
         </TouchableOpacity>
       </View>
 
@@ -294,6 +345,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
     borderWidth: 1,
     borderColor: "#e2e8f0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#ffffff",
   },
   welcomeText: {
     fontSize: 16,

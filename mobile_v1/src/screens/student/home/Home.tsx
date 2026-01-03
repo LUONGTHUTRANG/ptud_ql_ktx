@@ -19,6 +19,8 @@ import { getRoomById } from "../../../services/roomApi";
 import { getBuildingById } from "../../../services/buildingApi";
 import { studentApi } from "../../../services/studentApi";
 import { fetchInvoices } from "../../../services/invoiceApi";
+import { notificationApi } from "../../../services/notificationApi";
+import { getAvatarInitials } from "../../../utils/avatarHelper";
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
 
@@ -30,6 +32,7 @@ const Home = ({ navigation }: Props) => {
   const [user, setUser] = useState<User | null>(null);
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
   console.log("Rendering Home Screen");
 
   useEffect(() => {
@@ -39,6 +42,15 @@ const Home = ({ navigation }: Props) => {
         // 1. Get current user
         const userData = await getMe();
         console.log("User Data:", userData);
+
+        // Get unread notification count
+        try {
+          const count = await notificationApi.getUnreadCount();
+          setUnreadCount(count);
+        } catch (error) {
+          console.warn("Failed to fetch unread count:", error);
+          setUnreadCount(0);
+        }
 
         let roomName = "Chưa có";
         let buildingName = "Chưa có";
@@ -71,7 +83,7 @@ const Home = ({ navigation }: Props) => {
           room: roomName,
           building: buildingName,
           roommate: roommateName,
-          avatarUrl: "https://picsum.photos/100/100", // Placeholder
+          avatarUrl: "", // Will be generated from initials
         });
 
         // 4. Get invoices
@@ -168,7 +180,24 @@ const Home = ({ navigation }: Props) => {
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+            {user && user.name ? (
+              <View
+                style={[
+                  styles.avatar,
+                  {
+                    backgroundColor: getAvatarInitials(user.name).color,
+                  },
+                ]}
+              >
+                <Text style={styles.avatarText}>
+                  {getAvatarInitials(user.name).initials}
+                </Text>
+              </View>
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: "#e2e8f0" }]}>
+                <Text style={styles.avatarText}>?</Text>
+              </View>
+            )}
           </View>
           <Text style={styles.greeting}>Chào buổi sáng, {user.name}!</Text>
         </View>
@@ -177,7 +206,7 @@ const Home = ({ navigation }: Props) => {
           onPress={() => navigation.navigate("Notifications")}
         >
           <MaterialIcons name="notifications" size={24} color="#475569" />
-          <View style={styles.badge} />
+          {unreadCount > 0 && <View style={styles.badge} />}
         </TouchableOpacity>
       </View>
 
@@ -347,6 +376,13 @@ const styles = StyleSheet.create({
   avatar: {
     width: "100%",
     height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#ffffff",
   },
   greeting: {
     fontSize: 18,

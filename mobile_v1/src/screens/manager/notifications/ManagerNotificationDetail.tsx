@@ -232,7 +232,7 @@ const ManagerNotificationDetail = ({ navigation, route }: Props) => {
   ];
 
   const getScopeData = () => {
-    if (userRole === "manager") {
+    if (userRole === "manager" || userRole === "admin") {
       return scopeData.filter((item) =>
         ["ROOM", "STUDENT"].includes(item.value)
       );

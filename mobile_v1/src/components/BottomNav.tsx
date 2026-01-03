@@ -14,7 +14,7 @@ interface NavItemProps {
 }
 
 interface BottomNavProps {
-  role?: "student" | "manager";
+  role?: "student" | "manager" | "admin";
 }
 
 const NavItem = ({
@@ -62,10 +62,10 @@ const BottomNav = ({ role = "student" }: BottomNavProps) => {
     { icon: "settings", label: "Cài đặt", screenName: "Settings" },
   ];
 
-  const navItems = role === "manager" ? managerNavItems : studentNavItems;
+  const navItems = (role === "manager" || role === "admin") ? managerNavItems : studentNavItems;
 
   const handleNavClick = (screenName: keyof RootStackParamList) => {
-    navigation.navigate(screenName);
+    navigation.navigate(screenName as any);
   };
 
   return (

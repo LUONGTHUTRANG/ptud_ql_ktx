@@ -26,14 +26,14 @@ interface Props {
 
 const Settings = ({ navigation }: Props) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [role, setRole] = useState<"student" | "manager">("student");
+  const [role, setRole] = useState<"student" | "manager" | "admin">("student");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   useEffect(() => {
     const loadRole = async () => {
       try {
         const storedRole = await AsyncStorage.getItem("role");
-        if (storedRole === "manager" || storedRole === "student") {
+        if (storedRole === "manager" || storedRole === "admin" || storedRole === "student") {
           setRole(storedRole);
         }
       } catch (e) {

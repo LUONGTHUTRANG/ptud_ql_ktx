@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,11 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
+  Alert,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
 import BottomNav from "../../../components/BottomNav";
@@ -22,7 +25,25 @@ interface Props {
 }
 
 const ManagerServices = ({ navigation }: Props) => {
-  const services = [
+  const [userRole, setUserRole] = useState<"admin" | "manager" | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadUserRole = async () => {
+        try {
+          const role = await AsyncStorage.getItem("role");
+          console.log("Loaded user role:", role);
+          setUserRole(role as "admin" | "manager");
+        } catch (error) {
+          console.error("Failed to load user role", error);
+        }
+      };
+
+      loadUserRole();
+    }, [])
+  );
+
+  const baseServices = [
     {
       title: "Quản lý sinh viên",
       description: "Danh sách sinh viên và thông tin chi tiết.",
@@ -30,6 +51,7 @@ const ManagerServices = ({ navigation }: Props) => {
       iconColor: "#2563eb", // text-blue-600
       iconBg: "#dbeafe", // bg-blue-100
       path: "StudentList",
+      requiredRole: undefined,
     },
     {
       title: "Quản lý phòng",
@@ -38,6 +60,7 @@ const ManagerServices = ({ navigation }: Props) => {
       iconColor: "#0d9488", // text-teal-600
       iconBg: "#ccfbf1", // bg-teal-100
       path: "BuildingList",
+      requiredRole: undefined,
     },
     {
       title: "Yêu cầu hỗ trợ",
@@ -46,6 +69,7 @@ const ManagerServices = ({ navigation }: Props) => {
       iconColor: "#ea580c", // text-orange-600
       iconBg: "#ffedd5", // bg-orange-100
       path: "ManagerRegularRequest",
+      requiredRole: undefined,
     },
     {
       title: "Duyệt đơn đặc biệt",
@@ -54,6 +78,7 @@ const ManagerServices = ({ navigation }: Props) => {
       iconColor: "#db2777", // text-pink-600
       iconBg: "#fce7f3", // bg-pink-100
       path: "ManagerSpecialRequest",
+      requiredRole: undefined,
     },
     {
       title: "Quản lý hóa đơn",
@@ -62,6 +87,7 @@ const ManagerServices = ({ navigation }: Props) => {
       iconColor: "#9333ea", // text-purple-600
       iconBg: "#f3e8ff", // bg-purple-100
       path: "ManagerBills",
+      requiredRole: undefined,
     },
     {
       title: "Quản lý thông báo",
@@ -70,6 +96,7 @@ const ManagerServices = ({ navigation }: Props) => {
       iconColor: "#ca8a04", // text-yellow-600
       iconBg: "#fef9c3", // bg-yellow-100
       path: "ManagerNotifications",
+      requiredRole: undefined,
     },
     {
       title: "Quản lý kỳ ở",
@@ -78,60 +105,73 @@ const ManagerServices = ({ navigation }: Props) => {
       iconColor: "#4f46e5", // text-indigo-600
       iconBg: "#e0e7ff", // bg-indigo-100
       path: "ManagerTerm",
+      requiredRole: "admin",
     },
   ];
 
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
+  const filteredServices = baseServices.filter((service) => {
+    if (service.requiredRole === "admin" && userRole !== "admin") {
+      return false;
+    }
+    return true;
+  });
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft} />
-        <Text style={styles.headerTitle}>Quản lý</Text>
-        <View style={styles.headerRight} />
-      </View>
+  const handleNavigate = (service: (typeof baseServices)[0]) => {
+    if (service.requiredRole === "admin" && userRole !== "admin") {
+      Alert.alert(
+        "Quyền hạn",
+        "Chỉ quản trị viên mới có thể truy cập chức năng này."
+      );
+      return;
+    }
+  }
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
 
-      {/* Main Content */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.grid}>
-          {services.map((service, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => {
-                if (service.path !== "#") {
-                  navigation.navigate(service.path as any);
-                }
-              }}
-              style={styles.card}
-            >
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: service.iconBg },
-                ]}
-              >
-                <MaterialIcons
-                  name={service.icon as any}
-                  size={32}
-                  color={service.iconColor}
-                />
-              </View>
-              <View style={styles.textContainer}>
-                <Text style={styles.cardTitle}>{service.title}</Text>
-                <Text style={styles.cardDescription}>
-                  {service.description}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft} />
+          <Text style={styles.headerTitle}>Quản lý</Text>
+          <View style={styles.headerRight} />
         </View>
-      </ScrollView>
 
-      <BottomNav role="manager" />
-    </View>
-  );
-};
+        {/* Main Content */}
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.grid}>
+            {filteredServices.map((service, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleNavigate(service)}
+                style={styles.card}
+              >
+                <View
+                  style={[
+                    styles.iconContainer,
+                    { backgroundColor: service.iconBg },
+                  ]}
+                >
+                  <MaterialIcons
+                    name={service.icon as any}
+                    size={32}
+                    color={service.iconColor}
+                  />
+                </View>
+                <View style={styles.textContainer}>
+                  <Text style={styles.cardTitle}>{service.title}</Text>
+                  <Text style={styles.cardDescription}>
+                    {service.description}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+
+        <BottomNav role="manager" />
+      </View>
+    );
+  };
 
 const styles = StyleSheet.create({
   container: {

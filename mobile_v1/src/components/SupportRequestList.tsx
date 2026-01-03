@@ -25,7 +25,7 @@ export interface RequestItem {
 }
 
 interface SupportRequestListProps {
-  role: "manager" | "student";
+  role: "manager" | "admin" | "student";
   title: string;
   data: RequestItem[];
   onBackPress: () => void;
@@ -241,7 +241,7 @@ const SupportRequestList = ({
             >
               {typeInfo.label} #{item.code}
             </Text>
-            {role === "manager" && (
+            {(role === "manager" || role === "admin") && (
               <Text style={styles.cardSubtitle}>
                 {item.studentName
                   ? `${item.studentName} - ${item.room}`
@@ -290,7 +290,7 @@ const SupportRequestList = ({
           <TextInput
             style={styles.searchInput}
             placeholder={
-              role === "manager"
+              (role === "manager" || role === "admin")
                 ? "Tìm theo mã, tên sinh viên..."
                 : "Tìm theo mã..."
             }

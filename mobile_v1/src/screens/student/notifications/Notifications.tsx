@@ -30,14 +30,15 @@ const Notifications = ({ navigation }: Props) => {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [role, setRole] = useState<"student" | "manager">("student");
+  const [role, setRole] = useState<"student" | "manager" | "admin">("student");
 
   useFocusEffect(
     useCallback(() => {
       const fetchNotifications = async () => {
         try {
           const role = await AsyncStorage.getItem("role");
-          setRole((role as "student" | "manager") || "student");
+          console.log("User role in Notifications:", role);
+          setRole((role as "student" | "manager" | "admin") || "student");
 
           const data = await notificationApi.getMyNotifications();
           // Map backend data to frontend model
@@ -201,12 +202,19 @@ const Notifications = ({ navigation }: Props) => {
       </View>
 
       {/* List */}
-      <FlatList
-        data={notifications}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-      />
+      {notifications.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <MaterialIcons name="notifications-none" size={48} color="#cbd5e1" />
+          <Text style={styles.emptyText}>Bạn chưa nhận được thông báo nào</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={notifications}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
 
       {!isSelectionMode ? (
         <BottomNav role={role} />
@@ -274,6 +282,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 20,
     backgroundColor: "transparent",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#94a3b8",
+    marginTop: 12,
+    textAlign: "center",
   },
   listContent: {
     padding: 16,

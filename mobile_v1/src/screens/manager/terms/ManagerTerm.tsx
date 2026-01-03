@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
 import {
@@ -59,6 +60,31 @@ const ManagerTerm = ({ navigation }: Props) => {
   const [terms, setTerms] = useState<TermItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true);
+
+  const checkAuthorization = async () => {
+    try {
+      const role = await AsyncStorage.getItem("role");
+      if (role !== "admin") {
+        setIsAuthorized(false);
+        Alert.alert(
+          "Quyền hạn",
+          "Chỉ quản trị viên mới có thể truy cập chức năng này.",
+          [
+            {
+              text: "Quay lại",
+              onPress: () => navigation.goBack(),
+            },
+          ]
+        );
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Failed to check authorization", error);
+      return false;
+    }
+  };
 
   const fetchTerms = async () => {
     try {
@@ -102,8 +128,16 @@ const ManagerTerm = ({ navigation }: Props) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchTerms();
-    }, [])
+      const initializeScreen = async () => {
+        setLoading(true);
+        const authorized = await checkAuthorization();
+        if (authorized) {
+          fetchTerms();
+        }
+      };
+
+      initializeScreen();
+    }, [navigation])
   );
 
   const onRefresh = () => {
@@ -151,6 +185,22 @@ const ManagerTerm = ({ navigation }: Props) => {
         ]}
       >
         <ActivityIndicator size="large" color="#0ea5e9" />
+      </View>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <MaterialIcons name="lock" size={48} color="#dc2626" />
+        <Text style={{ color: "#dc2626", fontSize: 16, marginTop: 12 }}>
+          Bạn không có quyền truy cập
+        </Text>
       </View>
     );
   }

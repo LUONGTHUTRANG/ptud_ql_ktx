@@ -48,11 +48,12 @@ const Login = ({ navigation }: Props) => {
 
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
-      await AsyncStorage.setItem("role", activeTab);
+      await AsyncStorage.setItem("role", user.role);
 
-      if (activeTab === "manager") {
+      if (user.role === "admin" || user.role === "manager") {
         navigation.navigate("ManagerHome");
-      } else {
+      } 
+      if (user.role === "student") {
         navigation.navigate("Home");
       }
     } catch (error: any) {

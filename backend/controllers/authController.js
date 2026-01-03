@@ -134,13 +134,13 @@ export const getMe = async (req, res) => {
       if (rows.length > 0) user = rows[0];
     } else if (role === "manager") {
       const [rows] = await db.query(
-        "SELECT id, username, email, full_name, building_id FROM managers WHERE id = ?",
+        "SELECT id, username, email, full_name, building_id, phone_number FROM managers WHERE id = ?",
         [id]
       );
       if (rows.length > 0) user = rows[0];
     } else if (role === "student") {
       const [rows] = await db.query(
-        "SELECT id, mssv, full_name, email, gender, class_name, current_room_id FROM students WHERE id = ?",
+        "SELECT id, mssv, full_name, email, gender, class_name, current_room_id, phone_number FROM students WHERE id = ?",
         [id]
       );
       if (rows.length > 0) user = rows[0];
