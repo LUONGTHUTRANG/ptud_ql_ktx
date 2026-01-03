@@ -23,28 +23,33 @@ import {
   updateRegistrationStatus,
 } from "../../../services/registrationApi";
 
-type ManagerSpecialRequestDetailScreenNavigationProp = StackNavigationProp<
+type ManageRegistrationDetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
-  "ManagerSpecialRequestDetail"
+  "ManageRegistrationDetail"
 >;
 
-type ManagerSpecialRequestDetailScreenRouteProp = RouteProp<
+type ManageRegistrationDetailScreenRouteProp = RouteProp<
   RootStackParamList,
-  "ManagerSpecialRequestDetail"
+  "ManageRegistrationDetail"
 >;
 
 interface Props {
-  navigation: ManagerSpecialRequestDetailScreenNavigationProp;
-  route: ManagerSpecialRequestDetailScreenRouteProp;
+  navigation: ManageRegistrationDetailScreenNavigationProp;
+  route: ManageRegistrationDetailScreenRouteProp;
 }
 
 const API_BASE_URL = "http://192.168.1.67:5000";
 
-const ManagerSpecialRequestDetail = ({ navigation, route }: Props) => {
+const ManageRegistrationDetail = ({ navigation, route }: Props) => {
   const { id } = route.params;
   const [adminNotes, setAdminNotes] = useState("");
   const [requestDetails, setRequestDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const isPriority = requestDetails?.registration_type === "PRIORITY";
+  const isNormal = requestDetails?.registration_type === "NORMAL";
+  const invoiceStatus = requestDetails?.invoice_status;
+  const canApproveNormal = invoiceStatus === "PAID";
 
   useEffect(() => {
     fetchRequestDetails();
@@ -83,13 +88,15 @@ const ManagerSpecialRequestDetail = ({ navigation, route }: Props) => {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case "PENDING":
-        return { label: "Chờ xử lý", color: "#d97706", bg: "#fef3c7" }; // amber-700, amber-100
+        return { label: "Chờ xử lý", color: "#d97706", bg: "#fef3c7" };
       case "APPROVED":
         return { label: "Đã duyệt", color: "#16a34a", bg: "#dcfce7" };
       case "REJECTED":
         return { label: "Từ chối", color: "#dc2626", bg: "#fee2e2" };
       case "RETURN":
-        return { label: "Trả về", color: "#ca8a04", bg: "#fef9c3" }; // yellow-600, yellow-100
+        return { label: "Trả về", color: "#ca8a04", bg: "#fef9c3" };
+      case "COMPLETED":
+        return { label: "Hoàn thành", color: "#2563eb", bg: "#dbeafe" };
       default:
         return { label: "Không xác định", color: "#64748b", bg: "#f1f5f9" };
     }
@@ -114,6 +121,33 @@ const ManagerSpecialRequestDetail = ({ navigation, route }: Props) => {
     if (ext === "pdf") return "picture-as-pdf";
     if (["doc", "docx"].includes(ext || "")) return "description";
     return "attach-file";
+  };
+
+  const handleApprove = async () => {
+    try {
+      setLoading(true);
+
+      if (isNormal) {
+        // NORMAL: chỉ update status
+        await updateRegistrationStatus(id, "COMPLETED", adminNotes);
+        Alert.alert("Thành công", "Đã duyệt đăng ký phòng");
+        navigation.goBack();
+        return;
+      }
+
+      if (isPriority) {
+        // PRIORITY: duyệt xong → sang phân phòng
+        await updateRegistrationStatus(id, "APPROVED", adminNotes);
+
+        navigation.replace("ManageAssignRoom", {
+          registration: requestDetails,
+        });
+      }
+    } catch (e) {
+      Alert.alert("Lỗi", "Không thể xử lý yêu cầu");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -209,11 +243,20 @@ const ManagerSpecialRequestDetail = ({ navigation, route }: Props) => {
         <View style={styles.section}>
           <View style={styles.detailsCard}>
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Loại phòng</Text>
-              <Text style={styles.detailValue}>
-                {/* TODO: Fetch room type name if needed, currently not in join */}
-                Phòng tiêu chuẩn
-              </Text>
+              {isPriority && (
+                <>
+                  <Text style={styles.detailLabel}>Loại phòng</Text>
+                  <Text style={styles.detailValue}>Phòng tiêu chuẩn</Text>
+                </>
+              )}
+              {isNormal && (
+                <>
+                  <Text style={styles.detailLabel}>Phòng</Text>
+                  <Text style={styles.detailValue}>
+                    {requestDetails.room_number}
+                  </Text>
+                </>
+              )}
             </View>
             <View style={styles.divider} />
             <View style={styles.detailRow}>
@@ -231,21 +274,38 @@ const ManagerSpecialRequestDetail = ({ navigation, route }: Props) => {
                 )}
               </Text>
             </View>
+            {isNormal && (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Trạng thái thanh toán</Text>
+                  <Text style={styles.detailValue}>
+                    {invoiceStatus === "PAID"
+                      ? "Đã thanh toán"
+                      : "Chưa thanh toán"}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
         </View>
 
         {/* Special Circumstances */}
-        <View style={styles.section}>
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Lý do và Hoàn cảnh đặc biệt</Text>
-            <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
-              {getCircumstanceText(requestDetails.priority_category)}
-            </Text>
-            <Text style={styles.circumstanceText}>
-              {requestDetails.priority_description}
-            </Text>
+        {isPriority && (
+          <View style={styles.section}>
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>
+                Lý do và Hoàn cảnh đặc biệt
+              </Text>
+              <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
+                {getCircumstanceText(requestDetails.priority_category)}
+              </Text>
+              <Text style={styles.circumstanceText}>
+                {requestDetails.priority_description}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Attachments */}
         {requestDetails.evidence_file_path && (
@@ -307,31 +367,51 @@ const ManagerSpecialRequestDetail = ({ navigation, route }: Props) => {
             />
           </View>
         </View>
+
+        {/* Warning for NORMAL if invoice not PAID */}
+        {isNormal && invoiceStatus !== "PAID" && (
+          <View style={styles.warningBox}>
+            <MaterialIcons name="warning" size={20} color="#dc2626" />
+            <Text style={styles.warningText}>
+              Sinh viên chưa hoàn tất thanh toán. Không thể phê duyệt.
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={styles.footer}>
-        <View style={styles.actionButtons}>
+      {requestDetails.status !== "COMPLETED" && (
+        <View style={styles.footer}>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              style={styles.rejectButton}
+              onPress={() => handleUpdateStatus("REJECTED")}
+            >
+              <Text style={styles.rejectButtonText}>Từ chối</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.approveButton,
+                isNormal && !canApproveNormal && styles.disabledButton,
+              ]}
+              disabled={isNormal && !canApproveNormal}
+              onPress={handleApprove}
+            >
+              <Text style={styles.approveButtonText}>
+                {isPriority ? "Duyệt & Phân phòng" : "Phê duyệt"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
-            style={styles.rejectButton}
-            onPress={() => handleUpdateStatus("REJECTED")}
+            style={styles.requestInfoButton}
+            onPress={() => handleUpdateStatus("RETURN")}
           >
-            <Text style={styles.rejectButtonText}>Từ chối</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.approveButton}
-            onPress={() => handleUpdateStatus("APPROVED")}
-          >
-            <Text style={styles.approveButtonText}>Phê duyệt</Text>
+            <Text style={styles.requestInfoText}>Yêu cầu bổ sung</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.requestInfoButton}
-          onPress={() => handleUpdateStatus("RETURN")}
-        >
-          <Text style={styles.requestInfoText}>Yêu cầu thêm thông tin</Text>
-        </TouchableOpacity>
-      </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -474,6 +554,25 @@ const styles = StyleSheet.create({
     color: "#334155",
     lineHeight: 22,
   },
+  warningBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#fee2e2",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#fecaca",
+  },
+
+  warningText: {
+    marginLeft: 8,
+    color: "#991b1b",
+    fontSize: 14,
+    lineHeight: 20,
+    flex: 1,
+  },
+
   attachmentList: {
     gap: 12,
   },
@@ -559,6 +658,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#ffffff",
   },
+  disabledButton: {
+    backgroundColor: "#999999",
+  },
   requestInfoButton: {
     alignItems: "center",
     paddingVertical: 8,
@@ -570,4 +672,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ManagerSpecialRequestDetail;
+export default ManageRegistrationDetail;

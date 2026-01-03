@@ -58,6 +58,16 @@ const Student = {
     const [rows] = await db.query(query, [buildingId]);
     return rows;
   },
+
+  assignRoom: async (studentId, roomId) => {
+    const query = `
+      UPDATE students
+      SET current_room_id = ?
+      WHERE id = ?
+    `;
+    const [result] = await db.query(query, [roomId, studentId]);
+    return result;
+  }
 };
 
 export default Student;

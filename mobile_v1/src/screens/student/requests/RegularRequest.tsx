@@ -110,7 +110,10 @@ const handleConfirmSubmit = async () => {
         {
           text: "Thanh toán",
           onPress: () =>
-            navigation.navigate("BillDetail", { invoiceId: res.invoice_id }),
+            navigation.navigate("BillDetail", { 
+              invoiceId: res.invoice_id,
+              source: "REGISTER_SUCCESS",
+            }),
         },
       ]
     );

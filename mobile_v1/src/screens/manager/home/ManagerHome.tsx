@@ -128,7 +128,7 @@ const ManagerHome = ({ navigation }: Props) => {
       icon: "checklist",
       bgColor: "#f3e8ff",
       iconColor: "#9333ea",
-      path: "ManagerSpecialRequest",
+      path: "ManageRegistration",
     },
     {
       title: "Quản lý Thông báo",

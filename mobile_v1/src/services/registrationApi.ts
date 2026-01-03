@@ -14,6 +14,12 @@ export const getMyRegistrations = async () => {
   return response.data;
 };
 
+export const getManagerRegistrations = async (type: "NORMAL" | "PRIORITY") => {
+  const response = await api.get(`/registrations/manager`, {
+    params: { type },
+  });
+  return response.data;
+};
 export const getAllPriorityRegistrations = async (params?: {
   status?: string;
   search?: string;

@@ -48,12 +48,12 @@ const ManagerServices = ({ navigation }: Props) => {
       path: "ManagerRegularRequest",
     },
     {
-      title: "Duyệt đơn đặc biệt",
-      description: "Duyệt đơn đăng ký ở cho hoàn cảnh đặc biệt.",
+      title: "Duyệt đơn đăng ký phòng",
+      description: "Duyệt đơn đăng ký ở cho sinh viên.",
       icon: "assignment-late",
       iconColor: "#db2777", // text-pink-600
       iconBg: "#fce7f3", // bg-pink-100
-      path: "ManagerSpecialRequest",
+      path: "ManageRegistration",
     },
     {
       title: "Quản lý hóa đơn",

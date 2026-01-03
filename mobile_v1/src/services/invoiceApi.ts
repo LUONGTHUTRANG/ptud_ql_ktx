@@ -24,7 +24,7 @@ export const getInvoiceDetail = async (id: string) => {
 // Get invoices for manager's building
 export const fetchManagerInvoices = async (
   type?: "room" | "utility",
-  status?: "all" | "unpaid" | "paid"
+  status?: "all" | "unpaid" | "paid" | "submitted"
 ) => {
   try {
     let url = "/invoices/manager/building";
@@ -39,6 +39,7 @@ export const fetchManagerInvoices = async (
     }
 
     const response = await api.get(url);
+    console.log("Manager Invoices Response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching manager invoices:", error);
@@ -67,6 +68,19 @@ export const formatInvoiceData = (invoice: any) => {
   };
 };
 
+export const updateInvoiceStatus = async (
+  invoice_code: string,
+  status: "PAID" | "UNPAID" | "SUBMITTED"
+) => {
+  try {
+    const response = await api.put(`/invoices/${invoice_code}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating invoice status:", error);
+    throw error;
+  }
+};
+
 // Group invoices by month for utility bills
 export const groupUtilityInvoicesByMonth = (invoices: any[]) => {
   const grouped: { [key: string]: any[] } = {};
@@ -82,13 +96,16 @@ export const groupUtilityInvoicesByMonth = (invoices: any[]) => {
   return Object.entries(grouped).map(([period, invoiceList]) => {
     const paid = invoiceList.filter((i) => i.status === "PAID").length;
     const unpaid = invoiceList.filter((i) => i.status === "UNPAID").length;
+    const submitted = invoiceList.filter((i) => i.status === "SUBMITTED").length;
     const paidAmount = invoiceList
       .filter((i) => i.status === "PAID")
       .reduce((sum, i) => sum + parseFloat(i.amount), 0);
     const unpaidAmount = invoiceList
       .filter((i) => i.status === "UNPAID")
       .reduce((sum, i) => sum + parseFloat(i.amount), 0);
-
+    const submittedAmount = invoiceList
+      .filter((i) => i.status === "SUBMITTED")
+      .reduce((sum, i) => sum + parseFloat(i.amount), 0);
     return {
       month: `Tháng ${period}`,
       count: `${invoiceList.length} hóa đơn`,

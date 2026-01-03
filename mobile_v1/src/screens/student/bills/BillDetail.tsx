@@ -14,7 +14,11 @@ import * as Clipboard from "expo-clipboard";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../../types";
-import { getInvoiceDetail } from "../../../services/invoiceApi";
+import ConfirmModal from "@/src/components/ConfirmModal";
+import {
+  getInvoiceDetail,
+  updateInvoiceStatus,
+} from "../../../services/invoiceApi";
 import moment from "moment";
 
 type BillDetailRouteProp = RouteProp<RootStackParamList, "BillDetail">;
@@ -22,9 +26,10 @@ type BillDetailRouteProp = RouteProp<RootStackParamList, "BillDetail">;
 const BillDetail = () => {
   const navigation = useNavigation();
   const route = useRoute<BillDetailRouteProp>();
-  const { invoiceId } = route.params || {};
+  const { invoiceId, source, onRefresh } = route.params || {};
   const [detail, setDetail] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
   useEffect(() => {
     if (invoiceId) {
@@ -72,10 +77,21 @@ const BillDetail = () => {
     }).format(amount);
   };
 
+  const mapStatus = (status: string) => {
+    switch (status) {
+      case "PAID":
+        return "paid";
+      case "SUBMITTED":
+        return "submitted";
+      default:
+        return "unpaid";
+    }
+  };
+
   const billData = {
     amount: formatCurrency(displayData.amount),
     dueDate: moment(displayData.due_date).format("DD/MM/YYYY"),
-    status: displayData.status === "PAID" ? "paid" : "unpaid",
+    status: mapStatus(displayData.status),
     room: displayData.room_number || "N/A",
     building: displayData.building_name || "N/A",
     period: displayData.usage_month
@@ -116,6 +132,30 @@ const BillDetail = () => {
     },
   };
 
+  const handleStatusChange = async (
+    newStatus: "PAID" | "UNPAID" | "SUBMITTED"
+  ) => {
+    try {
+      await updateInvoiceStatus(displayData.invoice_code, newStatus);
+
+      setDetail({ ...detail, status: newStatus });
+      setConfirmModalVisible(false);
+      if (source === "BILLS") {
+            onRefresh?.();
+            navigation.goBack();
+          } else {
+            // 👇 RESET STACK → về Danh sách bill
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Bills" as never}],
+            });
+          }
+    } catch (error) {
+      console.error("Error updating invoice status:", error);
+      Alert.alert("Lỗi", "Không thể cập nhật trạng thái hóa đơn");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
@@ -135,29 +175,34 @@ const BillDetail = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Summary Card */}
         <View style={styles.summaryCard}>
-          <View style={styles.statusBadgeContainer}>
-            <View
+          <View
+            style={[
+              styles.statusBadge,
+              billData.status === "paid"
+                ? styles.statusBadgePaid
+                : billData.status === "submitted"
+                ? styles.statusBadgeSubmitted
+                : styles.statusBadgeUnpaid,
+            ]}
+          >
+            <Text
               style={[
-                styles.statusBadge,
+                styles.statusText,
                 billData.status === "paid"
-                  ? styles.statusBadgePaid
-                  : styles.statusBadgeUnpaid,
+                  ? styles.statusTextPaid
+                  : billData.status === "submitted"
+                  ? styles.statusTextSubmitted
+                  : styles.statusTextUnpaid,
               ]}
             >
-              <Text
-                style={[
-                  styles.statusText,
-                  billData.status === "paid"
-                    ? styles.statusTextPaid
-                    : styles.statusTextUnpaid,
-                ]}
-              >
-                {billData.status === "paid"
-                  ? "Đã thanh toán"
-                  : "Chưa thanh toán"}
-              </Text>
-            </View>
+              {billData.status === "paid"
+                ? "Đã thanh toán"
+                : billData.status === "submitted"
+                ? "Đã nộp – chờ xác nhận"
+                : "Chưa thanh toán"}
+            </Text>
           </View>
+
           <View style={styles.summaryContent}>
             <Text style={styles.summaryLabel}>Tổng thanh toán</Text>
             <Text style={styles.summaryAmount}>{billData.amount}</Text>
@@ -367,14 +412,29 @@ const BillDetail = () => {
 
       {/* Bottom Action Bar */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.payButton}>
+        <TouchableOpacity
+          style={styles.payButton}
+          onPress={() => {
+            setConfirmModalVisible(true);
+          }}
+        >
           <Text style={styles.payButtonText}>Xác nhận đã thanh toán</Text>
         </TouchableOpacity>
         {/* <TouchableOpacity style={styles.historyButton}>
           <MaterialIcons name="history" size={20} color="#64748b" />
           <Text style={styles.historyButtonText}>Xem Lịch sử Thanh toán</Text>
-        </TouchableOpacity> */}
+        // </TouchableOpacity> */}
       </View>
+      <ConfirmModal
+        isOpen={confirmModalVisible}
+        title="Xác nhận Thanh toán"
+        onConfirm={() => {
+          handleStatusChange("SUBMITTED");
+          setConfirmModalVisible(false);
+        }}
+        onClose={() => setConfirmModalVisible(false)}
+        message="Bạn có chắc chắn đã thanh toán hóa đơn này?"
+      />
     </View>
   );
 };
@@ -444,6 +504,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0fdf4",
     borderColor: "rgba(22, 163, 74, 0.1)",
   },
+  statusBadgeSubmitted: {
+    backgroundColor: "#fef3c7",
+    borderColor: "#f59e0b",
+  },
   statusText: {
     fontSize: 12,
     fontWeight: "500",
@@ -453,6 +517,10 @@ const styles = StyleSheet.create({
   },
   statusTextPaid: {
     color: "#15803d",
+  },
+  statusTextSubmitted: {
+    color: "#b45309",
+    fontWeight: "500",
   },
   summaryContent: {
     gap: 4,

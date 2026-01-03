@@ -40,3 +40,14 @@ export const getStudentsByBuildingId = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const putAsignRoom = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { room_id } = req.body;
+    const updatedStudent = await Student.assignRoom(studentId, room_id);
+    res.json(updatedStudent);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

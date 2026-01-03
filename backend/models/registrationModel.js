@@ -55,6 +55,61 @@ const Registration = {
     return rows.length > 0;
   },
 
+getByType: async (type = "NORMAL", limit = 20, offset = 0, filters = {}) => {
+  let query = `
+    SELECT 
+      r.*,
+      s.full_name AS student_name,
+      s.mssv,
+      rm.room_number
+    FROM registrations r
+    JOIN students s ON r.student_id = s.id
+    LEFT JOIN rooms rm ON r.desired_room_id = rm.id
+    WHERE r.registration_type = ?
+  `;
+
+  const params = [type];
+
+  if (filters.status) {
+    query += " AND r.status = ?";
+    params.push(filters.status);
+  }
+
+  if (filters.search) {
+    query += " AND (s.full_name LIKE ? OR s.mssv LIKE ?)";
+    params.push(`%${filters.search}%`, `%${filters.search}%`);
+  }
+
+  query += " ORDER BY r.created_at DESC LIMIT ? OFFSET ?";
+  params.push(limit, offset);
+
+  const [rows] = await db.query(query, params);
+  return rows;
+},
+
+
+  countByType: async (type = "NORMAL", filters = {}) => {
+    let query = `
+      SELECT COUNT(*) as count
+      FROM registrations r
+      JOIN students s ON r.student_id = s.id
+      WHERE r.registration_type = ?
+    `;
+    const params = [type];
+
+    if (filters.status) {
+      query += " AND r.status = ?";
+      params.push(filters.status);
+    }
+    if (filters.search) {
+      query += " AND (s.full_name LIKE ? OR s.mssv LIKE ?)";
+      params.push(`%${filters.search}%`, `%${filters.search}%`);
+    }
+
+    const [rows] = await db.query(query, params);
+    return rows[0].count;
+  },
+
   getAllPriority: async (limit = 20, offset = 0, filters = {}) => {
     let query = `
       SELECT r.*, s.full_name as student_name, s.mssv
@@ -103,12 +158,15 @@ const Registration = {
     const [rows] = await db.query(query, params);
     return rows[0].count;
   },
+
   getById: async (id) => {
     const [rows] = await db.query(
-      `SELECT r.*, s.full_name as student_name, s.mssv, b.name as building_name
+      `SELECT r.*, s.full_name as student_name, s.mssv, b.name as building_name, b.id as building_id, i.status as invoice_status, rm.room_number
        FROM registrations r
        JOIN students s ON r.student_id = s.id
        LEFT JOIN buildings b ON r.desired_building_id = b.id
+       LEFT JOIN invoices i ON r.invoice_id = i.id
+       LEFT JOIN rooms rm ON r.desired_room_id = rm.id
        WHERE r.id = ?`,
       [id]
     );
@@ -122,6 +180,12 @@ const Registration = {
     );
     return result.affectedRows > 0;
   },
+  addInvoiceId: async (registrationId, invoiceId) => {
+    await db.query(
+      "UPDATE registrations SET invoice_id = ? WHERE id = ?",
+      [invoiceId, registrationId]
+    );
+  }
 };
 
 export default Registration;

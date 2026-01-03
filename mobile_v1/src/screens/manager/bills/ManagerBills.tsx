@@ -29,9 +29,9 @@ interface Props {
 
 const ManagerBills = ({ navigation }: Props) => {
   const [activeTab, setActiveTab] = useState<"room" | "utility">("room");
-  const [filterStatus, setFilterStatus] = useState<"all" | "unpaid" | "paid">(
-    "all"
-  );
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "unpaid" | "submitted" | "paid"
+  >("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [bills, setBills] = useState<any[]>([]);
   const [utilityBills, setUtilityBills] = useState<any[]>([]);
@@ -81,6 +81,8 @@ const ManagerBills = ({ navigation }: Props) => {
     switch (status) {
       case "paid":
         return { bg: "#dcfce7", text: "#16a34a", label: "Đã thanh toán" };
+      case "submitted":
+        return { bg: "#fef9c3", text: "#ca8a04", label: "Chờ xác nhận" };
       case "unpaid":
         return { bg: "#fee2e2", text: "#dc2626", label: "Chưa thanh toán" };
       case "overdue":
@@ -188,6 +190,7 @@ const ManagerBills = ({ navigation }: Props) => {
               Tất cả
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[
               styles.filterChip,
@@ -208,6 +211,28 @@ const ManagerBills = ({ navigation }: Props) => {
               Chưa thanh toán
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.filterChip,
+              filterStatus === "submitted"
+                ? styles.activeFilterChip
+                : styles.inactiveFilterChip,
+            ]}
+            onPress={() => setFilterStatus("submitted")}
+          >
+            <Text
+              style={[
+                styles.filterText,
+                filterStatus === "submitted"
+                  ? styles.activeFilterText
+                  : styles.inactiveFilterText,
+              ]}
+            >
+              Chờ xác nhận
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[
               styles.filterChip,
@@ -296,7 +321,12 @@ const ManagerBills = ({ navigation }: Props) => {
                       <View style={styles.cardFooter}>
                         <View style={{ flex: 1 }} />
 
-                        <TouchableOpacity style={styles.detailButton}>
+                        <TouchableOpacity 
+                        style={styles.detailButton}
+                        onPress={() => {
+                          navigation.navigate("ManagerBillDetail", { invoice: bill.invoice });
+                        }}
+                      >
                           <Text style={styles.detailButtonText}>
                             Xem chi tiết
                           </Text>
