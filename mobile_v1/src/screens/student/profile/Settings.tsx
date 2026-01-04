@@ -131,28 +131,6 @@ const Settings = ({ navigation }: Props) => {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>{t("common.language")}</Text>
           <View style={styles.card}>
-            {/* Language Setting */}
-            <TouchableOpacity
-              onPress={() => setShowLanguageModal(true)}
-              style={styles.listItem}
-            >
-              <View style={styles.listItemLeft}>
-                <View style={[styles.iconContainer, styles.iconPrimary]}>
-                  <MaterialIcons name="language" size={24} color="#0ea5e9" />
-                </View>
-                <View style={styles.languageInfo}>
-                  <Text style={styles.listItemText}>
-                    {t("common.selectLanguage")}
-                  </Text>
-                  <Text style={styles.languageValue}>
-                    {currentLanguage === "vi" ? "Tiếng Việt" : "English"}
-                  </Text>
-                </View>
-              </View>
-              <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
-            </TouchableOpacity>
-
-            <View style={styles.divider} />
 
             {/* List Item: Notification Settings */}
             <View style={styles.listItem}>
@@ -211,7 +189,7 @@ const Settings = ({ navigation }: Props) => {
                   <MaterialIcons name="help" size={24} color="#16a34a" />
                 </View>
                 <Text style={styles.listItemText}>
-                  {t("common.selectLanguage")}
+                  {t("common.help")}
                 </Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
@@ -224,7 +202,7 @@ const Settings = ({ navigation }: Props) => {
                 <View style={[styles.iconContainer, styles.iconOrange]}>
                   <MaterialIcons name="info" size={24} color="#ea580c" />
                 </View>
-                <Text style={styles.listItemText}>{t("common.ok")}</Text>
+                <Text style={styles.listItemText}>{t("common.info")}</Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color="#94a3b8" />
             </TouchableOpacity>
