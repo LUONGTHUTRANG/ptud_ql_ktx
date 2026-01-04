@@ -124,8 +124,8 @@ const Home = ({ navigation }: Props) => {
   const menuItems: (MenuItem & { path: keyof RootStackParamList | "#" })[] = [
     {
       icon: "cottage",
-      title: t("common.add"),
-      subtitle: t("student.studentList"),
+      title: t("common.registerStay"),
+      subtitle: t("student.searchRoom"),
       path: "RegisterAccommodation",
     },
     {
@@ -136,8 +136,8 @@ const Home = ({ navigation }: Props) => {
     },
     {
       icon: "autorenew",
-      title: t("semester.semesterName"),
-      subtitle: t("semester.endDate"),
+      title: t("semester.extendAccommodation"),
+      subtitle: t("semester.extendSubTitle"),
       path: "ExtendAccommodation",
     },
     {

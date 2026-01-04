@@ -18,6 +18,7 @@
     "registerSuccess": "Registration successful"
   },
   "student": {
+    "student": "Student",
     "studentList": "Student List",
     "studentDetails": "Student Details",
     "addStudent": "Add Student",
@@ -28,7 +29,8 @@
     "roomNumber": "Room Number",
     "semester": "Semester",
     "status": "Status",
-    "roommate": "Roommate"
+    "roommate": "Roommate",
+    "searchRoom": "Search New Room"
   },
   "building": {
     "buildingList": "Building List",
@@ -101,6 +103,7 @@
     "registerAccommodation": "Register Dormitory",
     "registerAccommodationDesc": "Begin the process of registering for new accommodation",
     "extendAccommodation": "Extend Accommodation",
+    "extendSubTitle": "Extend contract",
     "extendAccommodationDesc": "Continue contract for the next semester",
     "selectRequestType": "Select Request Type",
     "selectRequestTypeDesc": "Please select the appropriate request type to begin the registration process.",
@@ -189,6 +192,7 @@
     "year": "Year"
   },
   "common": {
+    "registerStay": "Register Stay",
     "system": "Dormitory Management System",
     "save": "Save",
     "cancel": "Cancel",

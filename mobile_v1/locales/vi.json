@@ -29,7 +29,8 @@
     "roomNumber": "Số phòng",
     "semester": "Kỳ học",
     "status": "Trạng thái",
-    "roommate": "Bạn cùng phòng"
+    "roommate": "Bạn cùng phòng",
+    "searchRoom": "Tìm phòng mới"
   },
   "building": {
     "buildingList": "Danh sách tòa nhà",
@@ -102,6 +103,7 @@
     "registerAccommodation": "Đăng ký ký túc xá",
     "registerAccommodationDesc": "Bắt đầu quá trình đăng ký chỗ ở mới",
     "extendAccommodation": "Gia hạn chỗ ở",
+    "extendSubTitle": "Kéo dài hợp đồng",
     "extendAccommodationDesc": "Tiếp tục hợp đồng cho kỳ học tiếp theo",
     "selectRequestType": "Chọn loại đơn đăng ký",
     "selectRequestTypeDesc": "Vui lòng chọn loại đơn phù hợp với bạn để bắt đầu quá trình đăng ký.",
@@ -190,6 +192,7 @@
     "year": "Năm"
   },
   "common": {
+    "registerStay": "Đăng ký ở",
     "system": "Hệ thống Quản lý KTX",
     "save": "Lưu",
     "cancel": "Hủy",
