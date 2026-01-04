@@ -31,12 +31,13 @@ interface Props {
 }
 
 const ManagerBillDetail = ({ route, navigation }: Props) => {
-  const { invoice } = route.params;
+  const { invoice, onRefresh } = route.params;
   console.log("Invoice Details:", invoice);
   const [adminNote, setAdminNote] = useState("");
 
-  const isSubmitted = invoice.status === "SUBMITTED";
-  const isPaid = invoice.status === "PAID";
+  const isSubmitted = invoice.status||invoice.invoice_status === "SUBMITTED";
+  const isPaid = invoice.status||invoice.invoice_status === "PAID";
+  const invoiceAmount = invoice.amount||invoice.total_amount;
   const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<
     "PAID" | "UNPAID" | "SUBMITTED"
@@ -54,6 +55,7 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
         invoice.invoice_code,
         newStatus as "PAID" | "UNPAID" | "SUBMITTED"
       );
+      onRefresh?.();
       navigation.goBack();
     } catch (error) {
       console.error("Failed to update invoice status:", error);
@@ -94,11 +96,13 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
       )}
 
       {/* Student Info */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Thông tin sinh viên</Text>
-        <Text style={styles.row}>Họ tên: {invoice.student_name}</Text>
-        <Text style={styles.row}>MSSV: {invoice.mssv}</Text>
-      </View>
+      {invoice.type === "ROOM_FEE" && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Thông tin sinh viên</Text>
+          <Text style={styles.row}>Họ tên: {invoice.student_name}</Text>
+          <Text style={styles.row}>MSSV: {invoice.mssv}</Text>
+        </View>
+      )}
 
       {/* Room Info */}
       <View style={styles.card}>
@@ -112,10 +116,25 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
         <Text style={styles.sectionTitle}>Thông tin hóa đơn</Text>
         <Text style={styles.row}>{invoice.description}</Text>
 
-        <Text style={styles.amount}>{formatMoney(invoice.amount)}</Text>
+        {invoice.invoice_type === "UTILITY_FEE" && (
+          <>
+            <Text style={styles.row}>
+              Chỉ số điện cũ: {invoice.old_electricity|| 0}
+            </Text>
+            <Text style={styles.row}>
+              Chỉ số điện mới: {invoice.current_electricity|| 0}
+            </Text>
+            <Text style={styles.row}>Chỉ số nước cũ: {invoice.old_water||0}</Text>
+            <Text style={styles.row}>
+              Chỉ số nước mới: {invoice.current_water|| 0}
+            </Text>
+          </>
+        )}
+
+        <Text style={styles.amount}>{formatMoney(invoiceAmount)}</Text>
 
         <Text style={styles.row}>
-          Ngày tạo: {formatDate(invoice.time_invoiced)}
+          Ngày tạo: {formatDate(invoice.time_invoiced||invoice.last_updated)}
         </Text>
         <Text style={styles.row}>
           Hạn thanh toán: {formatDate(invoice.due_date)}
@@ -123,7 +142,7 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
       </View>
 
       {/* Payment Info */}
-      {(isSubmitted || isPaid) && (
+      {/* {(isSubmitted || isPaid) && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Thông tin thanh toán</Text>
           <Text style={styles.row}>Phương thức: {invoice.payment_method}</Text>
@@ -142,7 +161,7 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
             </TouchableOpacity>
           )}
         </View>
-      )}
+      )} */}
 
       {/* Admin Note */}
       {(isSubmitted || isPaid) && (
@@ -190,7 +209,9 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
           setConfirmModalVisible(false);
         }}
         onClose={() => setConfirmModalVisible(false)}
-        message={`Bạn có chắc chắn muốn cập nhật trạng thái thành "${pendingStatus === "PAID" ? "Đã thanh toán" : ""}" không?`}
+        message={`Bạn có chắc chắn muốn cập nhật trạng thái thành "${
+          pendingStatus === "PAID" ? "Đã thanh toán" : ""
+        }" không?`}
       />
     </ScrollView>
   );

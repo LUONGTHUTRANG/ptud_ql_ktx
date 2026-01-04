@@ -28,6 +28,7 @@ export const getInvoicesByManager = async (req, res) => {
   try {
     const managerId = req.user.id;
     const { type, status } = req.query;
+    console.log("getInvoicesByManager called with type:", type, "status:", status);
 
     // Get manager's building
     const manager = await Manager.getById(managerId);

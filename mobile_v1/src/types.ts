@@ -33,7 +33,10 @@ export type RootStackParamList = {
   RoomMembers: undefined;
   StudentList: undefined;
   ManagerBills: undefined;
-  ManagerBillDetail: { invoice: any };
+  ManagerBillDetail: { 
+    invoice: any;
+    onRefresh?: () => void;
+  };
   ManageRegistration: undefined;
   ManageRegistrationDetail: { id: string };
   ManageAssignRoom: { registration: any };
