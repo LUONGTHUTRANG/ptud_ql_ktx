@@ -14,6 +14,8 @@ const MonthlyUsage = {
         mu.total_amount,
         mu.created_at as last_updated,
         i.status as invoice_status,
+        i.type as invoice_type,
+        i.invoice_code,
         (SELECT electricity_new_index FROM monthly_usages WHERE room_id = r.id AND (year < ? OR (year = ? AND month < ?)) ORDER BY year DESC, month DESC LIMIT 1) as old_electricity,
         (SELECT water_new_index FROM monthly_usages WHERE room_id = r.id AND (year < ? OR (year = ? AND month < ?)) ORDER BY year DESC, month DESC LIMIT 1) as old_water
       FROM rooms r

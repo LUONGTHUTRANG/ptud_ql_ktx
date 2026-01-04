@@ -324,7 +324,10 @@ const ManagerBills = ({ navigation }: Props) => {
                         <TouchableOpacity 
                         style={styles.detailButton}
                         onPress={() => {
-                          navigation.navigate("ManagerBillDetail", { invoice: bill.invoice });
+                          navigation.navigate("ManagerBillDetail", {
+                             invoice: bill.invoice,
+                             onRefresh: loadBills,
+                             });
                         }}
                       >
                           <Text style={styles.detailButtonText}>

@@ -70,7 +70,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
   const [activeTab, setActiveTab] = useState<"completed" | "pending">(
     "completed"
   );
-  const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "unpaid">(
+  const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "submitted" | "unpaid">(
     "all"
   );
 
@@ -135,6 +135,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
     { id: "all", name: "Tất cả" },
     { id: "paid", name: "Đã đóng" },
     { id: "unpaid", name: "Chưa đóng" },
+    { id: "submitted", name: "Chờ duyệt" },
   ];
 
   const handleOpenFilter = (type: "building" | "room" | "payment") => {
@@ -266,7 +267,9 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
             {paymentFilter === "all"
               ? "Trạng thái"
               : paymentFilter === "paid"
-              ? "Đã đóng"
+              ? "Đã đóng" 
+              : paymentFilter === "submitted"
+              ? "Chờ duyệt"
               : "Chưa đóng"}
           </Text>
           <MaterialIcons
@@ -360,6 +363,8 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
         return null;
       if (paymentFilter === "unpaid" && item.invoice_status === "PAID")
         return null;
+      if (paymentFilter === "submitted" && item.invoice_status !== "SUBMITTED")
+        return null;
     }
 
     if (isPending) {
@@ -414,10 +419,19 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
     const statusConfig =
       item.invoice_status === "PAID"
         ? { text: "Đã đóng", color: "#16a34a", bg: "#dcfce7" }
+        : item.invoice_status === "SUBMITTED"
+        ? { text: "Chờ duyệt", color: "#f59e0b", bg: "#fef3c7" }
         : { text: "Chưa đóng", color: "#dc2626", bg: "#fee2e2" };
 
     return (
-      <View key={item.room_id} style={[styles.roomCard, styles.completedCard]}>
+      <TouchableOpacity 
+        key={item.room_id} 
+        style={[styles.roomCard, styles.completedCard]}
+        onPress={() => navigation.navigate("ManagerBillDetail", {
+          invoice: item,
+          onRefresh: loadData,
+        })}
+      >
         <View style={styles.roomHeader}>
           <View style={styles.roomInfo}>
             <View style={[styles.roomIcon, { backgroundColor: "#e0f2fe" }]}>
@@ -470,7 +484,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
             đ
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
