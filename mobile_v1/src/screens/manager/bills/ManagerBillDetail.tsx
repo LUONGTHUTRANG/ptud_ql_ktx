@@ -35,9 +35,9 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
   console.log("Invoice Details:", invoice);
   const [adminNote, setAdminNote] = useState("");
 
-  const isSubmitted = invoice.status||invoice.invoice_status === "SUBMITTED";
-  const isPaid = invoice.status||invoice.invoice_status === "PAID";
-  const invoiceAmount = invoice.amount||invoice.total_amount;
+  const isSubmitted = (invoice.status??invoice.invoice_status) === "SUBMITTED";
+  const isPaid = (invoice.status??invoice.invoice_status) === "PAID";
+  const invoiceAmount = invoice.amount??invoice.total_amount;
   const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<
     "PAID" | "UNPAID" | "SUBMITTED"
