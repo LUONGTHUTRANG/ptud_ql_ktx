@@ -77,8 +77,8 @@ const seed = async () => {
         "MALE",
         "CNTT1",
         "STUDYING",
-        "NOT_STAYING",
-        15
+        "STAYING",
+        15,
       ],
       [
         "20225002",
@@ -89,8 +89,8 @@ const seed = async () => {
         "FEMALE",
         "KT1",
         "STUDYING",
-        "NOT_STAYING",
-        15
+        "STAYING",
+        15,
       ],
       [
         "20225003",
@@ -101,8 +101,8 @@ const seed = async () => {
         "MALE",
         "CNTT2",
         "STUDYING",
-        "NOT_STAYING",
-        20
+        "STAYING",
+        20,
       ],
       [
         "20225004",
@@ -114,7 +114,7 @@ const seed = async () => {
         "NNA1",
         "STUDYING",
         "NOT_STAYING",
-        26
+        null,
       ],
       [
         "20225005",
@@ -125,8 +125,8 @@ const seed = async () => {
         "MALE",
         "DT1",
         "STUDYING",
-        "NOT_STAYING",
-        49
+        "STAYING",
+        49,
       ],
     ];
     await db.query(
