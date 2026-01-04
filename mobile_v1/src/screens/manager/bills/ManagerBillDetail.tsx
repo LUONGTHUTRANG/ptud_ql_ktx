@@ -190,7 +190,7 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
           setConfirmModalVisible(false);
         }}
         onClose={() => setConfirmModalVisible(false)}
-        message={`Bạn có chắc chắn muốn cập nhật trạng thái thành "${pendingStatus}" không?`}
+        message={`Bạn có chắc chắn muốn cập nhật trạng thái thành "${pendingStatus === "PAID" ? "Đã thanh toán" : ""}" không?`}
       />
     </ScrollView>
   );

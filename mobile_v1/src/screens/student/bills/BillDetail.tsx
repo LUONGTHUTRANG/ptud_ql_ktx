@@ -178,10 +178,10 @@ const BillDetail = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Summary Card */}
-        <View style={styles.summaryCard}>
           <View
             style={[
               styles.statusBadge,
+              styles.statusBadgeContainer,
               billData.status === "paid"
                 ? styles.statusBadgePaid
                 : billData.status === "submitted"
@@ -206,7 +206,7 @@ const BillDetail = () => {
                 : t("invoice.unpaid")}
             </Text>
           </View>
-        </View>
+
 
 
           <View style={styles.summaryContent}>
