@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `invoices` (
   `usage_id` int DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('UNPAID','PAID','SUBMITTED','CANCELLED') COLLATE utf8mb4_unicode_ci DEFAULT 'UNPAID',
+  `status` enum('UNPAID','SUBMITTED','PAID','CANCELLED') COLLATE utf8mb4_unicode_ci NOT NULL,
   `due_date` date DEFAULT NULL,
   `paid_at` datetime DEFAULT NULL,
   `paid_by_student_id` int DEFAULT NULL COMMENT 'Người đại diện thanh toán (quan trọng với hóa đơn điện nước)',
@@ -83,9 +83,9 @@ CREATE TABLE IF NOT EXISTS `invoices` (
   CONSTRAINT `invoices_ibfk_4` FOREIGN KEY (`paid_by_student_id`) REFERENCES `students` (`id`),
   CONSTRAINT `invoices_ibfk_5` FOREIGN KEY (`created_by_manager_id`) REFERENCES `managers` (`id`),
   CONSTRAINT `invoices_ibfk_6` FOREIGN KEY (`usage_id`) REFERENCES `monthly_usages` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dormitory_management.invoices: ~0 rows (approximately)
+-- Dumping data for table dormitory_management.invoices: ~40 rows (approximately)
 DELETE FROM `invoices`;
 INSERT INTO `invoices` (`id`, `invoice_code`, `type`, `semester_id`, `time_invoiced`, `room_id`, `student_id`, `usage_id`, `amount`, `description`, `status`, `due_date`, `paid_at`, `paid_by_student_id`, `payment_method`, `payment_proof`, `created_by_manager_id`) VALUES
 	(1, 'U15-82055169-0', 'UTILITY_FEE', 4, '2025-12-16 17:47:35', 15, NULL, 1, 263500.00, 'Tiền điện nước tháng 12/2025 phòng P101', 'UNPAID', '2026-01-10', NULL, NULL, NULL, NULL, 8),
@@ -125,12 +125,13 @@ INSERT INTO `invoices` (`id`, `invoice_code`, `type`, `semester_id`, `time_invoi
 	(35, 'U49-82055207-4', 'UTILITY_FEE', 4, '2025-12-16 17:47:35', 49, NULL, 35, 730000.00, 'Tiền điện nước tháng 12/2025 phòng P307', 'UNPAID', '2026-01-10', NULL, NULL, NULL, NULL, 8),
 	(36, 'U50-82055209-6', 'UTILITY_FEE', 4, '2025-12-16 17:47:35', 50, NULL, 36, 322500.00, 'Tiền điện nước tháng 12/2025 phòng P308', 'UNPAID', '2026-01-10', NULL, NULL, NULL, NULL, 8),
 	(37, 'U51-82055210-9', 'UTILITY_FEE', 4, '2025-12-16 17:47:35', 51, NULL, 37, 407500.00, 'Tiền điện nước tháng 12/2025 phòng P309', 'UNPAID', '2026-01-10', NULL, NULL, NULL, NULL, 8),
-	(44, 'U52-85054838-1', 'UTILITY_FEE', 4, '2025-12-16 18:37:34', 52, NULL, 44, 1527500.00, 'Tiền điện nước tháng 12/2025 phòng P310', 'UNPAID', '2026-01-10', NULL, NULL, NULL, NULL, 8);
+	(44, 'U52-85054838-1', 'UTILITY_FEE', 4, '2025-12-16 18:37:34', 52, NULL, 44, 1527500.00, 'Tiền điện nước tháng 12/2025 phòng P310', 'UNPAID', '2026-01-10', NULL, NULL, NULL, NULL, 8),
+	(45, 'R-20260102-8547', 'ROOM_FEE', 4, '2026-01-03 00:59:02', 31, 12, NULL, 3000000.00, 'Tiền phòng P203 - HK 1 2025-2026', 'PAID', '2026-01-04', NULL, NULL, NULL, NULL, NULL),
+	(46, 'R-20260104-2019', 'ROOM_FEE', 4, '2026-01-04 16:38:03', 44, 13, NULL, 3500000.00, 'Tiền phòng P302 - HK 1 2025-2026', 'SUBMITTED', '2026-01-05', NULL, NULL, NULL, NULL, NULL);
 
 -- Dumping structure for table dormitory_management.managers
 CREATE TABLE IF NOT EXISTS `managers` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `full_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -138,18 +139,19 @@ CREATE TABLE IF NOT EXISTS `managers` (
   `is_first_login` tinyint(1) DEFAULT '1' COMMENT 'Bắt buộc đổi mật khẩu lần đầu',
   `building_id` int DEFAULT NULL,
   `fcm_token` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_active` tinyint DEFAULT '1',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`),
   KEY `building_id` (`building_id`),
   CONSTRAINT `managers_ibfk_1` FOREIGN KEY (`building_id`) REFERENCES `buildings` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dormitory_management.managers: ~2 rows (approximately)
+-- Dumping data for table dormitory_management.managers: ~3 rows (approximately)
 DELETE FROM `managers`;
-INSERT INTO `managers` (`id`, `username`, `email`, `password_hash`, `full_name`, `phone_number`, `is_first_login`, `building_id`, `fcm_token`) VALUES
-	(8, 'manager1', 'manager1@ktx.com', '$2b$10$wvVqmwZKsG37zpFO.f/ePunp1ETHdPvNQDaz9Y6C3VrN1PlAYVKSO', 'Manager One', '0901234561', 1, 1, NULL),
-	(9, 'manager2', 'manager2@ktx.com', '$2b$10$wvVqmwZKsG37zpFO.f/ePunp1ETHdPvNQDaz9Y6C3VrN1PlAYVKSO', 'Manager Two', '0901234562', 1, 2, NULL);
+INSERT INTO `managers` (`id`, `email`, `password_hash`, `full_name`, `phone_number`, `is_first_login`, `building_id`, `fcm_token`, `is_active`) VALUES
+	(8, 'manager1@ktx.com', '$2b$10$wvVqmwZKsG37zpFO.f/ePunp1ETHdPvNQDaz9Y6C3VrN1PlAYVKSO', 'Manager One', '0901234562', 1, 1, NULL, 1),
+	(9, 'manager2@ktx.com', '$2b$10$wvVqmwZKsG37zpFO.f/ePunp1ETHdPvNQDaz9Y6C3VrN1PlAYVKSO', 'Manager Two', '0901234562', 1, 2, NULL, 1),
+	(10, 'trang123@gmail.com', '$2b$10$rNpEItTTqOSWxIzTdgN.J.OaE9KSfqs9u1V4hfD71rq58yMOk1ml.', 'Lương Thu Trang', '064646436', 1, 1, NULL, NULL);
 
 -- Dumping structure for table dormitory_management.monthly_usages
 CREATE TABLE IF NOT EXISTS `monthly_usages` (
@@ -170,7 +172,7 @@ CREATE TABLE IF NOT EXISTS `monthly_usages` (
   CONSTRAINT `monthly_usages_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dormitory_management.monthly_usages: ~0 rows (approximately)
+-- Dumping data for table dormitory_management.monthly_usages: ~38 rows (approximately)
 DELETE FROM `monthly_usages`;
 INSERT INTO `monthly_usages` (`id`, `room_id`, `month`, `year`, `electricity_old_index`, `electricity_new_index`, `electricity_price`, `water_old_index`, `water_new_index`, `water_price`, `total_amount`, `created_at`) VALUES
 	(1, 15, 12, 2025, 123, 176, 3500.00, 299, 312, 6000.00, 263500.00, '2025-12-16 17:47:35'),
@@ -278,12 +280,14 @@ CREATE TABLE IF NOT EXISTS `registrations` (
   CONSTRAINT `registrations_ibfk_2` FOREIGN KEY (`desired_room_id`) REFERENCES `rooms` (`id`),
   CONSTRAINT `registrations_ibfk_3` FOREIGN KEY (`desired_building_id`) REFERENCES `buildings` (`id`),
   CONSTRAINT `registrations_ibfk_4` FOREIGN KEY (`semester_id`) REFERENCES `semesters` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dormitory_management.registrations: ~1 rows (approximately)
+-- Dumping data for table dormitory_management.registrations: ~2 rows (approximately)
 DELETE FROM `registrations`;
 INSERT INTO `registrations` (`id`, `student_id`, `semester_id`, `registration_type`, `desired_room_id`, `desired_building_id`, `priority_category`, `priority_description`, `evidence_file_path`, `status`, `invoice_id`, `created_at`, `updated_at`, `admin_note`) VALUES
-	(1, 2, 4, 'PRIORITY', NULL, 2, 'POOR_HOUSEHOLD', NULL, 'uploads/evidence/evidence-1765648805977-776628501.docx', 'RETURN', NULL, '2025-12-14 01:00:06', '2025-12-14 01:42:06', 'thiếu minh chứng');
+	(1, 2, 4, 'PRIORITY', NULL, 2, 'POOR_HOUSEHOLD', NULL, 'uploads/evidence/evidence-1765648805977-776628501.docx', 'RETURN', NULL, '2025-12-14 01:00:06', '2025-12-14 01:42:06', 'thiếu minh chứng'),
+	(2, 12, 4, 'NORMAL', 31, 2, 'NONE', NULL, NULL, 'PENDING', NULL, '2026-01-03 00:59:02', NULL, NULL),
+	(3, 13, 4, 'NORMAL', 44, 3, 'NONE', NULL, NULL, 'PENDING', 46, '2026-01-04 16:38:03', '2026-01-04 16:38:03', NULL);
 
 -- Dumping structure for table dormitory_management.rooms
 CREATE TABLE IF NOT EXISTS `rooms` (
@@ -365,12 +369,12 @@ CREATE TABLE IF NOT EXISTS `semesters` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dormitory_management.semesters: ~4 rows (approximately)
+-- Dumping data for table dormitory_management.semesters: ~3 rows (approximately)
 DELETE FROM `semesters`;
 INSERT INTO `semesters` (`id`, `start_date`, `end_date`, `registration_open_date`, `registration_close_date`, `registration_special_open_date`, `registration_special_close_date`, `renewal_open_date`, `renewal_close_date`, `is_active`, `term`, `academic_year`) VALUES
 	(2, '2025-02-01', '2025-06-15', '2025-01-05 08:00:00', '2025-01-20 17:00:00', '2025-01-01 08:00:00', '2025-01-04 17:00:00', '2025-01-21 08:00:00', '2025-01-30 17:00:00', 0, '2', '2024-2025'),
 	(3, '2025-07-01', '2025-08-15', '2025-06-10 08:00:00', '2025-06-20 17:00:00', NULL, NULL, '2025-06-21 08:00:00', '2025-06-30 17:00:00', 0, '3', '2024-2025'),
-	(4, '2025-09-15', '2026-02-03', '2025-09-01 09:41:00', '2025-09-10 09:41:00', '2025-08-10 09:41:00', '2025-08-20 09:41:00', '2025-08-10 09:42:00', '2025-08-25 09:42:00', 1, '1', '2025-2026');
+	(4, '2025-09-15', '2026-02-03', '2025-09-01 09:41:00', '2025-09-10 09:41:00', '2025-08-10 09:41:00', '2025-08-20 09:41:00', '2025-08-10 09:42:00', '2026-08-25 09:42:00', 1, '1', '2025-2026');
 
 -- Dumping structure for table dormitory_management.service_prices
 CREATE TABLE IF NOT EXISTS `service_prices` (
@@ -382,7 +386,7 @@ CREATE TABLE IF NOT EXISTS `service_prices` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dormitory_management.service_prices: ~0 rows (approximately)
+-- Dumping data for table dormitory_management.service_prices: ~2 rows (approximately)
 DELETE FROM `service_prices`;
 INSERT INTO `service_prices` (`id`, `service_name`, `unit_price`, `apply_date`, `is_active`) VALUES
 	(1, 'ELECTRICITY', 2950.00, '2025-12-16', 1),
@@ -429,14 +433,14 @@ CREATE TABLE IF NOT EXISTS `students` (
   CONSTRAINT `students_ibfk_1` FOREIGN KEY (`current_room_id`) REFERENCES `rooms` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dormitory_management.students: ~6 rows (approximately)
+-- Dumping data for table dormitory_management.students: ~5 rows (approximately)
 DELETE FROM `students`;
 INSERT INTO `students` (`id`, `mssv`, `password_hash`, `full_name`, `email`, `phone_number`, `gender`, `class_name`, `student_status`, `stay_status`, `fcm_token`, `current_room_id`) VALUES
-	(12, '20225001', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Nguyen Van A', 'sv001@student.com', '0912345671', 'MALE', 'CNTT1', 'STUDYING', 'NOT_STAYING', NULL, 15),
-	(13, '20225002', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Tran Thi B', 'sv002@student.com', '0912345672', 'FEMALE', 'KT1', 'STUDYING', 'NOT_STAYING', NULL, 15),
+	(12, '20225001', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Nguyen Van A', 'sv001@student.com', '0912345671', 'MALE', 'CNTT1', 'STUDYING', 'STAYING', NULL, 15),
+	(13, '20225002', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Tran Thi B', 'sv002@student.com', '0912345672', 'FEMALE', 'KT1', 'STUDYING', 'STAYING', NULL, 15),
 	(14, '20225003', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Le Van C', 'sv003@student.com', '0912345673', 'MALE', 'CNTT2', 'STUDYING', 'NOT_STAYING', NULL, 20),
-	(15, '20225004', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Pham Thi D', 'sv004@student.com', '0912345674', 'FEMALE', 'NNA1', 'STUDYING', 'NOT_STAYING', NULL, 26),
-	(16, '20225005', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Hoang Van E', 'sv005@student.com', '0912345675', 'MALE', 'DT1', 'STUDYING', 'NOT_STAYING', NULL, 49);
+	(15, '20225004', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Pham Thi D', 'sv004@student.com', '0912345674', 'FEMALE', 'NNA1', 'STUDYING', 'STAYING', NULL, 26),
+	(16, '20225005', '$2b$10$zMV7wWQ9DVT2GLbcG1RbnOZ07wr0OQkSRGLWbOa99ikbssLI/aEnC', 'Hoang Van E', 'sv005@student.com', '0912345675', 'MALE', 'DT1', 'STUDYING', 'STAYING', NULL, 49);
 
 -- Dumping structure for table dormitory_management.support_requests
 CREATE TABLE IF NOT EXISTS `support_requests` (
@@ -456,12 +460,14 @@ CREATE TABLE IF NOT EXISTS `support_requests` (
   KEY `processed_by_manager_id` (`processed_by_manager_id`),
   CONSTRAINT `support_requests_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`),
   CONSTRAINT `support_requests_ibfk_2` FOREIGN KEY (`processed_by_manager_id`) REFERENCES `managers` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table dormitory_management.support_requests: ~0 rows (approximately)
+-- Dumping data for table dormitory_management.support_requests: ~2 rows (approximately)
 DELETE FROM `support_requests`;
 INSERT INTO `support_requests` (`id`, `student_id`, `type`, `title`, `content`, `attachment_path`, `status`, `processed_by_manager_id`, `response_content`, `created_at`, `updated_at`) VALUES
-	(3, 1, 'REPAIR', 'bò iu ', 'bò iu ti béoooooooo', 'uploads/support_requests/attachment-1765266235742-729552709.jpeg', 'PROCESSING', 4, '3h 15/10 chiều cần có người ở phòng để xử lý', '2025-12-09 14:43:55', '2025-12-14 00:25:08');
+	(3, 1, 'REPAIR', 'bò iu ', 'bò iu ti béoooooooo', 'uploads/support_requests/attachment-1765266235742-729552709.jpeg', 'PROCESSING', 4, '3h 15/10 chiều cần có người ở phòng để xử lý', '2025-12-09 14:43:55', '2025-12-14 00:25:08'),
+	(5, 12, 'REPAIR', 'yc1', 'yeu cau 1', 'uploads/support_requests/attachment-1765899804402-354451889.jpeg', 'PENDING', NULL, NULL, '2025-12-16 22:43:24', NULL),
+	(6, 12, 'REPAIR', 'abc', 'abcd', 'uploads/support_requests/attachment-1767464645113-669944245.jpeg', 'PENDING', NULL, NULL, '2026-01-04 01:24:05', NULL);
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
