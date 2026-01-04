@@ -14,3 +14,10 @@ export const studentApi = {
     return response.data;
   },
 };
+
+export const putAssignRoom = async (studentId: string, roomId: string) => {
+  const response = await api.put(`/students/${studentId}/assign-room`, {
+    room_id: roomId,
+  });
+  return response.data;
+};

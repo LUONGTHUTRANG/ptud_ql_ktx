@@ -22,4 +22,10 @@ router.get(
   studentController.getStudentsByBuildingId
 );
 
+router.put(
+  "/:studentId/assign-room",
+  authorizeRoles("admin", "manager"),
+  studentController.putAsignRoom
+);
+
 export default router;

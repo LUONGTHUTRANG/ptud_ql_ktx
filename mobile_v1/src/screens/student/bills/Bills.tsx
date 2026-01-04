@@ -33,16 +33,16 @@ interface BillItem {
   amount: number;
   amountDisplay: string;
   dueDate: string;
-  status: "overdue" | "pending" | "paid";
+  status: "overdue" | "submitted" | "pending" | "paid";
   icon: string;
   originalData: any;
 }
 
 const Bills = ({ navigation }: Props) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<"unpaid" | "paid" | "overdue">(
-    "unpaid"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "unpaid" | "submitted" | "paid" | "overdue"
+  >("unpaid");
   const [selectedBills, setSelectedBills] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [bills, setBills] = useState<BillItem[]>([]);
@@ -63,9 +63,14 @@ const Bills = ({ navigation }: Props) => {
           item.status === "UNPAID" &&
           moment(item.due_date).isBefore(moment(), "day");
 
-        let status: "overdue" | "pending" | "paid" = "pending";
-        if (item.status === "PAID") status = "paid";
-        else if (isOverdue) status = "overdue";
+        let status: "overdue" | "pending" | "paid" | "submitted" = "pending";
+        if (item.status === "PAID") {
+          status = "paid";
+        } else if (item.status === "SUBMITTED") {
+          status = "submitted";
+        } else if (isOverdue) {
+          status = "overdue";
+        }
 
         let icon = "receipt";
         let type: any = "other";
@@ -113,10 +118,16 @@ const Bills = ({ navigation }: Props) => {
 
   // Filter bills based on active tab
   const filteredBills = useMemo(() => {
+    if (activeTab === "paid") return bills.filter((b) => b.status === "paid");
+
+    if (activeTab === "submitted")
+      return bills.filter((b) => b.status === "submitted");
+
     if (activeTab === "overdue")
       return bills.filter((b) => b.status === "overdue");
-    if (activeTab === "paid") return bills.filter((b) => b.status === "paid");
-    return bills.filter((b) => b.status !== "paid" && b.status !== "overdue");
+
+    // unpaid
+    return bills.filter((b) => b.status === "pending");
   }, [activeTab, bills]);
 
   const handleLongPress = (id: string) => {
@@ -133,7 +144,11 @@ const Bills = ({ navigation }: Props) => {
     } else {
       const bill = bills.find((b) => b.id === id);
       if (bill) {
-        navigation.navigate("BillDetail", { invoiceId: bill.originalData.id });
+        navigation.navigate("BillDetail", {
+          invoiceId: bill.originalData.id,
+          source: "BILLS",
+          onRefresh: loadData,
+        });
       }
     }
   };
@@ -188,6 +203,15 @@ const Bills = ({ navigation }: Props) => {
         </View>
       );
     }
+
+    if (status === "submitted") {
+      return (
+        <View style={[styles.badge, styles.badgeSubmitted]}>
+          <Text style={styles.badgeTextSubmitted}>Đã gửi</Text>
+        </View>
+      );
+    }
+
     return (
       <View style={[styles.badge, styles.badgePending]}>
         <Text style={styles.badgeTextPending}>{t("invoice.unpaid")}</Text>
@@ -223,7 +247,7 @@ const Bills = ({ navigation }: Props) => {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.navigate("Services")}
             style={styles.backButton}
           >
             <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
@@ -253,55 +277,80 @@ const Bills = ({ navigation }: Props) => {
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            setActiveTab("unpaid");
-            cancelSelectionMode();
-          }}
-          style={[styles.tab, activeTab === "unpaid" && styles.activeTab]}
+      <View style={styles.tabWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabContainer}
         >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "unpaid" && styles.activeTabText,
-            ]}
+          <TouchableOpacity
+            onPress={() => {
+              setActiveTab("unpaid");
+              cancelSelectionMode();
+            }}
+            style={[styles.tab, activeTab === "unpaid" && styles.activeTab]}
           >
-            {t("invoice.unpaid")}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            setActiveTab("paid");
-            cancelSelectionMode();
-          }}
-          style={[styles.tab, activeTab === "paid" && styles.activeTab]}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "paid" && styles.activeTabText,
-            ]}
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "unpaid" && styles.activeTabText,
+              ]}
+            >
+              {t("invoice.unpaid")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setActiveTab("submitted");
+              cancelSelectionMode();
+            }}
+            style={[styles.tab, activeTab === "submitted" && styles.activeTab]}
           >
-            {t("invoice.paid")}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            setActiveTab("overdue");
-            cancelSelectionMode();
-          }}
-          style={[styles.tab, activeTab === "overdue" && styles.activeTab]}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === "overdue" && styles.activeTabText,
-            ]}
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "submitted" && styles.activeTabText,
+              ]}
+            >
+              Chờ xác nhận
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setActiveTab("paid");
+              cancelSelectionMode();
+            }}
+            style={[styles.tab, activeTab === "paid" && styles.activeTab]}
           >
-            {t("invoice.overdue")}
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "paid" && styles.activeTabText,
+              ]}
+            >
+              {t("invoice.paid")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setActiveTab("overdue");
+              cancelSelectionMode();
+            }}
+            style={[styles.tab, activeTab === "overdue" && styles.activeTab]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "overdue" && styles.activeTabText,
+              ]}
+            >
+              {t("invoice.overdue")}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
 
       {/* List */}
@@ -453,17 +502,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 14,
   },
-  tabContainer: {
-    flexDirection: "row",
+  tabWrapper: {
     backgroundColor: "#ffffff",
     borderBottomWidth: 1,
     borderBottomColor: "#e2e8f0",
   },
+  tabContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 8,
+  },
   tab: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 14,
+    marginRight: 6,
     borderBottomWidth: 3,
     borderBottomColor: "transparent",
   },
@@ -585,6 +636,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     color: "#b45309",
+  },
+  badgeSubmitted: {
+    backgroundColor: "#e0f2fe",
+  },
+  badgeTextSubmitted: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#0284c7",
   },
   emptyState: {
     alignItems: "center",

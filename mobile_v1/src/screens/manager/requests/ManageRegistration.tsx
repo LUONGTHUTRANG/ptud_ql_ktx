@@ -14,24 +14,26 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
-import { getAllPriorityRegistrations } from "../../../services/registrationApi";
+import { getManagerRegistrations } from "../../../services/registrationApi";
 
-type ManagerSpecialRequestScreenNavigationProp = StackNavigationProp<
+type ManagerRegistrationScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
-  "ManagerSpecialRequest"
+  "ManageRegistration"
 >;
 
 interface Props {
-  navigation: ManagerSpecialRequestScreenNavigationProp;
+  navigation: ManagerRegistrationScreenNavigationProp;
 }
 
-interface SpecialRequestItem {
+interface RegistrationItem {
   id: string;
   name: string;
   studentId: string;
-  circumstance: string;
+  type: "NORMAL" | "PRIORITY";
+  room?: string; // chỉ có NORMAL
+  circumstance?: string; // chỉ có PRIORITY
   date: string;
-  status: "pending" | "approved" | "rejected" | "return";
+  status: "pending" | "approved" | "rejected" | "return" | "completed";
 }
 
 const getCircumstanceText = (category: string) => {
@@ -47,53 +49,62 @@ const getCircumstanceText = (category: string) => {
   }
 };
 
-const ManagerSpecialRequest = ({ navigation }: Props) => {
+const ManageRegistration = ({ navigation }: Props) => {
   const [filter, setFilter] = useState<
-    "all" | "pending" | "approved" | "rejected" | "return"
+    "all" | "pending" | "approved" | "rejected" | "return" | "completed"
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [requests, setRequests] = useState<SpecialRequestItem[]>([]);
+
+  const [registrationType, setRegistrationType] = useState<
+    "NORMAL" | "PRIORITY"
+  >("PRIORITY");
+
+  const [registrations, setRegistrations] = useState<RegistrationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchRequests = useCallback(async () => {
+  const fetchRegistrations = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await getAllPriorityRegistrations();
+      const res = await getManagerRegistrations(registrationType);
 
-      const mappedRequests = response.data.map((item: any) => ({
+      const mapped = res.data.map((item: any) => ({
         id: item.id.toString(),
         name: item.student_name,
         studentId: item.mssv,
-        circumstance: getCircumstanceText(item.priority_category),
+        type: item.registration_type,
+        room: item.room_number ? `Phòng ${item.room_number}` : undefined,
+        circumstance: item.priority_category
+          ? getCircumstanceText(item.priority_category)
+          : undefined,
         date: new Date(item.created_at).toLocaleDateString("vi-VN"),
         status: item.status.toLowerCase(),
       }));
 
-      setRequests(mappedRequests);
-    } catch (error) {
-      console.error("Failed to fetch priority registrations", error);
+      setRegistrations(mapped);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [registrationType]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchRequests();
-    }, [fetchRequests])
+      fetchRegistrations();
+    }, [fetchRegistrations])
   );
 
   const filteredRequests = useMemo(() => {
-    return requests.filter((req) => {
+    return registrations.filter((req) => {
       const matchesFilter = filter === "all" || req.status === filter;
       const matchesSearch =
         req.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         req.studentId.includes(searchQuery);
       return matchesFilter && matchesSearch;
     });
-  }, [requests, filter, searchQuery]);
+  }, [registrations, filter, searchQuery]);
 
-  const getStatusColor = (status: SpecialRequestItem["status"]) => {
+  const getStatusColor = (status: RegistrationItem["status"]) => {
     switch (status) {
       case "pending":
         return "#FFC107"; // Yellow
@@ -103,12 +114,14 @@ const ManagerSpecialRequest = ({ navigation }: Props) => {
         return "#F44336"; // Red
       case "return":
         return "#FF9800"; // Orange
+      case "completed":
+        return "#2196F3"; // Blue
       default:
         return "#94a3b8";
     }
   };
 
-  const getStatusText = (status: SpecialRequestItem["status"]) => {
+  const getStatusText = (status: RegistrationItem["status"]) => {
     switch (status) {
       case "pending":
         return "Chờ duyệt";
@@ -118,64 +131,93 @@ const ManagerSpecialRequest = ({ navigation }: Props) => {
         return "Từ chối";
       case "return":
         return "Trả về";
+      case "completed":
+        return "Hoàn thành";
       default:
         return "Không xác định";
     }
   };
 
-  const renderItem = ({ item }: { item: SpecialRequestItem }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() =>
-        navigation.navigate("ManagerSpecialRequestDetail", {
-          id: item.id,
-        })
-      }
-    >
-      <View
-        style={[
-          styles.statusStrip,
-          { backgroundColor: getStatusColor(item.status) },
-        ]}
-      />
-      <View style={styles.cardContent}>
-        <View style={styles.rowHeader}>
-          <View style={styles.studentInfo}>
-            <Text style={styles.studentName}>{item.name}</Text>
-            <Text style={styles.studentId}>MSSV: {item.studentId}</Text>
-          </View>
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: getStatusColor(item.status) + "20" }, // 20% opacity
-            ]}
-          >
-            <Text
+  const renderItem = ({ item }: { item: RegistrationItem }) => {
+    const isPriority = item.type === "PRIORITY";
+    const isNormal = item.type === "NORMAL";
+
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.8}
+        onPress={() =>
+          navigation.navigate("ManageRegistrationDetail", {
+            id: item.id,
+          })
+        }
+      >
+        {/* Status strip */}
+        <View
+          style={[
+            styles.statusStrip,
+            { backgroundColor: getStatusColor(item.status) },
+          ]}
+        />
+
+        <View style={styles.cardContent}>
+          {/* ===== Header ===== */}
+          <View style={styles.rowHeader}>
+            <View style={styles.studentInfo}>
+              <Text style={styles.studentName} numberOfLines={1}>
+                {item.name}
+              </Text>
+              <Text style={styles.studentId}>MSSV: {item.studentId}</Text>
+            </View>
+
+            <View
               style={[
-                styles.statusText,
-                { color: getStatusColor(item.status) },
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(item.status) + "20" },
               ]}
             >
-              {getStatusText(item.status)}
-            </Text>
+              <Text
+                style={[
+                  styles.statusText,
+                  { color: getStatusColor(item.status) },
+                ]}
+              >
+                {getStatusText(item.status)}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          {/* ===== Details ===== */}
+          <View style={styles.rowDetails}>
+            {/* Left info */}
+            <View style={styles.detailItem}>
+              {isPriority && item.circumstance && (
+                <>
+                  <Text style={styles.detailLabel}>Hoàn cảnh:</Text>
+                  <Text style={styles.detailValue}>{item.circumstance}</Text>
+                </>
+              )}
+
+              {isNormal && item.room && (
+                <>
+                  <Text style={styles.detailLabel}>Phòng đăng ký:</Text>
+                  <Text style={styles.detailValue}>{item.room}</Text>
+                </>
+              )}
+            </View>
+
+            {/* Right info */}
+            <View style={[styles.detailItem, { alignItems: "flex-end" }]}>
+              <Text style={styles.detailLabel}>Ngày gửi:</Text>
+              <Text style={styles.detailValue}>{item.date}</Text>
+            </View>
           </View>
         </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.rowDetails}>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Hoàn cảnh:</Text>
-            <Text style={styles.detailValue}>{item.circumstance}</Text>
-          </View>
-          <View style={[styles.detailItem, { alignItems: "flex-end" }]}>
-            <Text style={styles.detailLabel}>Ngày gửi:</Text>
-            <Text style={styles.detailValue}>{item.date}</Text>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (
@@ -202,8 +244,44 @@ const ManagerSpecialRequest = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Duyệt Đơn Đặc Biệt</Text>
+        <Text style={styles.headerTitle}>Duyệt đăng ký phòng</Text>
         <View style={{ width: 40 }} />
+      </View>
+
+      <View style={styles.typeTabs}>
+        <TouchableOpacity
+          style={[
+            styles.typeTab,
+            registrationType === "PRIORITY" && styles.activeTypeTab,
+          ]}
+          onPress={() => setRegistrationType("PRIORITY")}
+        >
+          <Text
+            style={[
+              styles.typeTabText,
+              registrationType === "PRIORITY" && styles.activeTypeTabText,
+            ]}
+          >
+            Đơn ưu tiên
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.typeTab,
+            registrationType === "NORMAL" && styles.activeTypeTab,
+          ]}
+          onPress={() => setRegistrationType("NORMAL")}
+        >
+          <Text
+            style={[
+              styles.typeTabText,
+              registrationType === "NORMAL" && styles.activeTypeTabText,
+            ]}
+          >
+            Đơn thường
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Search Bar */}
@@ -312,6 +390,22 @@ const ManagerSpecialRequest = ({ navigation }: Props) => {
               Trả về
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterChip,
+              filter === "completed" && styles.activeFilterChip,
+            ]}
+            onPress={() => setFilter("completed")}
+          >
+            <Text
+              style={[
+                styles.filterText,
+                filter === "completed" && styles.activeFilterText,
+              ]}
+            >
+              Hoàn thành
+            </Text>
+          </TouchableOpacity>
         </ScrollView>
       </View>
 
@@ -322,7 +416,7 @@ const ManagerSpecialRequest = ({ navigation }: Props) => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         refreshing={loading}
-        onRefresh={fetchRequests}
+        onRefresh={fetchRegistrations}
       />
     </View>
   );
@@ -357,6 +451,41 @@ const styles = StyleSheet.create({
     textAlign: "center",
     flex: 1,
   },
+  typeTabs: {
+    flexDirection: "row",
+    backgroundColor: "#e2e8f0",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 8,
+  },
+
+  typeTab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+
+  activeTypeTab: {
+    backgroundColor: "#ffffff",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  typeTabText: {
+    fontSize: 14,
+    color: "#64748b",
+    fontWeight: "500",
+  },
+
+  activeTypeTabText: {
+    color: "#0f172a",
+    fontWeight: "700",
+  },
+
   notificationButton: {
     width: 40,
     height: 40,
@@ -494,4 +623,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ManagerSpecialRequest;
+export default ManageRegistration;

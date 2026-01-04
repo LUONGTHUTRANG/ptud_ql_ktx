@@ -146,8 +146,9 @@ const ManagerHome = ({ navigation }: Props) => {
       icon: "checklist",
       bgColor: "#f3e8ff",
       iconColor: "#9333ea",
-      path: "ManagerSpecialRequest",
+      path: "ManageRegistration",
       requiredRole: undefined,
+
     },
     {
       title: t("manager.manageNotifications"),

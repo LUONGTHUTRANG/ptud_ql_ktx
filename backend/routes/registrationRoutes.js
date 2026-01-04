@@ -7,6 +7,7 @@ import {
   getAllPriorityRegistrations,
   getRegistrationById,
   updateRegistrationStatus,
+  getManagerRegistrations,
 } from "../controllers/registrationController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
@@ -29,6 +30,7 @@ const upload = multer({ storage: storage });
 
 router.post("/", upload.single("evidence"), createRegistration);
 router.get("/my-registrations", getStudentRegistrations);
+router.get("/manager", getManagerRegistrations);
 router.get("/priority", getAllPriorityRegistrations);
 router.get("/:id", getRegistrationById);
 router.put("/:id/status", updateRegistrationStatus);

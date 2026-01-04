@@ -91,6 +91,18 @@ export const updateInvoice = async (req, res) => {
   }
 };
 
+export const updateInvoiceStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updatedInvoice = await Invoice.updateStatus(req.params.invoice_code, status);
+    res.json(updatedInvoice);
+    console.log("Updated invoice status:", updatedInvoice);
+  } catch (err) {
+    console.error("Error updating invoice status:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 export const deleteInvoice = async (req, res) => {
   try {
     await Invoice.delete(req.params.id);

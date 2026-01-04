@@ -79,7 +79,7 @@ const ManagerServices = ({ navigation }: Props) => {
       icon: "assignment-late",
       iconColor: "#db2777",
       iconBg: "#fce7f3",
-      path: "ManagerSpecialRequest",
+      path: "ManageRegistration", // giữ path cũ
       requiredRole: undefined,
     },
     {
