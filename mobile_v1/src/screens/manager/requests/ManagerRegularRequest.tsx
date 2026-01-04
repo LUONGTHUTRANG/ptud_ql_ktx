@@ -71,7 +71,7 @@ const ManagerRegularRequest = ({ navigation }: Props) => {
       role="manager"
       title="Quản lý Yêu cầu"
       data={requests}
-      onBackPress={() => navigation.goBack()}
+      onBackPress={() => navigation.navigate("ManagerServices")}
       onItemPress={(id) => navigation.navigate("RequestDetail", { id })}
     />
   );

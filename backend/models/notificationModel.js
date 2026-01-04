@@ -163,6 +163,41 @@ const Notification = {
     );
     await db.query("DELETE FROM notifications WHERE id = ?", [id]);
   },
+
+  getUnreadCount: async (studentId) => {
+    // Get student's room and building info
+    const [studentInfo] = await db.query(
+      `SELECT s.current_room_id, r.building_id 
+       FROM students s 
+       LEFT JOIN rooms r ON s.current_room_id = r.id 
+       WHERE s.id = ?`,
+      [studentId]
+    );
+
+    const roomId = studentInfo[0]?.current_room_id;
+    const buildingId = studentInfo[0]?.building_id;
+
+    const query = `
+      SELECT COUNT(DISTINCT n.id) as unread_count
+      FROM notifications n
+      LEFT JOIN notification_recipients nr_s ON n.id = nr_s.notification_id AND nr_s.student_id = ?
+      LEFT JOIN notification_recipients nr_r ON n.id = nr_r.notification_id AND nr_r.room_id = ?
+      LEFT JOIN notification_recipients nr_b ON n.id = nr_b.notification_id AND nr_b.building_id = ?
+      LEFT JOIN notification_recipients nr_read ON n.id = nr_read.notification_id AND nr_read.student_id = ?
+      WHERE (n.target_scope = 'ALL' 
+         OR nr_s.id IS NOT NULL
+         OR (n.target_scope = 'ROOM' AND nr_r.id IS NOT NULL)
+         OR (n.target_scope = 'BUILDING' AND nr_b.id IS NOT NULL))
+      AND COALESCE(nr_read.is_read, 0) = 0
+    `;
+    const [rows] = await db.query(query, [
+      studentId,
+      roomId,
+      buildingId,
+      studentId,
+    ]);
+    return rows[0]?.unread_count || 0;
+  },
 };
 
 export default Notification;
