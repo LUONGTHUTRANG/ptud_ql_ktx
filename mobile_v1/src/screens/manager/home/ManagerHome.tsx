@@ -149,7 +149,6 @@ const ManagerHome = ({ navigation }: Props) => {
       iconColor: "#9333ea",
       path: "ManageRegistration",
       requiredRole: undefined,
-
     },
     {
       title: t("manager.manageNotifications"),
@@ -234,7 +233,10 @@ const ManagerHome = ({ navigation }: Props) => {
         {statsData.overdueInvoices > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t("common.warning")}</Text>
-            <TouchableOpacity style={styles.warningCard}>
+            <TouchableOpacity 
+            style={styles.warningCard}
+            onPress={() => navigation.navigate("ManagerBills")}
+            >
               <View style={styles.warningIconContainer}>
                 <MaterialIcons name="receipt-long" size={24} color="#dc2626" />
               </View>

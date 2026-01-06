@@ -410,7 +410,7 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
           <View style={styles.warningBox}>
             <MaterialIcons name="warning" size={20} color="#dc2626" />
             <Text style={styles.warningText}>
-              {t("manageRegistration.cannotApproveNormalUnpaid")}
+              {t("registration.cannotApproveNormalUnpaid")}
             </Text>
           </View>
         )}
