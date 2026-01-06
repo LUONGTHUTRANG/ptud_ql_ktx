@@ -13,8 +13,10 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import { getManagerRegistrations } from "../../../services/registrationApi";
+import { t } from "i18next";
 
 type ManagerRegistrationScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -39,17 +41,18 @@ interface RegistrationItem {
 const getCircumstanceText = (category: string) => {
   switch (category) {
     case "POOR_HOUSEHOLD":
-      return "Hộ nghèo/Cận nghèo";
+      return t("registration.poorHousehold");
     case "DISABILITY":
-      return "Khuyết tật";
+      return t("registration.disability");
     case "OTHER":
-      return "Khác";
+      return t("registration.other");
     default:
       return category;
   }
 };
 
 const ManageRegistration = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<
     "all" | "pending" | "approved" | "rejected" | "return" | "completed"
   >("all");
@@ -72,11 +75,13 @@ const ManageRegistration = ({ navigation }: Props) => {
         name: item.student_name,
         studentId: item.mssv,
         type: item.registration_type,
-        room: item.room_number ? `Phòng ${item.room_number}` : undefined,
+        room: item.room_number
+          ? `${t("room.roomName")} ${item.room_number}`
+          : undefined,
         circumstance: item.priority_category
           ? getCircumstanceText(item.priority_category)
           : undefined,
-        date: new Date(item.created_at).toLocaleDateString("vi-VN"),
+        date: new Date(item.created_at).toLocaleDateString("locale"),
         status: item.status.toLowerCase(),
       }));
 
@@ -124,15 +129,15 @@ const ManageRegistration = ({ navigation }: Props) => {
   const getStatusText = (status: RegistrationItem["status"]) => {
     switch (status) {
       case "pending":
-        return "Chờ duyệt";
+        return t("manageRegistration.pending");
       case "approved":
-        return "Đã duyệt";
+        return t("manageRegistration.approved");
       case "rejected":
-        return "Từ chối";
+        return t("manageRegistration.rejected");
       case "return":
-        return "Trả về";
+        return t("manageRegistration.return");
       case "completed":
-        return "Hoàn thành";
+        return t("manageRegistration.completed");
       default:
         return "Không xác định";
     }
@@ -167,7 +172,9 @@ const ManageRegistration = ({ navigation }: Props) => {
               <Text style={styles.studentName} numberOfLines={1}>
                 {item.name}
               </Text>
-              <Text style={styles.studentId}>MSSV: {item.studentId}</Text>
+              <Text style={styles.studentId}>
+                {t("student.studentId")}: {item.studentId}
+              </Text>
             </View>
 
             <View
@@ -195,14 +202,18 @@ const ManageRegistration = ({ navigation }: Props) => {
             <View style={styles.detailItem}>
               {isPriority && item.circumstance && (
                 <>
-                  <Text style={styles.detailLabel}>Hoàn cảnh:</Text>
+                  <Text style={styles.detailLabel}>
+                    {t("manageRegistration.circumstance")}:
+                  </Text>
                   <Text style={styles.detailValue}>{item.circumstance}</Text>
                 </>
               )}
 
               {isNormal && item.room && (
                 <>
-                  <Text style={styles.detailLabel}>Phòng đăng ký:</Text>
+                  <Text style={styles.detailLabel}>
+                    {t("registration.expectedRoom")}:
+                  </Text>
                   <Text style={styles.detailValue}>{item.room}</Text>
                 </>
               )}
@@ -210,7 +221,9 @@ const ManageRegistration = ({ navigation }: Props) => {
 
             {/* Right info */}
             <View style={[styles.detailItem, { alignItems: "flex-end" }]}>
-              <Text style={styles.detailLabel}>Ngày gửi:</Text>
+              <Text style={styles.detailLabel}>
+                {t("manageRegistration.submissionDate")}:
+              </Text>
               <Text style={styles.detailValue}>{item.date}</Text>
             </View>
           </View>
@@ -244,7 +257,9 @@ const ManageRegistration = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Duyệt đăng ký phòng</Text>
+        <Text style={styles.headerTitle}>
+          {t("manager.approveRegistration")}
+        </Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -262,7 +277,7 @@ const ManageRegistration = ({ navigation }: Props) => {
               registrationType === "PRIORITY" && styles.activeTypeTabText,
             ]}
           >
-            Đơn ưu tiên
+            {t("manageRegistration.priority")}
           </Text>
         </TouchableOpacity>
 
@@ -279,7 +294,7 @@ const ManageRegistration = ({ navigation }: Props) => {
               registrationType === "NORMAL" && styles.activeTypeTabText,
             ]}
           >
-            Đơn thường
+            {t("manageRegistration.normal")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -295,7 +310,7 @@ const ManageRegistration = ({ navigation }: Props) => {
           />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm theo tên, MSSV..."
+            placeholder={t("student.searchPlaceholder")}
             placeholderTextColor="#94a3b8"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -339,7 +354,7 @@ const ManageRegistration = ({ navigation }: Props) => {
                 filter === "pending" && styles.activeFilterText,
               ]}
             >
-              Chờ duyệt
+              {t("manageRegistration.pending")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -355,7 +370,7 @@ const ManageRegistration = ({ navigation }: Props) => {
                 filter === "approved" && styles.activeFilterText,
               ]}
             >
-              Đã duyệt
+              {t("manageRegistration.approved")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -371,7 +386,7 @@ const ManageRegistration = ({ navigation }: Props) => {
                 filter === "rejected" && styles.activeFilterText,
               ]}
             >
-              Từ chối
+              {t("manageRegistration.rejected")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -387,7 +402,7 @@ const ManageRegistration = ({ navigation }: Props) => {
                 filter === "return" && styles.activeFilterText,
               ]}
             >
-              Trả về
+              {t("manageRegistration.return")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -403,7 +418,7 @@ const ManageRegistration = ({ navigation }: Props) => {
                 filter === "completed" && styles.activeFilterText,
               ]}
             >
-              Hoàn thành
+              {t("manageRegistration.completed")}
             </Text>
           </TouchableOpacity>
         </ScrollView>

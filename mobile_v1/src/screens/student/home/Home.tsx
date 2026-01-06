@@ -1,3 +1,4 @@
+//translated
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -102,7 +103,7 @@ const Home = ({ navigation }: Props) => {
             inv.description ||
             `Hóa đơn ${inv.type === "ROOM_FEE" ? "tiền phòng" : "điện nước"}`,
           status: new Date(inv.due_date) < new Date() ? "overdue" : "pending",
-          amount: `${parseInt(inv.amount).toLocaleString("vi-VN")}đ`,
+          amount: `${parseInt(inv.amount).toLocaleString("locale")}đ`,
           dueDate: new Date(inv.due_date).toLocaleDateString("vi-VN", {
             day: "2-digit",
             month: "2-digit",

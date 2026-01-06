@@ -89,7 +89,7 @@ const ManagerNotificationDetail = ({ navigation, route }: Props) => {
       }
     } catch (error) {
       console.error("Error loading notification details:", error);
-      Alert.alert("Lỗi", "Không thể tải chi tiết thông báo");
+      Alert.alert(t("common.error"), "Không thể tải chi tiết thông báo");
     } finally {
       setIsLoading(false);
     }
@@ -165,15 +165,15 @@ const ManagerNotificationDetail = ({ navigation, route }: Props) => {
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập tiêu đề");
+      Alert.alert(t("common.error"), "Vui lòng nhập tiêu đề");
       return;
     }
     if (!content.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập nội dung");
+      Alert.alert(t("common.error"), "Vui lòng nhập nội dung");
       return;
     }
     if (scope !== "ALL" && selectedTargets.length === 0) {
-      Alert.alert("Lỗi", "Vui lòng chọn đối tượng nhận");
+      Alert.alert(t("common.error"), "Vui lòng chọn đối tượng nhận");
       return;
     }
 
@@ -218,7 +218,7 @@ const ManagerNotificationDetail = ({ navigation, route }: Props) => {
       ]);
     } catch (error) {
       console.error("Error creating notification:", error);
-      Alert.alert("Lỗi", "Không thể tạo thông báo");
+      Alert.alert(t("common.error"), "Không thể tạo thông báo");
     } finally {
       setIsLoading(false);
     }

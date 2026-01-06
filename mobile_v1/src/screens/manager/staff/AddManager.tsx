@@ -103,27 +103,27 @@ const AddManager = ({ navigation }: Props) => {
 
   const validateForm = (): boolean => {
     if (!formData.fullName.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập họ và tên");
+      Alert.alert(t("common.error"), "Vui lòng nhập họ và tên");
       return false;
     }
     if (!formData.dateOfBirth) {
-      Alert.alert("Lỗi", "Vui lòng chọn ngày tháng năm sinh");
+      Alert.alert(t("common.error"), "Vui lòng chọn ngày tháng năm sinh");
       return false;
     }
     if (!formData.idCard.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập số CCCD/CMND");
+      Alert.alert(t("common.error"), "Vui lòng nhập số CCCD/CMND");
       return false;
     }
     if (!formData.phoneNumber.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập số điện thoại");
+      Alert.alert(t("common.error"), "Vui lòng nhập số điện thoại");
       return false;
     }
     if (!formData.email.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập email");
+      Alert.alert(t("common.error"), "Vui lòng nhập email");
       return false;
     }
     if (!formData.buildings || formData.buildings.trim() === "") {
-      Alert.alert("Lỗi", "Vui lòng chọn tòa nhà phụ trách");
+      Alert.alert(t("common.error"), "Vui lòng chọn tòa nhà phụ trách");
       return false;
     }
     return true;
@@ -168,7 +168,7 @@ const AddManager = ({ navigation }: Props) => {
       setLoading(false);
       const errorMessage =
         error?.response?.data?.error || "Không thể thêm cán bộ";
-      Alert.alert("Lỗi", errorMessage);
+      Alert.alert(t("common.error"), errorMessage);
       console.error(error);
     }
   };

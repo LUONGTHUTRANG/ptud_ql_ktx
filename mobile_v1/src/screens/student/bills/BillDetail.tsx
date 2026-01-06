@@ -1,3 +1,4 @@
+//translated
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -145,18 +146,18 @@ const BillDetail = () => {
       setDetail({ ...detail, status: newStatus });
       setConfirmModalVisible(false);
       if (source === "BILLS") {
-            onRefresh?.();
-            navigation.goBack();
-          } else {
-            // 👇 RESET STACK → về Danh sách bill
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "Bills" as never}],
-            });
-          }
+        onRefresh?.();
+        navigation.goBack();
+      } else {
+        // 👇 RESET STACK → về Danh sách bill
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Bills" as never }],
+        });
+      }
     } catch (error) {
       console.error("Error updating invoice status:", error);
-      Alert.alert("Lỗi", "Không thể cập nhật trạng thái hóa đơn");
+      Alert.alert(t("common.error"), "Không thể cập nhật trạng thái hóa đơn");
     }
   };
 
@@ -172,53 +173,51 @@ const BillDetail = () => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chi tiết Hóa đơn</Text>
+        <Text style={styles.headerTitle}>{t("invoice.invoiceDetails")}</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Summary Card */}
-          <View
+        <View
+          style={[
+            styles.statusBadge,
+            styles.statusBadgeContainer,
+            billData.status === "paid"
+              ? styles.statusBadgePaid
+              : billData.status === "submitted"
+              ? styles.statusBadgeSubmitted
+              : styles.statusBadgeUnpaid,
+          ]}
+        >
+          <Text
             style={[
-              styles.statusBadge,
-              styles.statusBadgeContainer,
+              styles.statusText,
               billData.status === "paid"
-                ? styles.statusBadgePaid
+                ? styles.statusTextPaid
                 : billData.status === "submitted"
-                ? styles.statusBadgeSubmitted
-                : styles.statusBadgeUnpaid,
+                ? styles.statusTextSubmitted
+                : styles.statusTextUnpaid,
             ]}
           >
-            <Text
-              style={[
-                styles.statusText,
-                billData.status === "paid"
-                  ? styles.statusTextPaid
-                  : billData.status === "submitted"
-                  ? styles.statusTextSubmitted
-                  : styles.statusTextUnpaid,
-              ]}
-            >
-              {billData.status === "paid"
-                ? t("invoice.paid")
-                : billData.status === "submitted"
-                ? "Đã nộp – chờ xác nhận"
-                : t("invoice.unpaid")}
-            </Text>
-          </View>
+            {billData.status === "paid"
+              ? t("invoice.paid")
+              : billData.status === "submitted"
+              ? "Đã nộp – chờ xác nhận"
+              : t("invoice.unpaid")}
+          </Text>
+        </View>
 
-
-
-          <View style={styles.summaryContent}>
-            <Text style={styles.summaryLabel}>{t("common.total")}</Text>
-            <Text style={styles.summaryAmount}>{billData.amount}</Text>
-          </View>
-          <View style={styles.dueDateContainer}>
-            <MaterialIcons name="warning" size={16} color="#f97316" />
-            <Text style={styles.dueDateText}>
-              {t("common.dueDate")}: {billData.dueDate}
-            </Text>
-          </View>
+        <View style={styles.summaryContent}>
+          <Text style={styles.summaryLabel}>{t("common.total")}</Text>
+          <Text style={styles.summaryAmount}>{billData.amount}</Text>
+        </View>
+        <View style={styles.dueDateContainer}>
+          <MaterialIcons name="warning" size={16} color="#f97316" />
+          <Text style={styles.dueDateText}>
+            {t("common.dueDate")}: {billData.dueDate}
+          </Text>
+        </View>
 
         {/* General Info Grid */}
         <View style={styles.gridContainer}>
@@ -355,104 +354,116 @@ const BillDetail = () => {
         )}
 
         {/* QR Payment Section */}
-        <View style={styles.qrSection}>
-          <Text style={styles.qrTitle}>{t("invoice.vietQRPayment")}</Text>
-          <View style={styles.qrCard}>
-            <View style={styles.qrHeader}>
-              <MaterialIcons name="qr-code-scanner" size={16} color="#136dec" />
-              <Text style={styles.qrHeaderText}>
-                Quét mã để thanh toán nhanh
-              </Text>
-            </View>
-            <View style={styles.qrBody}>
-              <View style={styles.qrImageContainer}>
-                <Image
-                  source={{
-                    uri: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ExamplePaymentData",
-                  }}
-                  style={styles.qrImage}
-                  resizeMode="contain"
+        {billData.status !== "paid" && (
+          <View style={styles.qrSection}>
+            <Text style={styles.qrTitle}>{t("invoice.vietQRPayment")}</Text>
+            <View style={styles.qrCard}>
+              <View style={styles.qrHeader}>
+                <MaterialIcons
+                  name="qr-code-scanner"
+                  size={16}
+                  color="#136dec"
                 />
+                <Text style={styles.qrHeaderText}>
+                  {t("invoice.scanToPay")}
+                </Text>
               </View>
-
-              <View style={styles.bankInfoContainer}>
-                <View style={styles.bankInfoRow}>
-                  <View>
-                    <Text style={styles.bankLabel}>Ngân hàng</Text>
-                    <Text style={styles.bankValue}>{billData.bank.name}</Text>
-                  </View>
-                  <View style={styles.bankIcon}>
-                    <MaterialIcons
-                      name="account-balance"
-                      size={16}
-                      color="#94a3b8"
-                    />
-                  </View>
+              <View style={styles.qrBody}>
+                <View style={styles.qrImageContainer}>
+                  <Image
+                    source={{
+                      uri: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ExamplePaymentData",
+                    }}
+                    style={styles.qrImage}
+                    resizeMode="contain"
+                  />
                 </View>
 
-                <TouchableOpacity
-                  style={styles.bankInfoRowClickable}
-                  onPress={() => copyToClipboard(billData.bank.accountNumber)}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.bankLabel}>Số tài khoản</Text>
-                    <Text style={styles.bankValue} numberOfLines={1}>
-                      {billData.bank.accountNumber}
-                    </Text>
+                <View style={styles.bankInfoContainer}>
+                  <View style={styles.bankInfoRow}>
+                    <View>
+                      <Text style={styles.bankLabel}>{t("invoice.bank")}</Text>
+                      <Text style={styles.bankValue}>{billData.bank.name}</Text>
+                    </View>
+                    <View style={styles.bankIcon}>
+                      <MaterialIcons
+                        name="account-balance"
+                        size={16}
+                        color="#94a3b8"
+                      />
+                    </View>
                   </View>
-                  <MaterialIcons
-                    name="content-copy"
-                    size={18}
-                    color="#136dec"
-                  />
-                </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.bankInfoRowClickable}
-                  onPress={() => copyToClipboard(billData.bank.content)}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.bankLabel}>Nội dung chuyển khoản</Text>
-                    <Text style={styles.bankValue} numberOfLines={1}>
-                      {billData.bank.content}
-                    </Text>
-                  </View>
-                  <MaterialIcons
-                    name="content-copy"
-                    size={18}
-                    color="#136dec"
-                  />
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.bankInfoRowClickable}
+                    onPress={() => copyToClipboard(billData.bank.accountNumber)}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.bankLabel}>
+                        {t("invoice.accountNumber")}
+                      </Text>
+                      <Text style={styles.bankValue} numberOfLines={1}>
+                        {billData.bank.accountNumber}
+                      </Text>
+                    </View>
+                    <MaterialIcons
+                      name="content-copy"
+                      size={18}
+                      color="#136dec"
+                    />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.bankInfoRowClickable}
+                    onPress={() => copyToClipboard(billData.bank.content)}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.bankLabel}>
+                        {t("invoice.transactionContent")}
+                      </Text>
+                      <Text style={styles.bankValue} numberOfLines={1}>
+                        {billData.bank.content}
+                      </Text>
+                    </View>
+                    <MaterialIcons
+                      name="content-copy"
+                      size={18}
+                      color="#136dec"
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
-        </View>
+        )}
       </ScrollView>
 
       {/* Bottom Action Bar */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={styles.payButton}
-          onPress={() => {
-            setConfirmModalVisible(true);
-          }}
-        >
-          <Text style={styles.payButtonText}>Xác nhận đã thanh toán</Text>
-        </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.historyButton}>
+      {billData.status !== "paid" && (
+        <View style={styles.bottomBar}>
+          <TouchableOpacity
+            style={styles.payButton}
+            onPress={() => {
+              setConfirmModalVisible(true);
+            }}
+          >
+            <Text style={styles.payButtonText}>{t("invoice.paid")}</Text>
+          </TouchableOpacity>
+          {/* <TouchableOpacity style={styles.historyButton}>
           <MaterialIcons name="history" size={20} color="#64748b" />
           <Text style={styles.historyButtonText}>Xem Lịch sử Thanh toán</Text>
         // </TouchableOpacity> */}
-      </View>
+        </View>
+      )}
       <ConfirmModal
         isOpen={confirmModalVisible}
-        title="Xác nhận Thanh toán"
+        title={t("invoice.confirm")}
         onConfirm={() => {
           handleStatusChange("SUBMITTED");
           setConfirmModalVisible(false);
         }}
         onClose={() => setConfirmModalVisible(false)}
-        message="Bạn có chắc chắn đã thanh toán hóa đơn này?"
+        message={t("invoice.confirmMessage")}
       />
     </View>
   );

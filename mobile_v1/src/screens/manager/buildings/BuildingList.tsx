@@ -12,6 +12,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import { fetchBuildings } from "../../../services/buildingApi";
 
 type BuildingListScreenNavigationProp = StackNavigationProp<
@@ -30,6 +31,7 @@ interface BuildingItem {
 }
 
 const BuildingList = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [buildings, setBuildings] = useState<BuildingItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ const BuildingList = ({ navigation }: Props) => {
       const mappedData = data.map((item: any) => ({
         id: String(item.id),
         name: item.name,
-        info: `Số phòng: ${item.room_count || 0} | Vị trí: ${item.location}`,
+        info: `${t("building.numberOfRooms")}: ${item.room_count || 0} | ${t("building.location")}: ${item.location}`,
       }));
       setBuildings(mappedData);
     } catch (error) {
@@ -101,7 +103,7 @@ const BuildingList = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Danh sách tòa nhà</Text>
+        <Text style={styles.headerTitle}>{t("building.buildingList")}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -116,7 +118,7 @@ const BuildingList = ({ navigation }: Props) => {
           />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm kiếm theo tên tòa nhà..."
+            placeholder={t("building.findByBuildingName")}
             placeholderTextColor="#94a3b8"
             value={searchQuery}
             onChangeText={setSearchQuery}

@@ -12,7 +12,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { fetchBuildings } from "../../../services/buildingApi";
@@ -28,6 +28,7 @@ interface Props {
 }
 
 const RegularRequest = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [building, setBuilding] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showBuildingDropdown, setShowBuildingDropdown] = useState(false);
@@ -59,7 +60,7 @@ const RegularRequest = ({ navigation }: Props) => {
         setBuildings(formattedBuildings);
       } catch (error) {
         console.error("Failed to load data", error);
-        Alert.alert("Lỗi", "Không thể tải dữ liệu");
+        Alert.alert(t("common.error"), t("common.cannotLoadData"));
       }
     };
 
@@ -68,17 +69,17 @@ const RegularRequest = ({ navigation }: Props) => {
 
   const handleSubmit = () => {
     if (!building) {
-      Alert.alert("Lỗi", "Vui lòng chọn tòa nhà.");
+      Alert.alert(t("common.error"), t("registration.pleaseSelectBuilding"));
       return;
     }
 
     if (!selectedRoom) {
-      Alert.alert("Lỗi", "Vui lòng chọn phòng.");
+      Alert.alert(t("common.error"), t("registration.pleaseSelectRoom"));
       return;
     }
 
     if (!userId) {
-      Alert.alert("Lỗi", "Không tìm thấy thông tin người dùng.");
+      Alert.alert(t("common.error"), t("registration.userNotFound"));
       return;
     }
 
@@ -87,7 +88,7 @@ const RegularRequest = ({ navigation }: Props) => {
 
 const handleConfirmSubmit = async () => {
   if (!selectedRoom) {
-    Alert.alert("Lỗi", "Vui lòng chọn phòng.");
+    Alert.alert(t("common.error"), t("registration.pleaseSelectRoom"));
     return;
   }
 
@@ -104,11 +105,11 @@ const handleConfirmSubmit = async () => {
     const res = await createRegistration(formData);
 
     Alert.alert(
-      "Đăng ký thành công",
-      "Vui lòng thanh toán trong vòng 24 giờ để được giữ chỗ.",
+      t("registration.success"),
+      t("registration.pleasePayWithin24Hours"),
       [
         {
-          text: "Thanh toán",
+          text: t("registration.payYourBill"),
           onPress: () =>
             navigation.navigate("BillDetail", { 
               invoiceId: res.invoice_id,
@@ -120,8 +121,8 @@ const handleConfirmSubmit = async () => {
   } catch (error: any) {
     console.error("Registration failed", error);
     Alert.alert(
-      "Lỗi",
-      error.response?.data?.message || "Đăng ký thất bại"
+      t("common.error"),
+      error.response?.data?.message || t("registration.registrationFailed")
     );
   } finally {
     setLoading(false);
@@ -141,7 +142,7 @@ const handleConfirmSubmit = async () => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Đăng Ký Chỗ Ở</Text>
+        <Text style={styles.headerTitle}>{t("registration.registration")}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -151,8 +152,8 @@ const handleConfirmSubmit = async () => {
       >
         {/* Building selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thông tin phòng mong muốn</Text>
-          <Text style={styles.label}>Tòa mong muốn ở</Text>
+          <Text style={styles.sectionTitle}>{t("registration.expectedRegistration")}</Text>
+          <Text style={styles.label}>{t("registration.expectedBuilding")}</Text>
 
           <TouchableOpacity
             style={styles.dropdownButton}
@@ -163,7 +164,7 @@ const handleConfirmSubmit = async () => {
             >
               {building
                 ? buildings.find((b) => b.value === building)?.label
-                : "Chọn tòa nhà"}
+                : t("registration.selectBuilding")}
             </Text>
             <MaterialIcons
               name={showBuildingDropdown ? "expand-less" : "expand-more"}
@@ -201,7 +202,7 @@ const handleConfirmSubmit = async () => {
           )}
 
           <View style={styles.roomSection}>
-            <Text style={styles.label}>Phòng mong muốn</Text>
+            <Text style={styles.label}>{t("registration.expectedRoom")}</Text>
             <TouchableOpacity
               style={styles.dropdownButton}
               disabled={!building}
@@ -224,7 +225,7 @@ const handleConfirmSubmit = async () => {
                   selectedRoom ? styles.dropdownText : styles.placeholderText
                 }
               >
-                {selectedRoom ? selectedRoom.name : "Chọn phòng"}
+                {selectedRoom ? selectedRoom.name : t("registration.selectRoom")}
               </Text>
               <MaterialIcons name="meeting-room" size={20} color="#64748b" />
             </TouchableOpacity>
@@ -232,7 +233,7 @@ const handleConfirmSubmit = async () => {
         </View>
 
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Gửi đăng ký</Text>
+          <Text style={styles.submitButtonText}>{t("registration.submitRegistration")}</Text>
         </TouchableOpacity>
       </ScrollView>
 

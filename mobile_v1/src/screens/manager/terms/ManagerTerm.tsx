@@ -119,7 +119,7 @@ const ManagerTerm = ({ navigation }: Props) => {
       setTerms(mappedTerms);
     } catch (error) {
       console.error("Failed to fetch terms", error);
-      Alert.alert("Lỗi", "Không thể tải danh sách kỳ học");
+      Alert.alert(t("common.error"), "Không thể tải danh sách kỳ học");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -169,7 +169,7 @@ const ManagerTerm = ({ navigation }: Props) => {
             fetchTerms();
           } catch (error) {
             console.error("Failed to delete term", error);
-            Alert.alert("Lỗi", "Không thể xóa kỳ học");
+            Alert.alert(t("common.error"), "Không thể xóa kỳ học");
           }
         },
       },

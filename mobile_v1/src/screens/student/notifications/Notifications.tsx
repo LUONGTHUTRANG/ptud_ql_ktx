@@ -1,3 +1,4 @@
+//translated
 import React, { useState, useCallback } from "react";
 import {
   View,
@@ -49,7 +50,7 @@ const Notifications = ({ navigation }: Props) => {
             type: item.type === "ANNOUNCEMENT" ? "document" : "power", // Map types as needed
             title: item.title,
             content: item.content,
-            time: new Date(item.created_at).toLocaleDateString("vi-VN"),
+            time: new Date(item.created_at).toLocaleDateString("locale"),
             isRead: item.is_read === 1,
           }));
           setNotifications(mappedData);

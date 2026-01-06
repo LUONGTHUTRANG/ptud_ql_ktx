@@ -1,3 +1,4 @@
+//translated
 import React, { useState, useCallback } from "react";
 import {
   View,
@@ -74,8 +75,8 @@ const ManagerServices = ({ navigation }: Props) => {
       requiredRole: undefined,
     },
     {
-      title: t("manager.approveSpecialRequest"),
-      description: t("manager.approveSpecialRequestDesc"),
+      title: t("manager.approveRegistration"),
+      description: t("manager.approveRegistrationDesc"),
       icon: "assignment-late",
       iconColor: "#db2777",
       iconBg: "#fce7f3",

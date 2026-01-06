@@ -13,6 +13,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { fetchBuildings } from "../../../services/buildingApi";
 import { putAssignRoom } from "../../../services/studentApi";
@@ -33,10 +34,15 @@ interface Props {
 }
 
 const ManageAssignRoom = ({ navigation, route }: Props) => {
+  const { t } = useTranslation();
   const { registration } = route.params;
 
-  const [selectedBuildingId, setSelectedBuildingId] = useState(registration.building_id);
-  const [selectedBuildingName, setSelectedBuildingName] = useState(registration.building_name);
+  const [selectedBuildingId, setSelectedBuildingId] = useState(
+    registration.building_id
+  );
+  const [selectedBuildingName, setSelectedBuildingName] = useState(
+    registration.building_name
+  );
   const [selectedRoom, setSelectedRoom] = useState<any>(null);
 
   const [buildings, setBuildings] = useState<
@@ -62,10 +68,9 @@ const ManageAssignRoom = ({ navigation, route }: Props) => {
     );
   };
 
-  
   const handleAssign = async () => {
     if (!selectedRoom) {
-      Alert.alert("Lỗi", "Vui lòng chọn phòng");
+      Alert.alert(t("common.error"), t("assignRoom.pleaseSelectRoom"));
       return;
     }
     setShowConfirmModal(true);
@@ -77,12 +82,19 @@ const ManageAssignRoom = ({ navigation, route }: Props) => {
 
     try {
       await putAssignRoom(registration.student_id, selectedRoom.id);
-      await updateRegistrationStatus(registration.id, "COMPLETED", "Phân phòng thành công");
+      await updateRegistrationStatus(
+        registration.id,
+        "COMPLETED",
+        t("assignRoom.roomAssigned")
+      );
 
-      Alert.alert("Thành công", "Đã phân phòng cho sinh viên");
+      Alert.alert(t("common.success"), t("assignRoom.roomAssigned"));
       navigation.goBack();
     } catch (err: any) {
-      Alert.alert("Lỗi", err.response?.data?.message || "Phân phòng thất bại");
+      Alert.alert(
+        t("common.error"),
+        err.response?.data?.message || t("assignRoom.assignFailed")
+      );
     } finally {
       setLoading(false);
     }
@@ -100,7 +112,7 @@ const ManageAssignRoom = ({ navigation, route }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Phân phòng</Text>
+        <Text style={styles.headerTitle}>{t("assignRoom.assignRoom")}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -110,28 +122,34 @@ const ManageAssignRoom = ({ navigation, route }: Props) => {
       >
         {/* Student info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thông tin sinh viên</Text>
+          <Text style={styles.sectionTitle}>{t("student.studentInfo")}</Text>
           <Text style={styles.infoText}>
-            Họ tên: {registration.student_name}
+            {t("student.studentName")}: {registration.student_name}
           </Text>
-          <Text style={styles.infoText}>MSSV: {registration.mssv}</Text>
           <Text style={styles.infoText}>
-            Loại đăng ký: {registration.registration_type}
+            {t("student.studentId")}: {registration.mssv}
+          </Text>
+          <Text style={styles.infoText}>
+            {t("registration.registrationType")}: {registration.registration_type}
           </Text>
         </View>
 
         {/* Building */}
         <View style={styles.section}>
-          <Text style={styles.label}>Chọn tòa nhà</Text>
+          <Text style={styles.label}>{t("registration.selectBuilding")}</Text>
 
           <TouchableOpacity
             style={styles.dropdownButton}
             onPress={() => setShowBuildingDropdown(!showBuildingDropdown)}
           >
             <Text
-              style={selectedBuildingId ? styles.dropdownText : styles.placeholderText}
+              style={
+                selectedBuildingId
+                  ? styles.dropdownText
+                  : styles.placeholderText
+              }
             >
-              {selectedBuildingName ? selectedBuildingName : "Chọn tòa nhà"}
+              {selectedBuildingName ? selectedBuildingName : t("registration.selectBuilding")}
             </Text>
             <MaterialIcons
               name={showBuildingDropdown ? "expand-less" : "expand-more"}
@@ -162,7 +180,7 @@ const ManageAssignRoom = ({ navigation, route }: Props) => {
 
         {/* Room */}
         <View style={styles.roomSection}>
-            <Text style={styles.label}>Chọn phòng</Text>
+          <Text style={styles.label}>{t("registration.selectRoom")}</Text>
           <TouchableOpacity
             style={styles.dropdownButton}
             disabled={!selectedBuildingId}
@@ -182,7 +200,7 @@ const ManageAssignRoom = ({ navigation, route }: Props) => {
                 selectedRoom ? styles.dropdownText : styles.placeholderText
               }
             >
-              {selectedRoom ? selectedRoom.name : "Chọn phòng"}
+              {selectedRoom ? selectedRoom.name : t("registration.selectRoom")}
             </Text>
             <MaterialIcons name="meeting-room" size={20} color="#64748b" />
           </TouchableOpacity>
@@ -193,7 +211,7 @@ const ManageAssignRoom = ({ navigation, route }: Props) => {
           disabled={!selectedRoom}
           onPress={handleAssign}
         >
-          <Text style={styles.submitButtonText}>Phân phòng</Text>
+          <Text style={styles.submitButtonText}>{t("assignRoom.assignRoom")}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -201,8 +219,8 @@ const ManageAssignRoom = ({ navigation, route }: Props) => {
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
         onConfirm={handleConfirmAssign}
-        title="Xác nhận phân phòng"
-        message="Bạn có chắc chắn muốn phân phòng cho sinh viên này?"
+        title={t("assignRoom.confirmAssign")}
+        message={t("assignRoom.confirmAssignMessage")}
       />
 
       {loading && (

@@ -15,6 +15,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { createSupportRequest } from "../../../services/requestApi";
 
@@ -28,8 +29,9 @@ interface Props {
 }
 
 const CreateRequest = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [requestType, setRequestType] = useState<
-    "repair" | "complaint" | "suggestion"
+    "repair" | "complaint" | "proposal"
   >("repair");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -58,12 +60,12 @@ const CreateRequest = ({ navigation }: Props) => {
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập tiêu đề");
+      Alert.alert(t("common.error"), t("registrationRequest.pleaseEnterTitle"));
       return;
     }
 
     if (!description.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập mô tả chi tiết");
+      Alert.alert(t("common.error"), t("createRequest.pleaseEnterDescription"));
       return;
     }
 
@@ -77,7 +79,7 @@ const CreateRequest = ({ navigation }: Props) => {
 
       if (requestType === "complaint") {
         backendType = "COMPLAINT";
-      } else if (requestType === "suggestion") {
+      } else if (requestType === "proposal") {
         backendType = "PROPOSAL";
       }
 
@@ -105,7 +107,7 @@ const CreateRequest = ({ navigation }: Props) => {
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error creating request:", error);
-      Alert.alert("Lỗi", "Không thể gửi yêu cầu. Vui lòng thử lại sau.");
+      Alert.alert(t("common.error"), t("createRequest.cannotSendRequest"));
     } finally {
       setIsLoading(false);
     }
@@ -128,20 +130,22 @@ const CreateRequest = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Yêu Cầu Hỗ Trợ</Text>
+        <Text style={styles.headerTitle}>
+          {t("createRequest.createRequest")}
+        </Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>Tạo Yêu Cầu Mới</Text>
-          <Text style={styles.subtitle}>Bạn cần hỗ trợ về việc gì?</Text>
+          <Text style={styles.title}>{t("createRequest.createRequest")}</Text>
+          <Text style={styles.subtitle}>{t("createRequest.subtitle")}</Text>
         </View>
 
         {/* Request Type Selector */}
         <View style={styles.typeSelector}>
           <View style={styles.typeSelectorInner}>
-            {(["repair", "complaint", "suggestion"] as const).map((type) => (
+            {(["repair", "complaint", "proposal"] as const).map((type) => (
               <TouchableOpacity
                 key={type}
                 onPress={() => setRequestType(type)}
@@ -157,10 +161,10 @@ const CreateRequest = ({ navigation }: Props) => {
                   ]}
                 >
                   {type === "repair"
-                    ? "Sửa chữa"
+                    ? t("createRequest.repair")
                     : type === "complaint"
-                    ? "Khiếu nại"
-                    : "Đề xuất"}
+                    ? t("createRequest.complaint")
+                    : t("createRequest.proposal")}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -169,10 +173,10 @@ const CreateRequest = ({ navigation }: Props) => {
 
         {/* Title Input */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Tiêu đề</Text>
+          <Text style={styles.label}>{t("createRequest.title")}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nhập tiêu đề yêu cầu..."
+            placeholder={t("createRequest.enterTitle")}
             placeholderTextColor="#94a3b8"
             value={title}
             onChangeText={setTitle}
@@ -181,12 +185,12 @@ const CreateRequest = ({ navigation }: Props) => {
 
         {/* Description Input */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Mô tả chi tiết sự việc</Text>
+          <Text style={styles.label}>{t("createRequest.description")}</Text>
           <TextInput
             style={styles.textArea}
             multiline
             numberOfLines={6}
-            placeholder="Vui lòng mô tả rõ vấn đề bạn đang gặp phải..."
+            placeholder={t("createRequest.enterDescription")}
             placeholderTextColor="#94a3b8"
             value={description}
             onChangeText={setDescription}
@@ -196,7 +200,7 @@ const CreateRequest = ({ navigation }: Props) => {
 
         {/* Image Upload */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Đính kèm ảnh minh họa</Text>
+          <Text style={styles.label}>{t("createRequest.attachImage")}</Text>
           {selectedImage ? (
             <View
               style={[
@@ -218,7 +222,9 @@ const CreateRequest = ({ navigation }: Props) => {
           ) : (
             <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
               <MaterialIcons name="photo-camera" size={32} color="#94a3b8" />
-              <Text style={styles.uploadText}>Nhấn để tải ảnh lên</Text>
+              <Text style={styles.uploadText}>
+                {t("createRequest.clickToUpload")}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -237,7 +243,9 @@ const CreateRequest = ({ navigation }: Props) => {
           {isLoading ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text style={styles.submitButtonText}>Gửi Yêu Cầu</Text>
+            <Text style={styles.submitButtonText}>
+              {t("createRequest.submit")}
+            </Text>
           )}
         </TouchableOpacity>
       </View>
@@ -246,10 +254,10 @@ const CreateRequest = ({ navigation }: Props) => {
         isOpen={showSuccessModal}
         onClose={handleCloseSuccess}
         onConfirm={handleCloseSuccess}
-        title="Gửi thành công"
-        message="Yêu cầu hỗ trợ của bạn đã được gửi thành công. Ban quản lý sẽ phản hồi trong thời gian sớm nhất."
-        confirmLabel="Đồng ý"
-        cancelLabel=""
+        title={t("createRequest.requestSent")}
+        message={t("createRequest.requestSentMessage")}
+        confirmLabel={t("createRequest.confirm")}
+        cancelLabel={t("createRequest.cancel")}
         variant="success"
       />
     </View>

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../../types";
 import { getMe } from "../../../services/authApi";
@@ -47,6 +48,7 @@ interface DetailItem {
 }
 
 const Profile = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [role, setRole] = useState<"student" | "manager" | "admin">("student");
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,10 @@ const Profile = ({ navigation }: Props) => {
         setUserData(user);
       } catch (error) {
         console.error("Failed to load user data", error);
-        Alert.alert("Lỗi", "Không thể tải dữ liệu hồ sơ. Vui lòng thử lại.");
+        Alert.alert(
+          t("common.error"),
+          "Không thể tải dữ liệu hồ sơ. Vui lòng thử lại."
+        );
       } finally {
         setLoading(false);
       }
@@ -89,17 +94,25 @@ const Profile = ({ navigation }: Props) => {
     if (role === "manager" || role === "admin") {
       // Manager details
       details.push(
-        { icon: "person", label: "Họ và tên", value: userData.full_name },
-        { icon: "mail", label: "Email", value: userData.email || "Chưa cập nhật" },
+        {
+          icon: "person",
+          label: t("common.fullName"),
+          value: userData.full_name,
+        },
+        {
+          icon: "mail",
+          label: t("common.email"),
+          value: userData.email || t("common.notUpdated"),
+        },
         {
           icon: "phone",
-          label: "Số điện thoại",
-          value: userData.phone_number || "Chưa cập nhật",
+          label: t("common.phoneNumber"),
+          value: userData.phone_number || t("common.notUpdated"),
         },
         {
           icon: "badge",
-          label: "Tên đăng nhập",
-          value: userData.username || "",
+          label: t("common.username"),
+          value: userData.username || t("common.notUpdated"),
         }
       );
       if (userData.building_id) {
@@ -112,32 +125,41 @@ const Profile = ({ navigation }: Props) => {
     } else {
       // Student details
       details.push(
-        { icon: "person", label: "Họ và tên", value: userData.full_name },
-        { icon: "badge", label: "Mã sinh viên", value: userData.mssv || "" },
+        {
+          icon: "person",
+          label: t("common.fullName"),
+          value: userData.full_name,
+        },
+        {
+          icon: "badge",
+          label: t("student.studentId"),
+          value: userData.mssv || "",
+        },
         {
           icon: "school",
-          label: "Lớp",
-          value: userData.class_name || "Chưa cập nhật",
+          label: t("student.className"),
+          value: userData.class_name || t("common.notUpdated"),
         },
-        { icon: "mail", label: "Email", value: userData.email }
+        { icon: "mail", label: t("common.email"), value: userData.email }
       );
       if (userData.gender) {
         details.push({
           icon: "wc",
-          label: "Giới tính",
-          value: userData.gender === "MALE" ? "Nam" : "Nữ",
+          label: t("common.gender"),
+          value:
+            userData.gender === "MALE" ? t("common.male") : t("common.female"),
         });
       }
       details.push({
         icon: "phone",
-        label: "Số điện thoại",
-        value: userData.phone_number || "Chưa cập nhật",
+        label: t("common.phoneNumber"),
+        value: userData.phone_number || t("common.notUpdated"),
       });
       if (userData.current_room_id) {
         details.push({
           icon: "bed",
-          label: "Phòng",
-          value: `Phòng ${userData.current_room_id}`,
+          label: t("room.roomName"),
+          value: `${t("room.roomName")} ${userData.current_room_id}`,
         });
       }
     }
@@ -150,10 +172,10 @@ const Profile = ({ navigation }: Props) => {
   const details = getDetailsList();
   const roleText =
     role === "student"
-      ? "Sinh viên"
+      ? t("student.student")
       : role === "admin"
-      ? "Quản trị viên"
-      : "Quản lý Ký túc xá";
+      ? t("manager.admin")
+      : t("manager.manager");
 
   return (
     <View style={styles.container}>
@@ -167,14 +189,14 @@ const Profile = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Hồ sơ của bạn</Text>
+        <Text style={styles.headerTitle}>{t("common.yourProfile")}</Text>
         <View style={styles.headerRight} />
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0ea5e9" />
-          <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
+          <Text style={styles.loadingText}>{t("common.loading")}</Text>
         </View>
       ) : userData ? (
         <ScrollView contentContainerStyle={styles.scrollContent}>

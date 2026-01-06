@@ -13,6 +13,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { useTranslation } from "react-i18next";
 import { RouteProp } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
@@ -41,6 +42,7 @@ interface RoomItem {
 }
 
 const RoomList = ({ navigation, route }: Props) => {
+  const { t } = useTranslation();
   const { id, name, selectMode, onSelectRoom } = route.params;
   const [searchQuery, setSearchQuery] = useState("");
   const [rooms, setRooms] = useState<RoomItem[]>([]);
@@ -59,19 +61,19 @@ const RoomList = ({ navigation, route }: Props) => {
   >(null);
 
   const priceOptions = [
-    { label: "Tất cả", value: null },
-    { label: "Dưới 2,000,000", value: 2000000 },
-    { label: "Dưới 3,000,000", value: 3000000 },
-    { label: "Dưới 4,000,000", value: 4000000 },
-    { label: "Trên 4,000,000", value: 4000001 },
+    { label: t("room.all"), value: null },
+    { label: `${t("room.lessThan")} 2,000,000`, value: 2000000 },
+    { label: `${t("room.lessThan")} 3,000,000`, value: 3000000 },
+    { label: `${t("room.lessThan")} 4,000,000`, value: 4000000 },
+    { label: `${t("room.moreThan")} 4,000,000`, value: 4000001 },
   ];
 
   const capacityOptions = [
-    { label: "Tất cả", value: null },
-    { label: "4 người", value: 4 },
-    { label: "6 người", value: 6 },
-    { label: "8 người", value: 8 },
-    { label: "10 người", value: 10 },
+    { label: t("room.all"), value: null },
+    { label: `4 ${t("room.people")}`, value: 4 },
+    { label: `6 ${t("room.people")}`, value: 6 },
+    { label: `8 ${t("room.people")}`, value: 8 },
+    { label: `10 ${t("room.people")}`, value: 10 },
   ];
 
   const handleOpenFilter = (type: "price" | "capacity") => {
@@ -116,7 +118,7 @@ const RoomList = ({ navigation, route }: Props) => {
 
       const mappedRooms = buildingRooms.map((item: any) => ({
         id: String(item.id),
-        name: `Phòng ${item.room_number}`,
+        name: `${t("room.roomName")} ${item.room_number}`,
         price: Number(item.price_per_semester),
         status: item.status || "available",
         capacity: item.max_capacity,
@@ -161,92 +163,15 @@ const RoomList = ({ navigation, route }: Props) => {
   const getStatusBadge = (status: RoomItem["status"]) => {
     switch (status) {
       case "AVAILABLE":
-        return { bg: "#dcfce7", text: "#15803d", label: "Còn trống" };
+        return { bg: "#dcfce7", text: "#15803d", label: t("room.available") };
       case "FULL":
-        return { bg: "#ffedd5", text: "#c2410c", label: "Đã đầy" };
+        return { bg: "#ffedd5", text: "#c2410c", label: t("room.full") };
       case "MAINTENANCE":
-        return { bg: "#fee2e2", text: "#b91c1c", label: "Bảo trì" };
+        return { bg: "#fee2e2", text: "#b91c1c", label: t("room.underMaintenance") };
       default:
         return { bg: "#f1f5f9", text: "#475569", label: status };
     }
   };
-
-  // const renderItem = ({ item }: { item: RoomItem }) => {
-  //   const statusStyle = getStatusBadge(item.status);
-  //   return (
-  //     <View style={styles.itemContainer}>
-  //       <View style={styles.itemHeader}>
-  //         <View style={styles.itemInfo}>
-  //           <Text style={styles.itemName}>{item.name}</Text>
-  //           <Text style={styles.itemPrice}>
-  //             Giá: {item.price.toLocaleString()} VNĐ/kỳ
-  //           </Text>
-  //         </View>
-  //         <View
-  //           style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}
-  //         >
-  //           <Text style={[styles.statusText, { color: statusStyle.text }]}>
-  //             {statusStyle.label}
-  //           </Text>
-  //         </View>
-  //       </View>
-
-  //       <View style={styles.amenitiesGrid}>
-  //         <View style={styles.amenityItem}>
-  //           <MaterialIcons name="group" size={18} color="#64748b" />
-  //           <Text style={styles.amenityText}>
-  //             Sức chứa: {item.capacity} người
-  //           </Text>
-  //         </View>
-  //         <View style={styles.amenityItem}>
-  //           <MaterialIcons
-  //             name="ac-unit"
-  //             size={18}
-  //             color={item.hasAC ? "#334155" : "#94a3b8"}
-  //           />
-  //           <Text
-  //             style={[
-  //               styles.amenityText,
-  //               !item.hasAC && styles.amenityDisabled,
-  //             ]}
-  //           >
-  //             Điều hòa: {item.hasAC ? "Có" : "Không"}
-  //           </Text>
-  //         </View>
-  //         <View style={styles.amenityItem}>
-  //           <MaterialIcons
-  //             name="water-drop"
-  //             size={18}
-  //             color={item.hasHeater ? "#334155" : "#94a3b8"}
-  //           />
-  //           <Text
-  //             style={[
-  //               styles.amenityText,
-  //               !item.hasHeater && styles.amenityDisabled,
-  //             ]}
-  //           >
-  //             Nóng lạnh: {item.hasHeater ? "Có" : "Không"}
-  //           </Text>
-  //         </View>
-  //         <View style={styles.amenityItem}>
-  //           <MaterialIcons
-  //             name="local-laundry-service"
-  //             size={18}
-  //             color={item.hasWasher ? "#334155" : "#94a3b8"}
-  //           />
-  //           <Text
-  //             style={[
-  //               styles.amenityText,
-  //               !item.hasWasher && styles.amenityDisabled,
-  //             ]}
-  //           >
-  //             Máy giặt: {item.hasWasher ? "Có" : "Không"}
-  //           </Text>
-  //         </View>
-  //       </View>
-  //     </View>
-  //   );
-  // };
 
   const renderItem = ({ item }: { item: RoomItem }) => {
   const statusStyle = getStatusBadge(item.status);
@@ -277,7 +202,7 @@ const RoomList = ({ navigation, route }: Props) => {
         <View style={styles.itemInfo}>
           <Text style={styles.itemName}>{item.name}</Text>
           <Text style={styles.itemPrice}>
-            Giá: {item.price.toLocaleString()} VNĐ/kỳ
+            {t("room.price")}: {item.price.toLocaleString()} VNĐ/{t("semester.semester")}
           </Text>
         </View>
 
@@ -295,7 +220,7 @@ const RoomList = ({ navigation, route }: Props) => {
         <View style={styles.amenityItem}>
           <MaterialIcons name="group" size={18} color="#64748b" />
           <Text style={styles.amenityText}>
-            Sức chứa: {item.capacity} người
+            {t("room.capacity")}: {item.capacity} {t("room.people")}
           </Text>
         </View>
 
@@ -311,7 +236,7 @@ const RoomList = ({ navigation, route }: Props) => {
               !item.hasAC && styles.amenityDisabled,
             ]}
           >
-            Điều hòa: {item.hasAC ? "Có" : "Không"}
+            {t("room.ac")}: {item.hasAC ? t("room.yes") : t("room.no")}
           </Text>
         </View>
 
@@ -327,7 +252,7 @@ const RoomList = ({ navigation, route }: Props) => {
               !item.hasHeater && styles.amenityDisabled,
             ]}
           >
-            Nóng lạnh: {item.hasHeater ? "Có" : "Không"}
+            {t("room.heater")}: {item.hasHeater ? t("room.yes") : t("room.no")}
           </Text>
         </View>
 
@@ -343,7 +268,7 @@ const RoomList = ({ navigation, route }: Props) => {
               !item.hasWasher && styles.amenityDisabled,
             ]}
           >
-            Máy giặt: {item.hasWasher ? "Có" : "Không"}
+            {t("room.washer")}: {item.hasWasher ? t("room.yes") : t("room.no")}
           </Text>
         </View>
       </View>
@@ -376,7 +301,7 @@ const RoomList = ({ navigation, route }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Danh sách phòng - Nhà {name}</Text>
+        <Text style={styles.headerTitle}>{t("room.roomList")} - {t("building.building")} {name}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -391,7 +316,7 @@ const RoomList = ({ navigation, route }: Props) => {
           />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm kiếm số phòng..."
+            placeholder={t("room.findByRoomNumber")}
             placeholderTextColor="#94a3b8"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -421,7 +346,7 @@ const RoomList = ({ navigation, route }: Props) => {
                 ? selectedPrice > 4000000
                   ? "> 4,000,000"
                   : `< ${selectedPrice.toLocaleString()}`
-                : "Giá"}
+                : t("room.price")}
             </Text>
             <MaterialIcons
               name="expand-more"
@@ -444,7 +369,7 @@ const RoomList = ({ navigation, route }: Props) => {
                 selectedCapacity !== null && styles.filterTextActive,
               ]}
             >
-              {selectedCapacity ? `${selectedCapacity} người` : "Sức chứa"}
+              {selectedCapacity ? `${selectedCapacity} người` : t("room.capacity")}
             </Text>
             <MaterialIcons
               name="expand-more"
@@ -460,7 +385,7 @@ const RoomList = ({ navigation, route }: Props) => {
             <Text
               style={[styles.filterText, filterAC && styles.filterTextActive]}
             >
-              Điều hòa
+              {t("room.hasAC")}
             </Text>
           </TouchableOpacity>
 
@@ -477,7 +402,7 @@ const RoomList = ({ navigation, route }: Props) => {
                 filterHeater && styles.filterTextActive,
               ]}
             >
-              Nóng lạnh
+              {t("room.hasHeater")}
             </Text>
           </TouchableOpacity>
 
@@ -494,7 +419,7 @@ const RoomList = ({ navigation, route }: Props) => {
                 filterWasher && styles.filterTextActive,
               ]}
             >
-              Máy giặt
+              {t("room.hasWasher")}
             </Text>
           </TouchableOpacity>
         </ScrollView>
@@ -521,8 +446,8 @@ const RoomList = ({ navigation, route }: Props) => {
               <View style={styles.modalContent}>
                 <Text style={styles.modalTitle}>
                   {activeFilterType === "price"
-                    ? "Chọn mức giá"
-                    : "Chọn sức chứa"}
+                    ? t("room.selectPrice")
+                    : t("room.selectCapacity")}
                 </Text>
                 {getActiveOptions().map((option, index) => {
                   const isSelected =
