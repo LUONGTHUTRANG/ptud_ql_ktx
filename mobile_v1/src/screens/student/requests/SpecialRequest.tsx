@@ -18,6 +18,7 @@ import { RootStackParamList } from "../../../types";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { fetchBuildings } from "../../../services/buildingApi";
 import { createRegistration } from "../../../services/registrationApi";
+import { useTranslation } from "react-i18next";
 
 type SpecialRequestScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -29,6 +30,7 @@ interface Props {
 }
 
 const SpecialRequest = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [building, setBuilding] = useState("");
   const [circumstance, setCircumstance] = useState("OTHER"); // POOR_HOUSEHOLD, DISABILITY, OTHER
   const [note, setNote] = useState("");
@@ -62,7 +64,7 @@ const SpecialRequest = ({ navigation }: Props) => {
         setBuildings(formattedBuildings);
       } catch (error) {
         console.error("Failed to load data", error);
-        Alert.alert("Lỗi", "Không thể tải danh sách tòa nhà");
+        Alert.alert(t("common.error"), t("building.loadError"));
       }
     };
     loadData();
@@ -86,7 +88,7 @@ const SpecialRequest = ({ navigation }: Props) => {
 
       if (!result.canceled) {
         const asset = result.assets[0];
-        
+
         setFiles([
           ...files,
           {
@@ -101,17 +103,17 @@ const SpecialRequest = ({ navigation }: Props) => {
       }
     } catch (error) {
       console.log(error);
-      Alert.alert("Lỗi", "Không thể chọn tệp");
+      Alert.alert(t("common.error"), t("registration.cannotSelectFile"));
     }
   };
 
   const handleSubmit = () => {
     if (!building) {
-      Alert.alert("Lỗi", "Vui lòng chọn tòa nhà mong muốn.");
+      Alert.alert(t("common.error"), t("registration.pleaseSelectBuilding"));
       return;
     }
     if (!userId) {
-      Alert.alert("Lỗi", "Không tìm thấy thông tin người dùng.");
+      Alert.alert(t("common.error"), t("registration.userNotFound"));
       return;
     }
     setShowConfirmModal(true);
@@ -141,7 +143,7 @@ const SpecialRequest = ({ navigation }: Props) => {
 
       await createRegistration(formData);
 
-      Alert.alert("Thành công", "Đơn đăng ký đã được gửi thành công.", [
+      Alert.alert(t("common.success"), t("registration.requestSentMessage"), [
         {
           text: "OK",
           onPress: () => navigation.navigate("RegisterAccommodation"), // Or navigate back/home
@@ -149,7 +151,10 @@ const SpecialRequest = ({ navigation }: Props) => {
       ]);
     } catch (error: any) {
       console.error("Registration failed", error);
-      Alert.alert("Lỗi", error.response?.data?.message || "Đăng ký thất bại");
+      Alert.alert(
+        t("common.error"),
+        error.response?.data?.message || "Đăng ký thất bại"
+      );
     } finally {
       setLoading(false);
     }
@@ -167,7 +172,9 @@ const SpecialRequest = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Đăng Ký Chỗ Ở - Ưu Tiên</Text>
+        <Text style={styles.headerTitle}>
+          {t("registration.registration")} - {t("registration.priority")}
+        </Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -177,8 +184,10 @@ const SpecialRequest = ({ navigation }: Props) => {
       >
         {/* Section 1: Building Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thông tin phòng mong muốn</Text>
-          <Text style={styles.label}>Tòa mong muốn ở</Text>
+          <Text style={styles.sectionTitle}>
+            {t("registration.expectedRegistration")}
+          </Text>
+          <Text style={styles.label}>{t("registration.expectedBuilding")}</Text>
 
           <TouchableOpacity
             style={styles.dropdownButton}
@@ -189,7 +198,7 @@ const SpecialRequest = ({ navigation }: Props) => {
             >
               {building
                 ? buildings.find((b) => b.value === building)?.label
-                : "Chọn tòa nhà"}
+                : t("registration.selectBuilding")}
             </Text>
             <MaterialIcons
               name={showBuildingDropdown ? "expand-less" : "expand-more"}
@@ -229,7 +238,7 @@ const SpecialRequest = ({ navigation }: Props) => {
 
         {/* Section 2: Circumstance */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Khai báo hoàn cảnh đặc biệt</Text>
+          <Text style={styles.sectionTitle}>{t("registration.priority")}</Text>
 
           <TouchableOpacity
             style={styles.radioOption}
@@ -246,7 +255,7 @@ const SpecialRequest = ({ navigation }: Props) => {
               )}
             </View>
             <Text style={styles.radioText}>
-              Sinh viên thuộc hộ nghèo/cận nghèo
+              {t("registration.poorHousehold")}
             </Text>
           </TouchableOpacity>
 
@@ -264,7 +273,7 @@ const SpecialRequest = ({ navigation }: Props) => {
                 <View style={styles.radioInnerCircle} />
               )}
             </View>
-            <Text style={styles.radioText}>Sinh viên khuyết tật</Text>
+            <Text style={styles.radioText}>{t("registration.disability")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -281,16 +290,18 @@ const SpecialRequest = ({ navigation }: Props) => {
                 <View style={styles.radioInnerCircle} />
               )}
             </View>
-            <Text style={styles.radioText}>Khác (Ghi rõ lý do bên dưới)</Text>
+            <Text style={styles.radioText}>
+              {t("registration.other")} ({t("registration.specifyReasonBelow")})
+            </Text>
           </TouchableOpacity>
         </View>
 
         {/* Section 3: Note */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Ghi chú thêm</Text>
+          <Text style={styles.sectionTitle}>{t("registration.note")}</Text>
           <TextInput
             style={styles.textArea}
-            placeholder="Mô tả chi tiết về hoàn cảnh của bạn..."
+            placeholder={t("registration.reasonPlaceholder")}
             placeholderTextColor="#94a3b8"
             multiline
             numberOfLines={4}
@@ -302,19 +313,20 @@ const SpecialRequest = ({ navigation }: Props) => {
 
         {/* Section 4: File Upload */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Minh chứng kèm theo</Text>
+          <Text style={styles.sectionTitle}>
+            {t("registration.attachedEvidence")}
+          </Text>
           <Text style={styles.helperText}>
-            Vui lòng tải lên các giấy tờ chứng minh hoàn cảnh (Định dạng: PDF, Word,
-            JPG, PNG. Tối đa 5MB)
+            {t("registration.uploadInstructions")}
           </Text>
 
           {files.map((file, index) => (
             <View key={index} style={styles.fileItem}>
               <View style={styles.fileIcon}>
-                <MaterialIcons 
-                  name={file.type?.includes('image') ? "image" : "description"} 
-                  size={24} 
-                  color="#64748b" 
+                <MaterialIcons
+                  name={file.type?.includes("image") ? "image" : "description"}
+                  size={24}
+                  color="#64748b"
                 />
               </View>
               <View style={styles.fileInfo}>
@@ -329,13 +341,17 @@ const SpecialRequest = ({ navigation }: Props) => {
 
           <TouchableOpacity style={styles.uploadButton} onPress={handleAddFile}>
             <MaterialIcons name="cloud-upload" size={24} color="#0ea5e9" />
-            <Text style={styles.uploadButtonText}>Tải lên tài liệu</Text>
+            <Text style={styles.uploadButtonText}>
+              {t("registration.uploadDocuments")}
+            </Text>
           </TouchableOpacity>
         </View>
 
         {/* Submit Button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Gửi đơn đăng ký</Text>
+          <Text style={styles.submitButtonText}>
+            {t("registration.submitRegistration")}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -343,8 +359,8 @@ const SpecialRequest = ({ navigation }: Props) => {
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
         onConfirm={handleConfirmSubmit}
-        title="Xác nhận gửi đơn"
-        message="Bạn có chắc chắn muốn gửi đơn đăng ký này không? Thông tin sẽ không thể thay đổi sau khi gửi."
+        title={t("registration.confirmSubmit")}
+        message={t("registration.confirmSubmitMessage")}
       />
 
       {loading && (
@@ -436,7 +452,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#64748b",
   },
-   dropdownList: {
+  dropdownList: {
     marginTop: 4,
     backgroundColor: "#ffffff",
     borderWidth: 1,
@@ -444,7 +460,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
     position: "absolute",
-    top: 115, 
+    top: 115,
     left: 0,
     right: 0,
     zIndex: 1000,

@@ -12,6 +12,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import ConfirmModal from "../../../components/ConfirmModal";
 
 type ChangePasswordScreenNavigationProp = StackNavigationProp<
@@ -24,6 +25,7 @@ interface Props {
 }
 
 const ChangePassword = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -52,12 +54,12 @@ const ChangePassword = ({ navigation }: Props) => {
       !formData.newPassword ||
       !formData.confirmPassword
     ) {
-      Alert.alert("Lỗi", "Vui lòng điền đầy đủ thông tin");
+      Alert.alert(t("common.error"), t("changePassword.fillAllFields"));
       return;
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      Alert.alert("Lỗi", "Mật khẩu mới không khớp");
+      Alert.alert(t("common.error"), t("changePassword.passwordMismatch"));
       return;
     }
 
@@ -69,11 +71,11 @@ const ChangePassword = ({ navigation }: Props) => {
     // Simulate API call
     setTimeout(() => {
       Alert.alert(
-        "Thành công",
-        "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.",
+        t("common.success"),
+        t("changePassword.successMessage"),
         [
           {
-            text: "OK",
+            text: t("common.ok"),
             onPress: () => {
               // In a real app, you might clear tokens here
               navigation.reset({
@@ -99,14 +101,14 @@ const ChangePassword = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Đổi mật khẩu</Text>
+        <Text style={styles.headerTitle}>{t("changePassword.changePassword")}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mật khẩu hiện tại</Text>
+            <Text style={styles.label}>{t("changePassword.currentPassword")}</Text>
             <View style={styles.inputWrapper}>
               <MaterialIcons
                 name="lock"
@@ -119,7 +121,7 @@ const ChangePassword = ({ navigation }: Props) => {
                 secureTextEntry={!showPassword.current}
                 value={formData.currentPassword}
                 onChangeText={(text) => handleChange("currentPassword", text)}
-                placeholder="Nhập mật khẩu hiện tại"
+                placeholder={t("changePassword.enterCurrentPassword")}
                 placeholderTextColor="#cbd5e1"
               />
               <TouchableOpacity
@@ -136,7 +138,7 @@ const ChangePassword = ({ navigation }: Props) => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mật khẩu mới</Text>
+            <Text style={styles.label}>{t("changePassword.newPassword")}</Text>
             <View style={styles.inputWrapper}>
               <MaterialIcons
                 name="vpn-key"
@@ -149,7 +151,7 @@ const ChangePassword = ({ navigation }: Props) => {
                 secureTextEntry={!showPassword.new}
                 value={formData.newPassword}
                 onChangeText={(text) => handleChange("newPassword", text)}
-                placeholder="Nhập mật khẩu mới"
+                placeholder={t("changePassword.enterNewPassword")}
                 placeholderTextColor="#cbd5e1"
               />
               <TouchableOpacity
@@ -166,7 +168,7 @@ const ChangePassword = ({ navigation }: Props) => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Xác nhận mật khẩu mới</Text>
+            <Text style={styles.label}>{t("changePassword.confirmNewPassword")}</Text>
             <View style={styles.inputWrapper}>
               <MaterialIcons
                 name="check-circle"
@@ -179,7 +181,7 @@ const ChangePassword = ({ navigation }: Props) => {
                 secureTextEntry={!showPassword.confirm}
                 value={formData.confirmPassword}
                 onChangeText={(text) => handleChange("confirmPassword", text)}
-                placeholder="Nhập lại mật khẩu mới"
+                placeholder={t("changePassword.enterConfirmNewPassword")}
                 placeholderTextColor="#cbd5e1"
               />
               <TouchableOpacity
@@ -196,7 +198,7 @@ const ChangePassword = ({ navigation }: Props) => {
           </View>
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Đổi mật khẩu</Text>
+            <Text style={styles.submitButtonText}>{t("changePassword.changePassword")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -205,9 +207,9 @@ const ChangePassword = ({ navigation }: Props) => {
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={handleConfirmChange}
-        title="Xác nhận đổi mật khẩu"
-        message="Bạn có chắc chắn muốn đổi mật khẩu không? Bạn sẽ cần đăng nhập lại sau khi đổi thành công."
-        confirmLabel="Đổi mật khẩu"
+        title={t("changePassword.changePassword")}
+        message={t("changePassword.confirmMessage")}
+        confirmLabel={t("changePassword.changePassword")}
         variant="warning"
       />
     </View>

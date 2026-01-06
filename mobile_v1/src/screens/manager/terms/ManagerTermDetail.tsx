@@ -124,11 +124,14 @@ const ManagerTermDetail = () => {
 
   const handleSave = async () => {
     if (!academicYear.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập năm học");
+      Alert.alert(t("common.error"), "Vui lòng nhập năm học");
       return;
     }
     if (!semesterStart || !semesterEnd) {
-      Alert.alert("Lỗi", "Vui lòng nhập thời gian bắt đầu và kết thúc học kỳ");
+      Alert.alert(
+        t("common.error"),
+        "Vui lòng nhập thời gian bắt đầu và kết thúc học kỳ"
+      );
       return;
     }
 
@@ -168,7 +171,7 @@ const ManagerTermDetail = () => {
       navigation.goBack();
     } catch (error) {
       console.error("Failed to save term", error);
-      Alert.alert("Lỗi", "Không thể lưu kỳ học");
+      Alert.alert(t("common.error"), "Không thể lưu kỳ học");
     } finally {
       setSaving(false);
     }

@@ -12,6 +12,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import {
   fetchManagerInvoices,
   formatInvoiceData,
@@ -28,6 +29,7 @@ interface Props {
 }
 
 const ManagerBills = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"room" | "utility">("room");
   const [filterStatus, setFilterStatus] = useState<
     "all" | "unpaid" | "submitted" | "paid"
@@ -51,14 +53,14 @@ const ManagerBills = ({ navigation }: Props) => {
         const data = await fetchManagerInvoices("room", filterStatus);
         const formattedBills = data.map((invoice: any) => ({
           id: invoice.id,
-          room: `Phòng ${invoice.room_number}`,
+          room: `${t("room.roomName")} ${invoice.room_number}`,
           period: invoice.time_invoiced
-            ? new Date(invoice.time_invoiced).toLocaleDateString("vi-VN", {
+            ? new Date(invoice.time_invoiced).toLocaleDateString(t("locale"), {
                 year: "numeric",
                 month: "2-digit",
               })
             : "N/A",
-          amount: `${parseInt(invoice.amount).toLocaleString("vi-VN")} đ`,
+          amount: `${parseInt(invoice.amount).toLocaleString(t("locale"))} đ`,
           status: invoice.status.toLowerCase(),
           type: "room",
           invoice,
@@ -80,15 +82,15 @@ const ManagerBills = ({ navigation }: Props) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "paid":
-        return { bg: "#dcfce7", text: "#16a34a", label: "Đã thanh toán" };
+        return { bg: "#dcfce7", text: "#16a34a", label: t("invoice.paid") };
       case "submitted":
-        return { bg: "#fef9c3", text: "#ca8a04", label: "Chờ xác nhận" };
+        return { bg: "#fef9c3", text: "#ca8a04", label: t("invoice.submitted") };
       case "unpaid":
-        return { bg: "#fee2e2", text: "#dc2626", label: "Chưa thanh toán" };
+        return { bg: "#fee2e2", text: "#dc2626", label: t("invoice.unpaid") };
       case "overdue":
-        return { bg: "#fee2e2", text: "#dc2626", label: "Quá hạn" };
+        return { bg: "#fee2e2", text: "#dc2626", label: t("invoice.overdue") };
       default:
-        return { bg: "#f1f5f9", text: "#64748b", label: "Khác" };
+        return { bg: "#f1f5f9", text: "#64748b", label: t("invoice.other") };
     }
   };
 
@@ -105,7 +107,7 @@ const ManagerBills = ({ navigation }: Props) => {
           >
             <MaterialIcons name="arrow-back" size={24} color="#0f172a" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Quản lý Hóa đơn</Text>
+          <Text style={styles.headerTitle}>{t("manageBills.manageBills")}</Text>
           <View style={styles.iconButton}></View>
         </View>
 
@@ -122,7 +124,7 @@ const ManagerBills = ({ navigation }: Props) => {
                   : styles.inactiveTabText,
               ]}
             >
-              Hóa đơn tiền phòng
+              {t("manageBills.roomBills")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -140,7 +142,7 @@ const ManagerBills = ({ navigation }: Props) => {
                   : styles.inactiveTabText,
               ]}
             >
-              Hóa đơn điện nước
+              {t("manageBills.utilityBills")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -156,7 +158,7 @@ const ManagerBills = ({ navigation }: Props) => {
             <MaterialIcons name="search" size={24} color="#94a3b8" />
             <TextInput
               style={styles.searchInput}
-              placeholder="Tìm kiếm hóa đơn..."
+              placeholder={t("manageBills.placeHolder")}
               placeholderTextColor="#94a3b8"
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -187,7 +189,7 @@ const ManagerBills = ({ navigation }: Props) => {
                   : styles.inactiveFilterText,
               ]}
             >
-              Tất cả
+              {t("manageBills.all")}
             </Text>
           </TouchableOpacity>
 
@@ -208,7 +210,7 @@ const ManagerBills = ({ navigation }: Props) => {
                   : styles.inactiveFilterText,
               ]}
             >
-              Chưa thanh toán
+              {t("invoice.unpaid")}
             </Text>
           </TouchableOpacity>
 
@@ -229,7 +231,7 @@ const ManagerBills = ({ navigation }: Props) => {
                   : styles.inactiveFilterText,
               ]}
             >
-              Chờ xác nhận
+              {t("invoice.submitted")}
             </Text>
           </TouchableOpacity>
 
@@ -250,7 +252,7 @@ const ManagerBills = ({ navigation }: Props) => {
                   : styles.inactiveFilterText,
               ]}
             >
-              Đã thanh toán
+              {t("invoice.paid")}
             </Text>
           </TouchableOpacity>
         </ScrollView>
@@ -268,7 +270,7 @@ const ManagerBills = ({ navigation }: Props) => {
             <MaterialIcons name="error" size={40} color="#dc2626" />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={loadBills}>
-              <Text style={styles.retryButtonText}>Thử lại</Text>
+              <Text style={styles.retryButtonText}>{t("manageBills.retry")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -331,7 +333,7 @@ const ManagerBills = ({ navigation }: Props) => {
                         }}
                       >
                           <Text style={styles.detailButtonText}>
-                            Xem chi tiết
+                            {t("manageBills.viewDetails")}
                           </Text>
                           <MaterialIcons
                             name="arrow-forward"
@@ -351,7 +353,7 @@ const ManagerBills = ({ navigation }: Props) => {
                     color="#cbd5e1"
                   />
                   <Text style={styles.emptyText}>
-                    Không có hóa đơn tiền phòng
+                    {t("manageBills.noRoomBills")}
                   </Text>
                 </View>
               )
@@ -420,13 +422,13 @@ const ManagerBills = ({ navigation }: Props) => {
                       <>
                         <View style={styles.statsContainer}>
                           <View style={styles.statBox}>
-                            <Text style={styles.statLabel}>ĐÃ THU</Text>
+                            <Text style={styles.statLabel}>{t("manageBills.collected")}</Text>
                             <Text style={styles.statValueSuccess}>
                               {bill.collected || "0 đ"}
                             </Text>
                           </View>
                           <View style={styles.statBox}>
-                            <Text style={styles.statLabel}>CHỜ THU</Text>
+                            <Text style={styles.statLabel}>{t("manageBills.pending")}</Text>
                             <Text style={styles.statValueWarning}>
                               {bill.pending || "0 đ"}
                             </Text>
@@ -435,7 +437,7 @@ const ManagerBills = ({ navigation }: Props) => {
                         <View style={styles.closedDateContainer}>
                           <View style={styles.dot} />
                           <Text style={styles.closedDateText}>
-                            Đã chốt sổ: {bill.closedDate}
+                            {t("manageBills.closedDate")}: {bill.closedDate}
                           </Text>
                         </View>
                       </>
@@ -448,7 +450,7 @@ const ManagerBills = ({ navigation }: Props) => {
                             color="#16a34a"
                           />
                           <Text style={styles.completedText}>
-                            Hoàn thành 100%
+                            {t("manageBills.completed100")}
                           </Text>
                         </View>
                         <Text style={styles.totalAmount}>{bill.total}</Text>
@@ -464,7 +466,7 @@ const ManagerBills = ({ navigation }: Props) => {
                   size={48}
                   color="#cbd5e1"
                 />
-                <Text style={styles.emptyText}>Không có hóa đơn điện nước</Text>
+                <Text style={styles.emptyText}>{t("manageBills.noUtilityBills")}</Text>
               </View>
             )}
           </View>

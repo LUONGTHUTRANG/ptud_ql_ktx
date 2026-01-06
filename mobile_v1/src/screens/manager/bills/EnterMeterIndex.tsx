@@ -15,6 +15,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import { monthlyUsageApi } from "../../../services/monthlyUsageApi";
 
@@ -34,6 +35,7 @@ interface Props {
 }
 
 const EnterMeterIndex = ({ navigation, route }: Props) => {
+  const { t } = useTranslation();
   const { room, period } = route.params;
 
   // State for inputs
@@ -84,12 +86,18 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
     }
 
     if (parseInt(newElectricity) < room.oldElectricity) {
-      Alert.alert("Lỗi", "Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số cũ");
+      Alert.alert(
+        t("common.error"),
+        "Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số cũ"
+      );
       return;
     }
 
     if (parseInt(newWater) < room.oldWater) {
-      Alert.alert("Lỗi", "Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số cũ");
+      Alert.alert(
+        t("common.error"),
+        "Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số cũ"
+      );
       return;
     }
 
@@ -110,7 +118,7 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
       ]);
     } catch (error) {
       console.error(error);
-      Alert.alert("Lỗi", "Không thể lưu chỉ số. Vui lòng thử lại.");
+      Alert.alert(t("common.error"), "Không thể lưu chỉ số. Vui lòng thử lại.");
     }
   };
 
@@ -126,7 +134,7 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#0f172a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Nhập chỉ số {period}</Text>
+        <Text style={styles.headerTitle}>{t("meterIndex.enterMeterIndex")} {period}</Text>
         <View style={styles.iconButton} />
       </View>
 
@@ -136,7 +144,7 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
           <Text style={styles.roomName}>
             {room.name} - {room.building}
           </Text>
-          <Text style={styles.cycleText}>Kỳ ghi: {period}</Text>
+          <Text style={styles.cycleText}>{t("meterIndex.semester")}: {period}</Text>
         </View>
 
         {/* Electricity Section */}
@@ -149,7 +157,7 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
                 <MaterialIcons name="bolt" size={24} color="#ca8a04" />
               </View>
               <View>
-                <Text style={styles.serviceName}>Điện năng</Text>
+                <Text style={styles.serviceName}>{t("meterIndex.electricityIndex")}</Text>
                 <Text style={styles.servicePrice}>
                   {formatCurrency(prices.electricity)} / kWh
                 </Text>
@@ -162,14 +170,14 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
 
           <View style={styles.inputGrid}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>CHỈ SỐ CŨ</Text>
+              <Text style={styles.label}>{t("invoice.oldIndex")}</Text>
               <View style={styles.readOnlyInput}>
                 <Text style={styles.readOnlyText}>{room.oldElectricity}</Text>
               </View>
             </View>
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: "#136dec" }]}>
-                CHỈ SỐ MỚI
+                {t("invoice.newIndex")}
               </Text>
               <TextInput
                 style={styles.textInput}
@@ -184,13 +192,13 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
 
           <View style={styles.resultRow}>
             <View>
-              <Text style={styles.resultLabel}>Tiêu thụ</Text>
+              <Text style={styles.resultLabel}>{t("meterIndex.usage")}</Text>
               <Text style={styles.resultValue}>
                 {electricityUsage > 0 ? electricityUsage : 0} kWh
               </Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.resultLabel}>Thành tiền</Text>
+              <Text style={styles.resultLabel}>{t("meterIndex.total")}</Text>
               <Text style={styles.resultValue}>
                 {formatCurrency(electricityAmount)}
               </Text>
@@ -213,7 +221,7 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
                 <MaterialIcons name="water-drop" size={24} color="#2563eb" />
               </View>
               <View>
-                <Text style={styles.serviceName}>Nước sinh hoạt</Text>
+                <Text style={styles.serviceName}>{t("meterIndex.waterIndex")}</Text>
                 <Text style={styles.servicePrice}>
                   {formatCurrency(prices.water)} / m³
                 </Text>
@@ -226,14 +234,14 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
 
           <View style={styles.inputGrid}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>CHỈ SỐ CŨ</Text>
+              <Text style={styles.label}>{t("invoice.oldIndex")}</Text>
               <View style={styles.readOnlyInput}>
                 <Text style={styles.readOnlyText}>{room.oldWater}</Text>
               </View>
             </View>
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: "#136dec" }]}>
-                CHỈ SỐ MỚI
+                {t("invoice.newIndex")}
               </Text>
               <TextInput
                 style={styles.textInput}
@@ -248,13 +256,13 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
 
           <View style={styles.resultRow}>
             <View>
-              <Text style={styles.resultLabel}>Tiêu thụ</Text>
+              <Text style={styles.resultLabel}>{t("meterIndex.usage")}</Text>
               <Text style={styles.resultValue}>
                 {waterUsage > 0 ? waterUsage : 0} m³
               </Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={styles.resultLabel}>Thành tiền</Text>
+              <Text style={styles.resultLabel}>{t("meterIndex.total")}</Text>
               <Text style={styles.resultValue}>
                 {formatCurrency(waterAmount)}
               </Text>
@@ -273,11 +281,11 @@ const EnterMeterIndex = ({ navigation, route }: Props) => {
       {/* Footer */}
       <View style={styles.footer}>
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Tổng cộng:</Text>
+          <Text style={styles.totalLabel}>{t("meterIndex.total")}:</Text>
           <Text style={styles.totalAmount}>{formatCurrency(totalAmount)}</Text>
         </View>
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Lưu chỉ số</Text>
+          <Text style={styles.saveButtonText}>{t("meterIndex.saveIndex")}</Text>
         </TouchableOpacity>
       </View>
     </View>

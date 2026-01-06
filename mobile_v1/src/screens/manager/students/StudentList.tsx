@@ -16,7 +16,7 @@ import { RootStackParamList } from "../../../types";
 import { studentApi } from "../../../services/studentApi";
 import { fetchBuildings } from "../../../services/buildingApi";
 import { fetchRooms } from "../../../services/roomApi";
-
+import { useTranslation } from "react-i18next";
 type StudentListScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   "StudentList"
@@ -36,6 +36,7 @@ interface StudentItem {
 }
 
 const StudentList = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [filterType, setFilterType] = useState<string>("building");
   const [searchQuery, setSearchQuery] = useState("");
   const [students, setStudents] = useState<StudentItem[]>([]);
@@ -48,8 +49,8 @@ const StudentList = ({ navigation }: Props) => {
   );
 
   const filterTypeData = [
-    { label: "Tòa nhà", value: "building" },
-    { label: "Phòng", value: "room" },
+    { label: t("building.building"), value: "building" },
+    { label: t("room.roomName"), value: "room" },
   ];
 
   useFocusEffect(
@@ -109,7 +110,7 @@ const StudentList = ({ navigation }: Props) => {
         studentId: s.mssv,
         room: s.room_number || "N/A", // Needs backend to join rooms
         building: s.building_name || "N/A", // Needs backend to join buildings
-        status: s.stay_status === "STAYING" ? "Đang ở" : "Chưa ở",
+        status: s.stay_status === "STAYING" ? t("student.staying") : t("student.notStaying"),
       }));
       setStudents(mappedStudents);
     } catch (error) {
@@ -131,7 +132,7 @@ const StudentList = ({ navigation }: Props) => {
       </View>
       <View style={styles.itemContent}>
         <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemInfo}>MSSV: {item.studentId}</Text>
+        <Text style={styles.itemInfo}>{t("student.studentId")}: {item.studentId}</Text>
         {item.status === "Đang ở" && (
           <Text style={styles.itemSubInfo}>
             {item.building} - {item.room}
@@ -141,13 +142,13 @@ const StudentList = ({ navigation }: Props) => {
       <View
         style={[
           styles.statusContainer,
-          item.status === "Chưa ở" && styles.statusContainerInactive,
+          item.status === t("student.notStaying") && styles.statusContainerInactive,
         ]}
       >
         <Text
           style={[
             styles.statusText,
-            item.status === "Chưa ở" && styles.statusTextInactive,
+            item.status === t("student.notStaying") && styles.statusTextInactive,
           ]}
         >
           {item.status}
@@ -168,7 +169,7 @@ const StudentList = ({ navigation }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Danh sách sinh viên</Text>
+        <Text style={styles.headerTitle}>{t("student.studentList")}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -207,7 +208,7 @@ const StudentList = ({ navigation }: Props) => {
               labelField="label"
               valueField="value"
               placeholder={
-                filterType === "building" ? "Chọn tòa nhà" : "Chọn phòng"
+                filterType === "building" ? t("registration.selectBuilding") : t("registration.selectRoom")
               }
               value={searchQuery}
               onChange={(item) => {

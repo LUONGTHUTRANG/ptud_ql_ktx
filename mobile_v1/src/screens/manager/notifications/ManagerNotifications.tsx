@@ -54,14 +54,14 @@ const ManagerNotifications = ({ navigation }: Props) => {
       const formattedData = data.map((item: any) => ({
         id: item.id.toString(),
         title: item.title,
-        date: new Date(item.created_at).toLocaleDateString("vi-VN"),
+        date: new Date(item.created_at).toLocaleDateString("locale"),
         status: "sent", // Assuming all fetched are sent for now
         content: item.content,
       }));
       setNotifications(formattedData);
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      Alert.alert("Lỗi", "Không thể tải danh sách thông báo");
+      Alert.alert(t("common.error"), "Không thể tải danh sách thông báo");
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ const ManagerNotifications = ({ navigation }: Props) => {
               await fetchNotifications();
             } catch (error) {
               console.error("Error deleting notifications:", error);
-              Alert.alert("Lỗi", "Không thể xóa một số thông báo");
+              Alert.alert(t("common.error"), "Không thể xóa một số thông báo");
             } finally {
               setLoading(false);
             }

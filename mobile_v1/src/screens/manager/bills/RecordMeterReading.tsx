@@ -14,6 +14,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp, useFocusEffect } from "@react-navigation/native";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import { fetchBuildings } from "../../../services/buildingApi";
 import { monthlyUsageApi } from "../../../services/monthlyUsageApi";
@@ -54,6 +55,7 @@ interface Building {
 }
 
 const RecordMeterReading = ({ navigation, route }: Props) => {
+  const { t } = useTranslation();
   const { period } = route.params || { period: "Tháng 12/2025" };
   const [monthStr, yearStr] = period.replace("Tháng ", "").split("/");
   const month = parseInt(monthStr);
@@ -62,7 +64,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(
     null
   );
-  const [selectedRoom, setSelectedRoom] = useState("Tất cả");
+  const [selectedRoom, setSelectedRoom] = useState(t("invoice.all"));
   const [modalVisible, setModalVisible] = useState(false);
   const [activeFilterType, setActiveFilterType] = useState<
     "building" | "room" | "payment"
@@ -70,9 +72,9 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
   const [activeTab, setActiveTab] = useState<"completed" | "pending">(
     "completed"
   );
-  const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "submitted" | "unpaid">(
-    "all"
-  );
+  const [paymentFilter, setPaymentFilter] = useState<
+    "all" | "paid" | "submitted" | "unpaid"
+  >("all");
 
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [rooms, setRooms] = useState<RoomUsage[]>([]);
@@ -121,21 +123,21 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
   };
 
   const buildingOptions = [
-    { id: -1, name: "Tất cả" },
+    { id: -1, name: t("invoice.all") },
     ...buildings.map((b) => ({ id: b.id, name: b.name })),
   ];
 
   // Get unique room numbers for filter
   const roomOptions = [
-    "Tất cả",
+    t("invoice.all"),
     ...Array.from(new Set(rooms.map((r) => r.room_number))).sort(),
   ];
 
   const paymentOptions = [
-    { id: "all", name: "Tất cả" },
-    { id: "paid", name: "Đã đóng" },
-    { id: "unpaid", name: "Chưa đóng" },
-    { id: "submitted", name: "Chờ duyệt" },
+    { id: "all", name: t("invoice.all") },
+    { id: "paid", name: t("invoice.paid") },
+    { id: "unpaid", name: t("invoice.unpaid") },
+    { id: "submitted", name: t("invoice.submitted") },
   ];
 
   const handleOpenFilter = (type: "building" | "room" | "payment") => {
@@ -169,7 +171,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
             activeTab === "completed" && { color: "#16a34a" },
           ]}
         >
-          Đã ghi ({stats.recorded})
+          {t("meterIndex.recorded")} ({stats.recorded})
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -185,7 +187,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
             activeTab === "pending" && { color: "#dc2626" },
           ]}
         >
-          Chưa ghi ({stats.pending})
+          {t("meterIndex.notRecorded")} ({stats.pending})
         </Text>
       </TouchableOpacity>
     </View>
@@ -199,7 +201,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
       >
         <MaterialIcons name="arrow-back" size={24} color="#0f172a" />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Ghi chỉ số {period}</Text>
+      <Text style={styles.headerTitle}>{t("meterIndex.enterMeterIndex")} {period}</Text>
       <View style={styles.iconButton}></View>
     </View>
   );
@@ -219,7 +221,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
             selectedBuilding !== null && styles.activeFilterText,
           ]}
         >
-          {selectedBuilding ? selectedBuilding.name : "Tòa nhà"}
+          {selectedBuilding ? selectedBuilding.name : t("building.building")}
         </Text>
         <MaterialIcons
           name="expand-more"
@@ -231,22 +233,22 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
       <TouchableOpacity
         style={[
           styles.filterChip,
-          selectedRoom !== "Tất cả" && styles.activeFilterChip,
+          selectedRoom !== t("invoice.all") && styles.activeFilterChip,
         ]}
         onPress={() => handleOpenFilter("room")}
       >
         <Text
           style={[
             styles.filterText,
-            selectedRoom !== "Tất cả" && styles.activeFilterText,
+            selectedRoom !== t("invoice.all") && styles.activeFilterText,
           ]}
         >
-          {selectedRoom === "Tất cả" ? "Phòng" : selectedRoom}
+          {selectedRoom === t("invoice.all") ? t("room.roomName") : selectedRoom}
         </Text>
         <MaterialIcons
           name="expand-more"
           size={20}
-          color={selectedRoom !== "Tất cả" ? "#136dec" : "#64748b"}
+          color={selectedRoom !== t("invoice.all") ? "#136dec" : "#64748b"}
         />
       </TouchableOpacity>
 
@@ -265,12 +267,12 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
             ]}
           >
             {paymentFilter === "all"
-              ? "Trạng thái"
+              ? t("invoice.status")
               : paymentFilter === "paid"
-              ? "Đã đóng" 
+              ? t("invoice.paid")
               : paymentFilter === "submitted"
-              ? "Chờ duyệt"
-              : "Chưa đóng"}
+              ? t("invoice.submitted")
+              : t("invoice.unpaid")}
           </Text>
           <MaterialIcons
             name="expand-more"
@@ -301,10 +303,10 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>
                 {activeFilterType === "building"
-                  ? "Chọn tòa nhà"
+                  ? t("registration.selectBuilding")
                   : activeFilterType === "payment"
-                  ? "Chọn trạng thái"
-                  : "Chọn phòng"}
+                  ? t("invoice.selectStatus")
+                  : t("registration.selectRoom")}
               </Text>
               <ScrollView>
                 {getActiveOptions().map((option: any, index) => {
@@ -376,22 +378,22 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
                 <MaterialIcons name="meeting-room" size={24} color="#475569" />
               </View>
               <View>
-                <Text style={styles.roomName}>Phòng {item.room_number}</Text>
+                <Text style={styles.roomName}>{t("room.roomName")} {item.room_number}</Text>
                 <Text style={styles.roomDetail}>
-                  {item.building_name} - Tầng {item.floor}
+                  {item.building_name} -  {t("room.floor")} {item.floor}
                 </Text>
               </View>
             </View>
             <View style={[styles.statusBadge, { backgroundColor: "#fef2f2" }]}>
               <Text style={[styles.statusText, { color: "#dc2626" }]}>
-                Chưa ghi
+                {t("meterIndex.notRecorded")}
               </Text>
             </View>
           </View>
           <View style={styles.divider} />
           <View style={styles.cardFooter}>
             <Text style={styles.lastUpdated}>
-              Chỉ số cũ: Đ {item.old_electricity || 0} - N {item.old_water || 0}
+              {t("invoice.oldIndex")}: Đ {item.old_electricity || 0} - N {item.old_water || 0}
             </Text>
             <TouchableOpacity
               style={styles.actionButton}
@@ -399,7 +401,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
                 navigation.navigate("EnterMeterIndex", {
                   room: {
                     id: item.room_id.toString(),
-                    name: `Phòng ${item.room_number}`,
+                    name: `${t("room.roomName")} ${item.room_number}`,
                     building: item.building_name,
                     oldElectricity: item.old_electricity || 0,
                     oldWater: item.old_water || 0,
@@ -408,7 +410,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
                 })
               }
             >
-              <Text style={styles.actionButtonText}>Nhập chỉ số</Text>
+              <Text style={styles.actionButtonText}>{t("meterIndex.enterMeterIndex")}</Text>
               <MaterialIcons name="arrow-forward" size={16} color="#136dec" />
             </TouchableOpacity>
           </View>
@@ -418,19 +420,21 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
 
     const statusConfig =
       item.invoice_status === "PAID"
-        ? { text: "Đã đóng", color: "#16a34a", bg: "#dcfce7" }
+        ? { text: t("invoice.paid"), color: "#16a34a", bg: "#dcfce7" }
         : item.invoice_status === "SUBMITTED"
-        ? { text: "Chờ duyệt", color: "#f59e0b", bg: "#fef3c7" }
-        : { text: "Chưa đóng", color: "#dc2626", bg: "#fee2e2" };
+        ? { text: t("invoice.submitted"), color: "#f59e0b", bg: "#fef3c7" }
+        : { text: t("invoice.unpaid"), color: "#dc2626", bg: "#fee2e2" };
 
     return (
-      <TouchableOpacity 
-        key={item.room_id} 
+      <TouchableOpacity
+        key={item.room_id}
         style={[styles.roomCard, styles.completedCard]}
-        onPress={() => navigation.navigate("ManagerBillDetail", {
-          invoice: item,
-          onRefresh: loadData,
-        })}
+        onPress={() =>
+          navigation.navigate("ManagerBillDetail", {
+            invoice: item,
+            onRefresh: loadData,
+          })
+        }
       >
         <View style={styles.roomHeader}>
           <View style={styles.roomInfo}>
@@ -438,9 +442,9 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
               <MaterialIcons name="check" size={24} color="#136dec" />
             </View>
             <View>
-              <Text style={styles.roomName}>Phòng {item.room_number}</Text>
+              <Text style={styles.roomName}>{t("room.roomName")} {item.room_number}</Text>
               <Text style={styles.roomDetail}>
-                {item.building_name} - Tầng {item.floor}
+                {item.building_name} -  {t("room.floor")} {item.floor}
               </Text>
             </View>
           </View>
@@ -457,7 +461,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
           <View style={styles.readingItem}>
             <MaterialIcons name="bolt" size={16} color="#f59e0b" />
             <View>
-              <Text style={styles.readingLabel}>ĐIỆN</Text>
+              <Text style={styles.readingLabel}>{t("meterIndex.electricity")}</Text>
               <Text style={styles.readingValue}>
                 {item.current_electricity} <Text style={styles.unit}>kWh</Text>
               </Text>
@@ -466,7 +470,7 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
           <View style={styles.readingItem}>
             <MaterialIcons name="water-drop" size={16} color="#3b82f6" />
             <View>
-              <Text style={styles.readingLabel}>NƯỚC</Text>
+              <Text style={styles.readingLabel}>{t("meterIndex.water")}</Text>
               <Text style={styles.readingValue}>
                 {item.current_water} <Text style={styles.unit}>m³</Text>
               </Text>
@@ -476,10 +480,10 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
 
         <View style={styles.divider} />
         <View style={styles.cardFooter}>
-          <Text style={styles.totalLabel}>Tổng tiền:</Text>
+          <Text style={styles.totalLabel}>{t("invoice.totalAmount")}:</Text>
           <Text style={styles.totalAmount}>
             {item.total_amount
-              ? parseInt(item.total_amount).toLocaleString("vi-VN")
+              ? parseInt(item.total_amount).toLocaleString("locale")
               : 0}{" "}
             đ
           </Text>
@@ -507,16 +511,16 @@ const RecordMeterReading = ({ navigation, route }: Props) => {
           {renderFilter()}
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Danh sách phòng</Text>
+            <Text style={styles.sectionTitle}>{t("room.roomList")}</Text>
             <Text style={styles.sectionSubtitle}>
-              {selectedBuilding ? selectedBuilding.name : "Tất cả tòa"}
+              {selectedBuilding ? selectedBuilding.name : t("invoice.all")}
             </Text>
           </View>
 
           <View style={styles.listContainer}>
             {rooms
               .filter((item) =>
-                selectedRoom === "Tất cả"
+                selectedRoom === t("invoice.all")
                   ? true
                   : item.room_number === selectedRoom
               )

@@ -18,6 +18,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import {
   getRegistrationById,
   updateRegistrationStatus,
@@ -41,6 +42,7 @@ interface Props {
 const API_BASE_URL = "http://192.168.1.67:5000";
 
 const ManageRegistrationDetail = ({ navigation, route }: Props) => {
+  const { t } = useTranslation();
   const { id } = route.params;
   const [adminNotes, setAdminNotes] = useState("");
   const [requestDetails, setRequestDetails] = useState<any>(null);
@@ -79,7 +81,7 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
       ]);
     } catch (error) {
       console.error("Failed to update registration status", error);
-      Alert.alert("Lỗi", "Không thể cập nhật trạng thái");
+      Alert.alert(t("common.error"), "Không thể cập nhật trạng thái");
     } finally {
       setLoading(false);
     }
@@ -88,15 +90,35 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case "PENDING":
-        return { label: "Chờ xử lý", color: "#d97706", bg: "#fef3c7" };
+        return {
+          label: t("manageRegistration.pending"),
+          color: "#d97706",
+          bg: "#fef3c7",
+        };
       case "APPROVED":
-        return { label: "Đã duyệt", color: "#16a34a", bg: "#dcfce7" };
+        return {
+          label: t("manageRegistration.approved"),
+          color: "#16a34a",
+          bg: "#dcfce7",
+        };
       case "REJECTED":
-        return { label: "Từ chối", color: "#dc2626", bg: "#fee2e2" };
+        return {
+          label: t("manageRegistration.rejected"),
+          color: "#dc2626",
+          bg: "#fee2e2",
+        };
       case "RETURN":
-        return { label: "Trả về", color: "#ca8a04", bg: "#fef9c3" };
+        return {
+          label: t("manageRegistration.return"),
+          color: "#ca8a04",
+          bg: "#fef9c3",
+        };
       case "COMPLETED":
-        return { label: "Hoàn thành", color: "#2563eb", bg: "#dbeafe" };
+        return {
+          label: t("manageRegistration.completed"),
+          color: "#2563eb",
+          bg: "#dbeafe",
+        };
       default:
         return { label: "Không xác định", color: "#64748b", bg: "#f1f5f9" };
     }
@@ -105,11 +127,11 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
   const getCircumstanceText = (category: string) => {
     switch (category) {
       case "POOR_HOUSEHOLD":
-        return "Hộ nghèo/Cận nghèo";
+        return t("registration.poorHousehold");
       case "DISABILITY":
-        return "Khuyết tật";
+        return t("registration.disability");
       case "OTHER":
-        return "Khác";
+        return t("registration.other");
       default:
         return category;
     }
@@ -130,7 +152,10 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
       if (isNormal) {
         // NORMAL: chỉ update status
         await updateRegistrationStatus(id, "COMPLETED", adminNotes);
-        Alert.alert("Thành công", "Đã duyệt đăng ký phòng");
+        Alert.alert(
+          t("common.success"),
+          t("registration.registrationApproved")
+        );
         navigation.goBack();
         return;
       }
@@ -144,7 +169,7 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
         });
       }
     } catch (e) {
-      Alert.alert("Lỗi", "Không thể xử lý yêu cầu");
+      Alert.alert(t("common.error"), "Không thể xử lý yêu cầu");
     } finally {
       setLoading(false);
     }
@@ -171,7 +196,7 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <Text>Không tìm thấy thông tin đơn đăng ký</Text>
+        <Text>{t("manageRegistration.noRegistrationDetails")}</Text>
       </View>
     );
   }
@@ -195,7 +220,7 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          Chi tiết Đơn #{requestDetails.id}
+          {t("registration.registrationDetails")} #{requestDetails.id}
         </Text>
         <View style={{ width: 40 }} />
       </View>
@@ -221,7 +246,9 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
               <Text style={styles.studentName}>
                 {requestDetails.student_name}
               </Text>
-              <Text style={styles.studentId}>MSSV: {requestDetails.mssv}</Text>
+              <Text style={styles.studentId}>
+                {t("student.studentId")}: {requestDetails.mssv}
+              </Text>
             </View>
             <View
               style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}
@@ -245,13 +272,15 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
             <View style={styles.detailRow}>
               {isPriority && (
                 <>
-                  <Text style={styles.detailLabel}>Loại phòng</Text>
-                  <Text style={styles.detailValue}>Phòng tiêu chuẩn</Text>
+                  <Text style={styles.detailLabel}>{t("room.roomType")}</Text>
+                  <Text style={styles.detailValue}>
+                    {t("room.standardRoom")}
+                  </Text>
                 </>
               )}
               {isNormal && (
                 <>
-                  <Text style={styles.detailLabel}>Phòng</Text>
+                  <Text style={styles.detailLabel}>{t("room.roomName")}</Text>
                   <Text style={styles.detailValue}>
                     {requestDetails.room_number}
                   </Text>
@@ -260,14 +289,18 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
             </View>
             <View style={styles.divider} />
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Tòa mong muốn</Text>
+              <Text style={styles.detailLabel}>
+                {t("registration.expectedBuilding")}
+              </Text>
               <Text style={styles.detailValue}>
-                {requestDetails.building_name || "Không có"}
+                {requestDetails.building_name || t("common.none")}
               </Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Ngày nộp đơn</Text>
+              <Text style={styles.detailLabel}>
+                {t("registration.submissionDate")}
+              </Text>
               <Text style={styles.detailValue}>
                 {new Date(requestDetails.created_at).toLocaleDateString(
                   "vi-VN"
@@ -278,11 +311,13 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
               <>
                 <View style={styles.divider} />
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Trạng thái thanh toán</Text>
+                  <Text style={styles.detailLabel}>
+                    {t("registration.paymentStatus")}
+                  </Text>
                   <Text style={styles.detailValue}>
                     {invoiceStatus === "PAID"
-                      ? "Đã thanh toán"
-                      : "Chưa thanh toán"}
+                      ? t("invoice.paid")
+                      : t("invoice.unpaid")}
                   </Text>
                 </View>
               </>
@@ -295,7 +330,7 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
           <View style={styles.section}>
             <View style={styles.card}>
               <Text style={styles.sectionTitle}>
-                Lý do và Hoàn cảnh đặc biệt
+                {t("manageRegistration.priority")}
               </Text>
               <Text style={{ fontWeight: "bold", marginBottom: 4 }}>
                 {getCircumstanceText(requestDetails.priority_category)}
@@ -354,10 +389,12 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
         {/* Admin Notes */}
         <View style={styles.section}>
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Ghi chú của người duyệt</Text>
+            <Text style={styles.sectionTitle}>
+              {t("registration.adminNotes")}
+            </Text>
             <TextInput
               style={styles.notesInput}
-              placeholder="Nhập lý do phê duyệt, từ chối hoặc thông tin cần bổ sung..."
+              placeholder={t("registration.enterAdminNotes")}
               placeholderTextColor="#94a3b8"
               multiline
               numberOfLines={4}
@@ -373,7 +410,7 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
           <View style={styles.warningBox}>
             <MaterialIcons name="warning" size={20} color="#dc2626" />
             <Text style={styles.warningText}>
-              Sinh viên chưa hoàn tất thanh toán. Không thể phê duyệt.
+              {t("manageRegistration.cannotApproveNormalUnpaid")}
             </Text>
           </View>
         )}
@@ -387,7 +424,9 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
               style={styles.rejectButton}
               onPress={() => handleUpdateStatus("REJECTED")}
             >
-              <Text style={styles.rejectButtonText}>Từ chối</Text>
+              <Text style={styles.rejectButtonText}>
+                {t("registration.reject")}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -399,7 +438,9 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
               onPress={handleApprove}
             >
               <Text style={styles.approveButtonText}>
-                {isPriority ? "Duyệt & Phân phòng" : "Phê duyệt"}
+                {isPriority
+                  ? t("registration.approveAndAssignRoom")
+                  : t("registration.approve")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -408,7 +449,9 @@ const ManageRegistrationDetail = ({ navigation, route }: Props) => {
             style={styles.requestInfoButton}
             onPress={() => handleUpdateStatus("RETURN")}
           >
-            <Text style={styles.requestInfoText}>Yêu cầu bổ sung</Text>
+            <Text style={styles.requestInfoText}>
+              {t("registration.requestInfo")}
+            </Text>
           </TouchableOpacity>
         </View>
       )}

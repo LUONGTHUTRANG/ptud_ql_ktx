@@ -73,7 +73,7 @@ const ManagerStaff = ({ navigation }: Props) => {
           setLoading(false);
         } catch (error) {
           console.error("Failed to load staff", error);
-          Alert.alert("Lỗi", "Không thể tải danh sách cán bộ");
+          Alert.alert(t("common.error"), "Không thể tải danh sách cán bộ");
           setLoading(false);
         }
       };
@@ -192,7 +192,7 @@ const ManagerStaff = ({ navigation }: Props) => {
       Alert.alert("Thành công", "Cập nhật thông tin cán bộ thành công");
     } catch (error) {
       console.error("Failed to update staff", error);
-      Alert.alert("Lỗi", "Không thể cập nhật thông tin cán bộ");
+      Alert.alert(t("common.error"), "Không thể cập nhật thông tin cán bộ");
     } finally {
       setUpdatingStaff(false);
     }
@@ -221,7 +221,7 @@ const ManagerStaff = ({ navigation }: Props) => {
       Alert.alert("Thành công", "Xóa cán bộ thành công");
     } catch (error) {
       console.error("Failed to delete staff", error);
-      Alert.alert("Lỗi", "Không thể xóa cán bộ");
+      Alert.alert(t("common.error"), "Không thể xóa cán bộ");
     } finally {
       setDeletingStaff(false);
     }

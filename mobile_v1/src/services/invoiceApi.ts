@@ -1,5 +1,5 @@
 import api from "./api";
-
+import {t} from "i18next";
 export const fetchInvoices = async (studentId?: string) => {
   try {
     const url = studentId ? `/invoices?student_id=${studentId}` : "/invoices";
@@ -73,7 +73,9 @@ export const updateInvoiceStatus = async (
   status: "PAID" | "UNPAID" | "SUBMITTED"
 ) => {
   try {
-    const response = await api.put(`/invoices/${invoice_code}/status`, { status });
+    const response = await api.put(`/invoices/${invoice_code}/status`, {
+      status,
+    });
     return response.data;
   } catch (error) {
     console.error("Error updating invoice status:", error);
@@ -96,7 +98,9 @@ export const groupUtilityInvoicesByMonth = (invoices: any[]) => {
   return Object.entries(grouped).map(([period, invoiceList]) => {
     const paid = invoiceList.filter((i) => i.status === "PAID").length;
     const unpaid = invoiceList.filter((i) => i.status === "UNPAID").length;
-    const submitted = invoiceList.filter((i) => i.status === "SUBMITTED").length;
+    const submitted = invoiceList.filter(
+      (i) => i.status === "SUBMITTED"
+    ).length;
     const paidAmount = invoiceList
       .filter((i) => i.status === "PAID")
       .reduce((sum, i) => sum + parseFloat(i.amount), 0);
@@ -107,15 +111,15 @@ export const groupUtilityInvoicesByMonth = (invoices: any[]) => {
       .filter((i) => i.status === "SUBMITTED")
       .reduce((sum, i) => sum + parseFloat(i.amount), 0);
     return {
-      month: `Tháng ${period}`,
-      count: `${invoiceList.length} hóa đơn`,
+      month: `${t("common.month")} ${period}`,
+      count: `${invoiceList.length} ${t("common.bills")}`,
       collected:
-        paidAmount > 0 ? `${paidAmount.toLocaleString("vi-VN")} đ` : null,
+        paidAmount > 0 ? `${paidAmount.toLocaleString("locale")} đ` : null,
       pending:
-        unpaidAmount > 0 ? `${unpaidAmount.toLocaleString("vi-VN")} đ` : null,
-      closedDate: new Date().toLocaleDateString("vi-VN"),
+        unpaidAmount > 0 ? `${unpaidAmount.toLocaleString("locale")} đ` : null,
+      closedDate: new Date().toLocaleDateString("locale"),
       status: unpaid === 0 ? "completed" : "active",
-      total: unpaid === 0 ? `${paidAmount.toLocaleString("vi-VN")} đ` : null,
+      total: unpaid === 0 ? `${paidAmount.toLocaleString("locale")} đ` : null,
       paidCount: paid,
       unpaidCount: unpaid,
       invoices: invoiceList,

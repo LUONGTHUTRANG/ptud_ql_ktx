@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../../../types";
 import { studentApi } from "../../../services/studentApi";
 import { getRoomById } from "../../../services/roomApi";
@@ -36,6 +37,7 @@ interface Student {
 }
 
 const RoomMembers = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,9 @@ const RoomMembers = ({ navigation }: Props) => {
 
         if (studentsData.length > 0) {
           setRoomName(
-            `Phòng ${studentsData[0].room_number} - Tòa ${studentsData[0].building_name}`
+            `${t("room.roomName")} ${studentsData[0].room_number} - ${t(
+              "building.building"
+            )} ${studentsData[0].building_name}`
           );
         } else {
           setRoomName(`Phòng ${roomData.room_number}`);
@@ -81,7 +85,7 @@ const RoomMembers = ({ navigation }: Props) => {
       }
     } catch (error) {
       console.error("Error fetching room members:", error);
-      Alert.alert("Lỗi", "Không thể tải danh sách thành viên.");
+      Alert.alert(t("common.error"), "Không thể tải danh sách thành viên.");
     } finally {
       setLoading(false);
     }
@@ -144,7 +148,7 @@ const RoomMembers = ({ navigation }: Props) => {
           />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm kiếm theo tên hoặc MSSV..."
+            placeholder={t("student.searchPlaceholder")}
             placeholderTextColor="#94a3b8"
             value={searchQuery}
             onChangeText={setSearchQuery}

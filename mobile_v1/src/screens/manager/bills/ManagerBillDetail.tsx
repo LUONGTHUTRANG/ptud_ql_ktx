@@ -12,6 +12,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../types";
 import { RouteProp } from "@react-navigation/core";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { updateInvoiceStatus } from "@/src/services/invoiceApi";
 import ConfirmModal from "@/src/components/ConfirmModal";
 
@@ -31,23 +32,25 @@ interface Props {
 }
 
 const ManagerBillDetail = ({ route, navigation }: Props) => {
+  const { t } = useTranslation();
   const { invoice, onRefresh } = route.params;
   console.log("Invoice Details:", invoice);
   const [adminNote, setAdminNote] = useState("");
 
-  const isSubmitted = (invoice.status??invoice.invoice_status) === "SUBMITTED";
-  const isPaid = (invoice.status??invoice.invoice_status) === "PAID";
-  const invoiceAmount = invoice.amount??invoice.total_amount;
+  const isSubmitted =
+    (invoice.status ?? invoice.invoice_status) === "SUBMITTED";
+  const isPaid = (invoice.status ?? invoice.invoice_status) === "PAID";
+  const invoiceAmount = invoice.amount ?? invoice.total_amount;
   const [isConfirmModalVisible, setConfirmModalVisible] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<
     "PAID" | "UNPAID" | "SUBMITTED"
   >("UNPAID");
 
   const formatMoney = (value: string) =>
-    Number(value).toLocaleString("vi-VN") + " VNĐ";
+    Number(value).toLocaleString("locale") + " VNĐ";
 
   const formatDate = (date?: string | null) =>
-    date ? new Date(date).toLocaleString("vi-VN") : "--";
+    date ? new Date(date).toLocaleString("locale") : "--";
 
   const handleUpdateStatus = async (newStatus: string) => {
     try {
@@ -74,7 +77,7 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
             <MaterialIcons name="arrow-back" size={24} color="#0f172a" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            Hóa đơn tiền {invoice.type === "ROOM_FEE" ? "phòng" : "điện nước"}
+            {invoice.type === "ROOM_FEE" ? t("manageBills.roomBills") : t("manageBills.utilityBills")}
           </Text>
           <View style={styles.iconButton}></View>
         </View>
@@ -84,49 +87,55 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
       {!isPaid && (
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>
-            Sinh viên chưa thanh toán hóa đơn này.
+            {t("manageBills.hasNotPaid")}
           </Text>
         </View>
       )}
 
       {isPaid && (
         <View style={styles.statusPaidBox}>
-          <Text style={styles.statusPaidText}>Hóa đơn đã thanh toán.</Text>
+          <Text style={styles.statusPaidText}>{t("manageBills.hasPaid")}</Text>
         </View>
       )}
 
       {/* Student Info */}
       {invoice.type === "ROOM_FEE" && (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Thông tin sinh viên</Text>
-          <Text style={styles.row}>Họ tên: {invoice.student_name}</Text>
-          <Text style={styles.row}>MSSV: {invoice.mssv}</Text>
+          <Text style={styles.sectionTitle}>{t("student.studentInfo")}</Text>
+          <Text style={styles.row}>{t("student.studentName")}: {invoice.student_name}</Text>
+          <Text style={styles.row}>
+            {t("student.studentId")}: {invoice.mssv}
+          </Text>
         </View>
       )}
 
       {/* Room Info */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Thông tin phòng</Text>
-        <Text style={styles.row}>Tòa nhà: {invoice.building_name}</Text>
-        <Text style={styles.row}>Phòng: {invoice.room_number}</Text>
+        <Text style={styles.sectionTitle}>{t("building.buildingAndRoom")}</Text>
+        <Text style={styles.row}>{t("building.building")}: {invoice.building_name}</Text>
+        <Text style={styles.row}>{t("room.roomNumber")}: {invoice.room_number}</Text>
       </View>
 
       {/* Invoice Info */}
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Thông tin hóa đơn</Text>
+        <Text style={styles.sectionTitle}>{t("invoice.invoiceDetails")}</Text>
         <Text style={styles.row}>{invoice.description}</Text>
 
         {invoice.invoice_type === "UTILITY_FEE" && (
           <>
+            <Text style={styles.sectionTitle}>{t("invoice.electricityIndex")}</Text>
             <Text style={styles.row}>
-              Chỉ số điện cũ: {invoice.old_electricity|| 0}
+              {t("invoice.oldIndex")}: {invoice.old_electricity || 0}
             </Text>
             <Text style={styles.row}>
-              Chỉ số điện mới: {invoice.current_electricity|| 0}
+              {t("invoice.newIndex")}: {invoice.current_electricity || 0}
             </Text>
-            <Text style={styles.row}>Chỉ số nước cũ: {invoice.old_water||0}</Text>
+            <Text style={styles.sectionTitle}>{t("invoice.waterIndex")}</Text>
             <Text style={styles.row}>
-              Chỉ số nước mới: {invoice.current_water|| 0}
+              {t("invoice.oldIndex")}: {invoice.old_water || 0}
+            </Text>
+            <Text style={styles.row}>
+              {t("invoice.newIndex")}: {invoice.current_water || 0}
             </Text>
           </>
         )}
@@ -134,42 +143,20 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
         <Text style={styles.amount}>{formatMoney(invoiceAmount)}</Text>
 
         <Text style={styles.row}>
-          Ngày tạo: {formatDate(invoice.time_invoiced||invoice.last_updated)}
+          {t("invoice.issueDate")}: {formatDate(invoice.time_invoiced || invoice.last_updated)}
         </Text>
         <Text style={styles.row}>
-          Hạn thanh toán: {formatDate(invoice.due_date)}
+          {t("invoice.dueDate")}: {formatDate(invoice.due_date)}
         </Text>
       </View>
-
-      {/* Payment Info */}
-      {/* {(isSubmitted || isPaid) && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Thông tin thanh toán</Text>
-          <Text style={styles.row}>Phương thức: {invoice.payment_method}</Text>
-          <Text style={styles.row}>
-            Thời gian thanh toán: {formatDate(invoice.paid_at)}
-          </Text>
-
-          {invoice.payment_proof && (
-            <TouchableOpacity
-              style={styles.attachment}
-              onPress={() => Linking.openURL(invoice.payment_proof as string)}
-            >
-              <Text style={styles.attachmentText}>
-                Xem minh chứng thanh toán
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )} */}
 
       {/* Admin Note */}
       {(isSubmitted || isPaid) && (
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Ghi chú quản lý</Text>
+          <Text style={styles.sectionTitle}>{t("invoice.adminNote")}</Text>
           <TextInput
             style={styles.textArea}
-            placeholder="Nhập ghi chú..."
+            placeholder={t("invoice.enterAdminNote")}
             multiline
             value={adminNote}
             onChangeText={setAdminNote}
@@ -187,7 +174,7 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
               setConfirmModalVisible(true);
             }}
           >
-            <Text style={styles.rejectText}>Chưa thanh toán</Text>
+            <Text style={styles.rejectText}>{t("invoice.unpaid")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -197,7 +184,7 @@ const ManagerBillDetail = ({ route, navigation }: Props) => {
               setConfirmModalVisible(true);
             }}
           >
-            <Text style={styles.approveText}>Đã thanh toán</Text>
+            <Text style={styles.approveText}>{t("invoice.paid")}</Text>
           </TouchableOpacity>
         </View>
       )}

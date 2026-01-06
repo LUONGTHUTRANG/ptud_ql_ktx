@@ -35,7 +35,7 @@ import ManagerBills from "./src/screens/manager/bills/ManagerBills";
 import ManagerBillDetail from "./src/screens/manager/bills/ManagerBillDetail";
 import ManageRegistration from "./src/screens/manager/requests/ManageRegistration";
 import ManageRegistrationDetail from "./src/screens/manager/requests/ManageRegistrationDetail";
-import ManageAssignRoom from "./src/screens/manager/requests/ManageAsignRoom";
+import ManageAssignRoom from "./src/screens/manager/requests/ManageAssignRoom";
 import ManagerNotifications from "./src/screens/manager/notifications/ManagerNotifications";
 import ManagerNotificationDetail from "./src/screens/manager/notifications/ManagerNotificationDetail";
 import ManagerRegularRequest from "./src/screens/manager/requests/ManagerRegularRequest";

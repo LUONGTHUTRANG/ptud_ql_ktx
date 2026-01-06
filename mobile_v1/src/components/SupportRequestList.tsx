@@ -12,7 +12,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-
+import { useTranslation } from "react-i18next";
 export interface RequestItem {
   id: string;
   code: string;
@@ -41,26 +41,34 @@ const SupportRequestList = ({
   onAddPress,
   onItemPress,
 }: SupportRequestListProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [activeFilterType, setActiveFilterType] = useState<
     "status" | "type" | "building" | null
   >(null);
   const [selectedFilters, setSelectedFilters] = useState({
-    status: "Tất cả",
-    type: "Tất cả",
-    building: "Tất cả",
+    status: "All",
+    type: "All",
+    building: "All",
   });
 
-  const statusOptions = [
-    "Tất cả",
-    "Mới",
-    "Đang xử lý",
-    "Hoàn thành",
-    "Từ chối",
+  const statusOptions = ["All", "new", "pending", "completed", "rejected"];
+
+  const statusLabelMap: Record<string, string> = {
+    All: t("supportRequestList.all"),
+    new: t("supportRequestList.new"),
+    pending: t("supportRequestList.inProgress"),
+    completed: t("supportRequestList.resolved"),
+    rejected: t("supportRequestList.rejected"),
+  };
+  const typeOptions = [
+    t("supportRequestList.all"),
+    t("supportRequestList.repair"),
+    t("supportRequestList.complaint"),
+    t("supportRequestList.proposal"),
   ];
-  const typeOptions = ["Tất cả", "Sửa chữa", "Khiếu nại", "Đề xuất"];
-  const buildingOptions = ["Tất cả", "C1", "C2", "C3"];
+  const buildingOptions = [t("supportRequestList.all"), "C1", "C2", "C3"];
 
   const handleOpenFilter = (type: "status" | "type" | "building") => {
     setActiveFilterType(type);
@@ -90,28 +98,22 @@ const SupportRequestList = ({
       if (!matchesSearch) return false;
 
       // 2. Status Filter
-      if (selectedFilters.status !== "Tất cả") {
-        const statusMap: Record<string, string> = {
-          "Đang xử lý": "pending",
-          "Hoàn thành": "completed",
-          "Từ chối": "rejected",
-          Mới: "new",
-        };
-        if (item.status !== statusMap[selectedFilters.status]) return false;
+      if (selectedFilters.status !== "All") {
+        if (item.status !== selectedFilters.status) return false;
       }
 
       // 3. Type Filter
-      if (selectedFilters.type !== "Tất cả") {
+      if (selectedFilters.type !== t("supportRequestList.all")) {
         const typeMap: Record<string, string> = {
-          "Sửa chữa": "repair",
-          "Khiếu nại": "complaint",
-          "Đề xuất": "proposal",
+          [t("supportRequestList.repair")]: "repair",
+          [t("supportRequestList.complaint")]: "complaint",
+          [t("supportRequestList.proposal")]: "proposal",
         };
         if (item.type !== typeMap[selectedFilters.type]) return false;
       }
 
       // 4. Building Filter
-      if (selectedFilters.building !== "Tất cả") {
+      if (selectedFilters.building !== "All") {
         if (!item.room.includes(selectedFilters.building)) return false;
       }
 
@@ -139,35 +141,35 @@ const SupportRequestList = ({
           bg: "#ffedd5",
           text: "#ea580c",
           dot: "#fb923c",
-          label: "Đang xử lý",
+          label: t("supportRequestList.inProgress"),
         };
       case "completed":
         return {
           bg: "#dcfce7",
           text: "#16a34a",
           dot: "#4ade80",
-          label: "Hoàn thành",
+          label: t("supportRequestList.resolved"),
         };
       case "new":
         return {
           bg: "#dbeafe",
           text: "#2563eb",
           dot: "#60a5fa",
-          label: "Mới",
+          label: t("supportRequestList.new"),
         };
       case "rejected":
         return {
           bg: "#f1f5f9",
           text: "#475569",
           dot: "#94a3b8",
-          label: "Từ chối",
+          label: t("supportRequestList.rejected"),
         };
       default:
         return {
           bg: "#f1f5f9",
           text: "#64748b",
           dot: "#94a3b8",
-          label: "Khác",
+          label: t("supportRequestList.other"),
         };
     }
   };
@@ -179,28 +181,28 @@ const SupportRequestList = ({
           icon: "build",
           bg: "#ffedd5",
           color: "#f97316",
-          label: "Sửa chữa",
+          label: t("supportRequestList.repair"),
         };
       case "complaint":
         return {
           icon: "report",
           bg: "#fee2e2",
           color: "#ef4444",
-          label: "Khiếu nại",
+          label: t("supportRequestList.complaint"),
         };
       case "proposal":
         return {
           icon: "lightbulb",
           bg: "#dbeafe",
           color: "#3b82f6",
-          label: "Đề xuất",
+          label: t("supportRequestList.proposal"),
         };
       default:
         return {
           icon: "help",
           bg: "#f1f5f9",
           color: "#64748b",
-          label: "Khác",
+          label: t("supportRequestList.other"),
         };
     }
   };
@@ -290,9 +292,9 @@ const SupportRequestList = ({
           <TextInput
             style={styles.searchInput}
             placeholder={
-              (role === "manager" || role === "admin")
-                ? "Tìm theo mã, tên sinh viên..."
-                : "Tìm theo mã..."
+              role === "manager" || role === "admin"
+                ? t("supportRequestList.searchByIdAndName")
+                : t("supportRequestList.searchById")
             }
             placeholderTextColor="#94a3b8"
             value={searchQuery}
@@ -311,77 +313,70 @@ const SupportRequestList = ({
           <TouchableOpacity
             style={[
               styles.filterChip,
-              selectedFilters.status !== "Tất cả" && styles.activeFilterChip,
+              selectedFilters.status !== "All" && styles.activeFilterChip,
             ]}
             onPress={() => handleOpenFilter("status")}
           >
             <Text
               style={[
                 styles.filterText,
-                selectedFilters.status !== "Tất cả" && styles.activeFilterText,
+                selectedFilters.status !== "All" && styles.activeFilterText,
               ]}
             >
-              {selectedFilters.status === "Tất cả"
-                ? "Trạng thái"
+              {selectedFilters.status === "All"
+                ? t("supportRequestList.status")
                 : selectedFilters.status}
             </Text>
             <MaterialIcons
               name="expand-more"
               size={20}
-              color={
-                selectedFilters.status !== "Tất cả" ? "#136dec" : "#64748b"
-              }
+              color={selectedFilters.status !== "All" ? "#136dec" : "#64748b"}
             />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.filterChip,
-              selectedFilters.type !== "Tất cả" && styles.activeFilterChip,
+              selectedFilters.type !== "All" && styles.activeFilterChip,
             ]}
             onPress={() => handleOpenFilter("type")}
           >
             <Text
               style={[
                 styles.filterText,
-                selectedFilters.type !== "Tất cả" && styles.activeFilterText,
+                selectedFilters.type !== "All" && styles.activeFilterText,
               ]}
             >
-              {selectedFilters.type === "Tất cả"
-                ? "Loại"
-                : selectedFilters.type}
+              {selectedFilters.type === "All" ? t("supportRequestList.type") : selectedFilters.type}
             </Text>
             <MaterialIcons
               name="expand-more"
               size={20}
-              color={selectedFilters.type !== "Tất cả" ? "#136dec" : "#64748b"}
+              color={selectedFilters.type !== "All" ? "#136dec" : "#64748b"}
             />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.filterChip,
-              selectedFilters.building !== "Tất cả" && styles.activeFilterChip,
+              selectedFilters.building !== "All" && styles.activeFilterChip,
             ]}
             onPress={() => handleOpenFilter("building")}
           >
             <Text
               style={[
                 styles.filterText,
-                selectedFilters.building !== "Tất cả" &&
-                  styles.activeFilterText,
+                selectedFilters.building !== "All" && styles.activeFilterText,
               ]}
             >
-              {selectedFilters.building === "Tất cả"
-                ? "Tòa nhà"
+              {selectedFilters.building === "All"
+                ? t("supportRequestList.building")
                 : selectedFilters.building}
             </Text>
             <MaterialIcons
               name="expand-more"
               size={20}
-              color={
-                selectedFilters.building !== "Tất cả" ? "#136dec" : "#64748b"
-              }
+              color={selectedFilters.building !== "All" ? "#136dec" : "#64748b"}
             />
           </TouchableOpacity>
         </ScrollView>
@@ -414,12 +409,12 @@ const SupportRequestList = ({
             <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
                 <Text style={styles.modalTitle}>
-                  Chọn{" "}
+                  {t("supportRequestList.filterBy")}{" "}
                   {activeFilterType === "status"
-                    ? "Trạng thái"
+                    ? t("supportRequestList.status")
                     : activeFilterType === "type"
-                    ? "Loại"
-                    : "Tòa nhà"}
+                    ? t("supportRequestList.type")
+                    : t("supportRequestList.building")}
                 </Text>
                 {getActiveOptions().map((option, index) => (
                   <TouchableOpacity
@@ -434,7 +429,7 @@ const SupportRequestList = ({
                           styles.selectedModalOptionText,
                       ]}
                     >
-                      {option}
+                      {statusLabelMap[option] ?? option}
                     </Text>
                     {selectedFilters[activeFilterType!] === option && (
                       <MaterialIcons name="check" size={20} color="#136dec" />

@@ -1,3 +1,4 @@
+//translated
 import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
@@ -110,7 +111,7 @@ const Bills = ({ navigation }: Props) => {
       setBills(mappedBills);
     } catch (error) {
       console.error("Failed to load bills:", error);
-      Alert.alert("Lỗi", "Không thể tải danh sách hóa đơn");
+      Alert.alert(t("common.error"), "Không thể tải danh sách hóa đơn");
     } finally {
       setLoading(false);
     }
@@ -208,6 +209,14 @@ const Bills = ({ navigation }: Props) => {
       return (
         <View style={[styles.badge, styles.badgeSubmitted]}>
           <Text style={styles.badgeTextSubmitted}>Đã gửi</Text>
+        </View>
+      );
+    }
+
+    if (status === "paid") {
+      return (
+        <View style={[styles.badge, styles.badgePaid]}>
+          <Text style={styles.badgeTextPaid}>{t("invoice.paid")}</Text>
         </View>
       );
     }
@@ -313,7 +322,7 @@ const Bills = ({ navigation }: Props) => {
                 activeTab === "submitted" && styles.activeTabText,
               ]}
             >
-              Chờ xác nhận
+              {t("invoice.submitted")}
             </Text>
           </TouchableOpacity>
 
@@ -644,6 +653,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
     color: "#0284c7",
+  },
+  badgePaid: {
+    backgroundColor: "#d1fae5",
+  },
+  badgeTextPaid: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#065f46",
   },
   emptyState: {
     alignItems: "center",

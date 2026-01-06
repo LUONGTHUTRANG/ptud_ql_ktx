@@ -3,6 +3,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { getSupportRequests } from "../../../services/requestApi";
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import SupportRequestList, {
   RequestItem,
 } from "../../../components/SupportRequestList";
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const RequestHistory = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,7 +45,7 @@ const RequestHistory = ({ navigation }: Props) => {
           room: item.room_number
             ? `${item.room_number} ${item.building_name || ""}`
             : "N/A",
-          date: new Date(item.created_at).toLocaleDateString("vi-VN"),
+          date: new Date(item.created_at).toLocaleDateString("locale"),
           status,
           studentName: item.student_name,
         };
@@ -66,7 +68,7 @@ const RequestHistory = ({ navigation }: Props) => {
   return (
     <SupportRequestList
       role="student"
-      title="Lịch sử yêu cầu"
+      title={t("requestHistory.requestHistory")}
       data={requests}
       onBackPress={() => navigation.navigate("Services")}
       onAddPress={() => navigation.navigate("CreateRequest")}

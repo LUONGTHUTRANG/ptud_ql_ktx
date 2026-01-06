@@ -19,6 +19,7 @@ import { RouteProp } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import {
   getSupportRequestById,
   updateSupportRequestStatus,
@@ -39,6 +40,7 @@ interface Props {
 }
 
 const RequestDetail = ({ navigation, route }: Props) => {
+  const { t } = useTranslation();
   const { id } = route.params;
   const [role, setRole] = useState<"student" | "manager" | "admin">("student");
   const [userId, setUserId] = useState<number | null>(null);
@@ -60,7 +62,11 @@ const RequestDetail = ({ navigation, route }: Props) => {
         const storedRole = await AsyncStorage.getItem("role");
         const storedUser = await AsyncStorage.getItem("user");
 
-        if (storedRole === "manager" || storedRole === "admin" || storedRole === "student") {
+        if (
+          storedRole === "manager" ||
+          storedRole === "admin" ||
+          storedRole === "student"
+        ) {
           setRole(storedRole);
         }
 
@@ -85,7 +91,7 @@ const RequestDetail = ({ navigation, route }: Props) => {
         code: `REQ${data.id}`,
         type: getTypeText(data.type), // Map from data.type to Vietnamese
         title: data.title, // Add title
-        date: new Date(data.created_at).toLocaleDateString("vi-VN"),
+        date: new Date(data.created_at).toLocaleDateString("locale"),
         status: data.status.toLowerCase(),
         statusText: getStatusText(data.status),
         description: data.content,
@@ -100,7 +106,7 @@ const RequestDetail = ({ navigation, route }: Props) => {
                   status: getStatusText(data.status),
                   time: new Date(
                     data.updated_at || data.created_at
-                  ).toLocaleString("vi-VN"),
+                  ).toLocaleString("locale"),
                   user: data.manager_name || "Quản lý",
                   comment:
                     data.response_content || getStatusComment(data.status),
@@ -111,8 +117,8 @@ const RequestDetail = ({ navigation, route }: Props) => {
               ]
             : []),
           {
-            status: "Đã gửi yêu cầu",
-            time: new Date(data.created_at).toLocaleString("vi-VN"),
+            status: t("supportRequestDetails.requestCreated"),
+            time: new Date(data.created_at).toLocaleString("locale"),
             user: data.student_name || "Bạn",
             active: data.status === "PENDING",
             icon: "receipt-long",
@@ -138,13 +144,13 @@ const RequestDetail = ({ navigation, route }: Props) => {
   const getStatusText = (status: string) => {
     switch (status) {
       case "PENDING":
-        return "Đang chờ xử lý";
+        return t("supportRequestDetails.statuses.pending");
       case "PROCESSING":
-        return "Đang xử lý";
+        return t("supportRequestDetails.statuses.processing");
       case "COMPLETED":
-        return "Hoàn thành";
+        return t("supportRequestDetails.statuses.completed");
       case "CANCELLED":
-        return "Đã hủy/Từ chối";
+        return t("supportRequestDetails.statuses.cancelled");
       default:
         return status;
     }
@@ -153,11 +159,11 @@ const RequestDetail = ({ navigation, route }: Props) => {
   const getStatusComment = (status: string) => {
     switch (status) {
       case "PROCESSING":
-        return "Yêu cầu đang được xử lý.";
+        return t("supportRequestDetails.statusComments.processing");
       case "COMPLETED":
-        return "Yêu cầu đã được giải quyết.";
+        return t("supportRequestDetails.statusComments.completed");
       case "CANCELLED":
-        return "Yêu cầu đã bị từ chối hoặc hủy bỏ.";
+        return t("supportRequestDetails.statusComments.cancelled");
       default:
         return "";
     }
@@ -193,13 +199,13 @@ const RequestDetail = ({ navigation, route }: Props) => {
     switch (type) {
       case "repair":
       case "REPAIR":
-        return "Sửa chữa";
+        return t("supportRequestDetails.type.repair");
       case "complaint":
       case "COMPLAINT":
-        return "Khiếu nại";
+        return t("supportRequestDetails.type.complaint");
       case "proposal":
       case "PROPOSAL":
-        return "Đề xuất";
+        return t("supportRequestDetails.type.proposal");
       default:
         return type;
     }
@@ -215,12 +221,18 @@ const RequestDetail = ({ navigation, route }: Props) => {
 
   const handleSendResponse = async () => {
     if (!responseContent.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập nội dung phản hồi");
+      Alert.alert(
+        t("common.error"),
+        t("supportRequestDetails.responseContentRequired")
+      );
       return;
     }
 
     if (!userId) {
-      Alert.alert("Lỗi", "Không tìm thấy thông tin người dùng");
+      Alert.alert(
+        t("common.error"),
+        t("supportRequestDetails.userNotIdentified")
+      );
       return;
     }
 
@@ -232,19 +244,26 @@ const RequestDetail = ({ navigation, route }: Props) => {
         response_content: responseContent,
       });
 
-      Alert.alert("Thành công", "Đã gửi phản hồi", [
-        {
-          text: "OK",
-          onPress: () => {
-            setResponseModalVisible(false);
-            // Refresh data
-            fetchRequestDetail();
+      Alert.alert(
+        t("common.success"),
+        t("supportRequestDetails.responseSent"),
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              setResponseModalVisible(false);
+              // Refresh data
+              fetchRequestDetail();
+            },
           },
-        },
-      ]);
+        ]
+      );
     } catch (error) {
       console.error("Error updating support request status:", error);
-      Alert.alert("Lỗi", "Không thể gửi phản hồi");
+      Alert.alert(
+        t("common.error"),
+        t("supportRequestDetails.responseSendError")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -288,7 +307,9 @@ const RequestDetail = ({ navigation, route }: Props) => {
         >
           <MaterialIcons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chi tiết Yêu cầu</Text>
+        <Text style={styles.headerTitle}>
+          {t("supportRequestDetails.supportRequestDetails")}
+        </Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -297,19 +318,27 @@ const RequestDetail = ({ navigation, route }: Props) => {
         <View style={styles.card}>
           <View style={styles.infoGrid}>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Mã yêu cầu:</Text>
+              <Text style={styles.infoLabel}>
+                {t("supportRequestDetails.requestId")}
+              </Text>
               <Text style={styles.infoValue}>{request.code}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Loại yêu cầu:</Text>
+              <Text style={styles.infoLabel}>
+                {t("supportRequestDetails.requestType")}
+              </Text>
               <Text style={styles.infoValue}>{request.type}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Ngày gửi:</Text>
+              <Text style={styles.infoLabel}>
+                {t("supportRequestDetails.createdAt")}
+              </Text>
               <Text style={styles.infoValue}>{request.date}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Trạng thái:</Text>
+              <Text style={styles.infoLabel}>
+                {t("supportRequestDetails.status")}
+              </Text>
               <View style={styles.statusBadge}>
                 <Text style={styles.statusText}>{request.statusText}</Text>
               </View>
@@ -319,7 +348,9 @@ const RequestDetail = ({ navigation, route }: Props) => {
 
         {/* Content Section Card */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Tiêu đề</Text>
+          <Text style={styles.sectionTitle}>
+            {t("supportRequestDetails.title")}
+          </Text>
           <Text
             style={[
               styles.description,
@@ -329,13 +360,17 @@ const RequestDetail = ({ navigation, route }: Props) => {
             {request.title}
           </Text>
 
-          <Text style={styles.sectionTitle}>Mô tả chi tiết</Text>
+          <Text style={styles.sectionTitle}>
+            {t("supportRequestDetails.description")}
+          </Text>
           <Text style={styles.description}>{request.description}</Text>
 
           {/* Image Gallery */}
           {request.images && request.images.length > 0 && (
             <View style={styles.galleryContainer}>
-              <Text style={styles.sectionTitle}>Ảnh đính kèm</Text>
+              <Text style={styles.sectionTitle}>
+                {t("supportRequestDetails.images")}
+              </Text>
               <View style={styles.galleryGrid}>
                 {request.images.map((img: any, idx: any) => (
                   <TouchableOpacity
@@ -352,7 +387,9 @@ const RequestDetail = ({ navigation, route }: Props) => {
 
         {/* Timeline/History Log Card */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Lịch sử cập nhật</Text>
+          <Text style={styles.sectionTitle}>
+            {t("supportRequestDetails.updateHistory")}
+          </Text>
           <View style={styles.timelineContainer}>
             {/* Vertical Line */}
             <View style={styles.timelineLine} />
@@ -385,7 +422,7 @@ const RequestDetail = ({ navigation, route }: Props) => {
                     {item.status}
                   </Text>
                   <Text style={styles.timelineMeta}>
-                    {item.time} - Bởi: {item.user}
+                    {item.time} - {t("supportRequestDetails.by")}: {item.user}
                   </Text>
 
                   {item.comment && (
@@ -405,13 +442,17 @@ const RequestDetail = ({ navigation, route }: Props) => {
                 style={styles.rejectButton}
                 onPress={() => handleOpenResponse("CANCELLED")}
               >
-                <Text style={styles.rejectButtonText}>Hủy Yêu cầu</Text>
+                <Text style={styles.rejectButtonText}>
+                  {t("supportRequestDetails.cancelRequest")}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.respondButton}
                 onPress={() => handleOpenResponse("PROCESSING")}
               >
-                <Text style={styles.respondButtonText}>Gửi Phản Hồi</Text>
+                <Text style={styles.respondButtonText}>
+                  {t("supportRequestDetails.addResponse")}
+                </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -452,13 +493,17 @@ const RequestDetail = ({ navigation, route }: Props) => {
         >
           <View style={styles.responseModalContent}>
             <View style={styles.responseModalHeader}>
-              <Text style={styles.responseModalTitle}>Gửi Phản Hồi</Text>
+              <Text style={styles.responseModalTitle}>
+                {t("supportRequestDetails.sendResponse")}
+              </Text>
               <TouchableOpacity onPress={() => setResponseModalVisible(false)}>
                 <MaterialIcons name="close" size={24} color="#64748b" />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.inputLabel}>Trạng thái mới:</Text>
+            <Text style={styles.inputLabel}>
+              {t("supportRequestDetails.newStatus")}:
+            </Text>
             <View style={styles.statusOptions}>
               <TouchableOpacity
                 style={[
@@ -477,7 +522,7 @@ const RequestDetail = ({ navigation, route }: Props) => {
                       : { color: "#fb923c" },
                   ]}
                 >
-                  Đang xử lý
+                  {t("supportRequestDetails.statuses.processing")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -497,7 +542,7 @@ const RequestDetail = ({ navigation, route }: Props) => {
                       : { color: "#16a34a" },
                   ]}
                 >
-                  Hoàn thành
+                  {t("supportRequestDetails.statuses.completed")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -517,16 +562,18 @@ const RequestDetail = ({ navigation, route }: Props) => {
                       : { color: "#ef4444" },
                   ]}
                 >
-                  Hủy bỏ
+                  {t("supportRequestDetails.statuses.cancelled")}
                 </Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.inputLabel}>Nội dung phản hồi:</Text>
+            <Text style={styles.inputLabel}>
+              {t("supportRequestDetails.responseContent")}:
+            </Text>
             <TextInput
               style={styles.responseInput}
               multiline
-              placeholder="Nhập nội dung phản hồi cho sinh viên..."
+              placeholder={t("supportRequestDetails.enterResponseContent")}
               value={responseContent}
               onChangeText={setResponseContent}
               textAlignVertical="top"
@@ -540,7 +587,9 @@ const RequestDetail = ({ navigation, route }: Props) => {
               {submitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.submitButtonText}>Gửi Phản Hồi</Text>
+                <Text style={styles.submitButtonText}>
+                  {t("supportRequestDetails.sendResponse")}
+                </Text>
               )}
             </TouchableOpacity>
           </View>

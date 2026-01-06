@@ -62,7 +62,7 @@ const NotificationDetail = ({ navigation, route }: Props) => {
       setNotification(data);
     } catch (error) {
       console.error("Failed to fetch notification details", error);
-      Alert.alert("Lỗi", "Không thể tải chi tiết thông báo");
+      Alert.alert(t("common.error"), "Không thể tải chi tiết thông báo");
     } finally {
       setLoading(false);
     }
@@ -105,10 +105,10 @@ const NotificationDetail = ({ navigation, route }: Props) => {
         if (supported) {
           await Linking.openURL(notification.attachment_url);
         } else {
-          Alert.alert("Lỗi", "Không thể mở tệp đính kèm này");
+          Alert.alert(t("common.error"), "Không thể mở tệp đính kèm này");
         }
       } catch (error) {
-        Alert.alert("Lỗi", "Đã xảy ra lỗi khi mở tệp");
+        Alert.alert(t("common.error"), "Đã xảy ra lỗi khi mở tệp");
       }
     }
   };

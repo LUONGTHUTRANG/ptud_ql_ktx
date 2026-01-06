@@ -13,6 +13,7 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
+import { useTranslation } from "react-i18next";
 import { getMe } from "../../../services/authApi";
 import { getAllSemesters, Semester } from "../../../services/semesterApi";
 import {
@@ -40,6 +41,7 @@ type ScreenStatus =
   | "error";
 
 const ExtendAccommodation = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [note, setNote] = useState("");
   const [status, setStatus] = useState<ScreenStatus>("loading");
   const [semester, setSemester] = useState<Semester | null>(null);
@@ -60,7 +62,10 @@ const ExtendAccommodation = ({ navigation }: Props) => {
       setStudent(userData);
 
       if (!userData.current_room_id) {
-        Alert.alert("Lỗi", "Bạn hiện không ở trong phòng nào để gia hạn.");
+        Alert.alert(
+          t("common.error"),
+          "Bạn hiện không ở trong phòng nào để gia hạn."
+        );
         navigation.goBack();
         return;
       }
@@ -110,7 +115,7 @@ const ExtendAccommodation = ({ navigation }: Props) => {
     } catch (error) {
       console.error("Error fetching data:", error);
       setStatus("error");
-      Alert.alert("Lỗi", "Có lỗi xảy ra khi tải dữ liệu.");
+      Alert.alert(t("common.error"), "Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
 
@@ -178,7 +183,10 @@ const ExtendAccommodation = ({ navigation }: Props) => {
   if (status === "not_open" && semester) {
     return (
       <View style={styles.container}>
-        <Header navigation={navigation} title="Gia hạn Chỗ ở" />
+        <Header
+          navigation={navigation}
+          title={t("extendAccommodation.extendAccommodation")}
+        />
         <View style={styles.messageContainer}>
           <View style={styles.iconContainer}>
             <MaterialIcons name="access-time" size={64} color="#64748b" />
@@ -198,18 +206,25 @@ const ExtendAccommodation = ({ navigation }: Props) => {
   if (status === "closed" && semester) {
     return (
       <View style={styles.container}>
-        <Header navigation={navigation} title="Gia hạn Chỗ ở" />
+        <Header
+          navigation={navigation}
+          title={t("extendAccommodation.extendAccommodation")}
+        />
         <View style={styles.messageContainer}>
           <View style={styles.iconContainer}>
             <MaterialIcons name="timer-off" size={64} color="#ef4444" />
           </View>
-          <Text style={styles.messageTitle}>Thời gian gia hạn đã kết thúc</Text>
-          <Text style={styles.messageSubtitle}>Hạn cuối gia hạn là:</Text>
+          <Text style={styles.messageTitle}>
+            {t("extendAccommodation.extensionTimeEnded")}
+          </Text>
+          <Text style={styles.messageSubtitle}>
+            {t("extendAccommodation.extensionDeadline")}
+          </Text>
           <Text style={styles.messageDate}>
             {moment(semester.renewal_close_date).format("HH:mm DD/MM/YYYY")}
           </Text>
           <Text style={styles.contactText}>
-            Vui lòng liên hệ ban quản lý nếu bạn cần hỗ trợ.
+            {t("extendAccommodation.contactText")}
           </Text>
         </View>
       </View>
