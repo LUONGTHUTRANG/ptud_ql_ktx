@@ -28,29 +28,13 @@ const seed = async () => {
     // Assuming buildings 1 and 2 exist. If not, set building_id to NULL or ensure buildings are seeded first.
     // We will assume the main SQL script has been run which inserts buildings.
     const managers = [
-      [
-        "manager1",
-        "manager1@ktx.com",
-        managerPassword,
-        "Manager One",
-        "0901234561",
-        1,
-        1,
-      ],
-      [
-        "manager2",
-        "manager2@ktx.com",
-        managerPassword,
-        "Manager Two",
-        "0901234562",
-        1,
-        2,
-      ],
+      ["manager1@ktx.com", managerPassword, "Manager One", "0901234561", 1, 1],
+      ["manager2@ktx.com", managerPassword, "Manager Two", "0901234562", 1, 2],
     ];
 
     try {
       await db.query(
-        "INSERT INTO managers (username, email, password_hash, full_name, phone_number, is_first_login, building_id) VALUES ?",
+        "INSERT INTO managers (email, password_hash, full_name, phone_number, is_first_login, building_id) VALUES ?",
         [managers]
       );
     } catch (err) {
@@ -77,8 +61,8 @@ const seed = async () => {
         "MALE",
         "CNTT1",
         "STUDYING",
-        "NOT_STAYING",
-        15
+        "STAYING",
+        15,
       ],
       [
         "20225002",
@@ -89,8 +73,8 @@ const seed = async () => {
         "FEMALE",
         "KT1",
         "STUDYING",
-        "NOT_STAYING",
-        15
+        "STAYING",
+        15,
       ],
       [
         "20225003",
@@ -101,8 +85,8 @@ const seed = async () => {
         "MALE",
         "CNTT2",
         "STUDYING",
-        "NOT_STAYING",
-        20
+        "STAYING",
+        20,
       ],
       [
         "20225004",
@@ -114,7 +98,7 @@ const seed = async () => {
         "NNA1",
         "STUDYING",
         "NOT_STAYING",
-        26
+        null,
       ],
       [
         "20225005",
@@ -125,8 +109,8 @@ const seed = async () => {
         "MALE",
         "DT1",
         "STUDYING",
-        "NOT_STAYING",
-        49
+        "STAYING",
+        49,
       ],
     ];
     await db.query(
@@ -239,10 +223,36 @@ const seed = async () => {
       );
     }
 
+    // 5. Seed Stay Records
+    console.log("Seeding Stay Records...");
+    const [activeSemesters] = await db.query(
+      "SELECT id FROM semesters WHERE is_active = 1 LIMIT 1"
+    );
+    const semesterId = activeSemesters.length > 0 ? activeSemesters[0].id : 4;
+
+    const [studentList] = await db.query(
+      "SELECT id, current_room_id FROM students WHERE current_room_id IS NOT NULL"
+    );
+    const stayRecords = studentList.map((s) => [
+      s.id,
+      s.current_room_id,
+      semesterId,
+      "2025-09-15",
+      "2026-02-03",
+      "ACTIVE",
+    ]);
+
+    if (stayRecords.length > 0) {
+      await db.query(
+        "INSERT INTO stay_records (student_id, room_id, semester_id, start_date, end_date, status) VALUES ?",
+        [stayRecords]
+      );
+    }
+
     // 6. Seed Room Fee Invoices
     console.log("Seeding Room Fee Invoices...");
     // Get active stay records
-    const [stayRecords] = await db.query(
+    const [stayData] = await db.query(
       `
         SELECT sr.student_id, sr.room_id, r.price_per_semester, r.room_number 
         FROM stay_records sr 
@@ -252,7 +262,7 @@ const seed = async () => {
     );
 
     const roomInvoices = [];
-    for (const record of stayRecords) {
+    for (const record of stayData) {
       // Shorten invoice code to fit VARCHAR(20)
       const invoiceCode = `R${record.student_id}-${Date.now()
         .toString()

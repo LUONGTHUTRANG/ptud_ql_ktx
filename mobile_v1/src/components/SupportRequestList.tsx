@@ -227,7 +227,7 @@ const SupportRequestList = ({
             />
           </View>
           <View style={styles.cardContent}>
-            {/* Add Title here */}
+            {/* Add Title */}
             {item.title && (
               <Text
                 style={[styles.cardTitle, { fontSize: 16, marginBottom: 4 }]}

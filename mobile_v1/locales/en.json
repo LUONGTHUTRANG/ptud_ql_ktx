@@ -35,6 +35,7 @@
     "searchPlaceholder": "Search by ID or student name...",
     "staying": "Staying",
     "notStaying": "Not Staying"
+    "searchRoom": "Search New Room"
   },
   "building": {
     "buildingList": "Building List",
@@ -149,6 +150,7 @@
     "registerAccommodation": "Register Dormitory",
     "registerAccommodationDesc": "Begin the process of registering for new accommodation",
     "extendAccommodation": "Extend Accommodation",
+    "extendSubTitle": "Extend contract",
     "extendAccommodationDesc": "Continue contract for the next semester",
     "selectRequestType": "Select Request Type",
     "selectRequestTypeDesc": "Please select the appropriate request type to begin the registration process.",
@@ -451,6 +453,7 @@
     "confirmMessage": "Are you sure you want to change your password?"
   },
   "common": {
+    "registerStay": "Register Stay",
     "system": "Dormitory Management System",
     "save": "Save",
     "cancel": "Cancel",

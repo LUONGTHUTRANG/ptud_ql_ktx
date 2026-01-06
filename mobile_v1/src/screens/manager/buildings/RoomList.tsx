@@ -215,7 +215,6 @@ const RoomList = ({ navigation, route }: Props) => {
         </View>
       </View>
 
-      {/* AMENITIES GRID (GIỮ NGUYÊN, KHÔNG COMPONENT RIÊNG) */}
       <View style={styles.amenitiesGrid}>
         <View style={styles.amenityItem}>
           <MaterialIcons name="group" size={18} color="#64748b" />

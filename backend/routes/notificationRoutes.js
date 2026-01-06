@@ -8,6 +8,7 @@ import {
   getManagerSentNotifications,
   getNotificationById,
   deleteNotification,
+  getUnreadCount,
 } from "../controllers/notificationController.js";
 import { verifyToken, authorizeRoles } from "../middleware/authMiddleware.js";
 
@@ -43,6 +44,9 @@ router.post(
 
 // Get my notifications
 router.get("/my", getMyNotifications);
+
+// Get unread count
+router.get("/unread-count", getUnreadCount);
 
 // Mark as read
 router.put("/:id/read", markAsRead);

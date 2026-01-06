@@ -14,6 +14,7 @@ import { useRoute, RouteProp } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { RootStackParamList } from "../../../types";
+import { formatCurrency } from "../../../utils/formatCurrency";
 import ConfirmModal from "../../../components/ConfirmModal";
 
 type PaymentDetailScreenNavigationProp = StackNavigationProp<
@@ -47,14 +48,7 @@ const PaymentDetail = ({ navigation }: Props) => {
     navigation.navigate("Home");
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
-
-  const amount = formatCurrency(bill?.amount || 0);
+  const amount = formatCurrency(bill?.amount || 0, "VND");
   const period = bill?.usage_month
     ? `Học kỳ ${bill.semester_name || "1"}, ${bill.usage_year}-${
         bill.usage_year + 1

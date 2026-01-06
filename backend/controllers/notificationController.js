@@ -181,3 +181,14 @@ export const deleteNotification = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getUnreadCount = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const count = await Notification.getUnreadCount(studentId);
+    res.json({ count });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};

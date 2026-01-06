@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,15 @@ import {
   StyleSheet,
   StatusBar,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
+import { fetchInvoices } from "../../../services/invoiceApi";
+import { getMe } from "../../../services/authApi";
+import { formatCurrency } from "../../../utils/formatCurrency";
+import moment from "moment";
 
 type TransactionHistoryScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -22,59 +27,98 @@ interface Props {
 
 interface Transaction {
   id: string;
-  type: "room" | "electricity" | "water";
+  type: "room" | "electricity" | "water" | "other";
   title: string;
   date: string;
   amount: string;
-  status: "paid" | "pending";
+  status: "paid" | "pending" | "submitted" | "overdue";
   month: string;
+  originalData: any;
 }
 
 const TransactionHistory = ({ navigation }: Props) => {
   const [filter, setFilter] = useState<"all" | "this_month" | "type">("all");
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const allTransactions: Transaction[] = [
-    {
-      id: "1",
-      type: "room",
-      title: "Thanh toán tiền phòng",
-      date: "15/10/2024",
-      amount: "2.500.000đ",
-      status: "paid",
-      month: "Tháng 10, 2024",
-    },
-    {
-      id: "2",
-      type: "electricity",
-      title: "Thanh toán tiền điện",
-      date: "12/10/2024",
-      amount: "350.000đ",
-      status: "paid",
-      month: "Tháng 10, 2024",
-    },
-    {
-      id: "3",
-      type: "water",
-      title: "Thanh toán tiền nước",
-      date: "12/10/2024",
-      amount: "120.000đ",
-      status: "pending",
-      month: "Tháng 10, 2024",
-    },
-    {
-      id: "4",
-      type: "room",
-      title: "Thanh toán tiền phòng",
-      date: "15/09/2024",
-      amount: "2.500.000đ",
-      status: "paid",
-      month: "Tháng 9, 2024",
-    },
-  ];
+  useEffect(() => {
+    loadTransactions();
+  }, []);
+
+  const loadTransactions = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const user = await getMe();
+      const invoices = await fetchInvoices(user.id);
+
+      const transactions: Transaction[] = invoices.map((item: any) => {
+        let type: "room" | "electricity" | "water" | "other" = "other";
+        let title = "Thanh toán hóa đơn";
+
+        if (item.type === "ROOM_FEE") {
+          type = "room";
+          title = "Thanh toán tiền phòng";
+        } else if (item.type === "UTILITY_FEE") {
+          // Determine if it's electricity or water based on the invoice details
+          if (item.invoice_code && item.invoice_code.includes("ELEC")) {
+            type = "electricity";
+            title = "Thanh toán tiền điện";
+          } else if (item.invoice_code && item.invoice_code.includes("WATER")) {
+            type = "water";
+            title = "Thanh toán tiền nước";
+          } else {
+            type = "electricity";
+            title = "Thanh toán tiền tiện ích";
+          }
+        } else {
+          title = "Thanh toán khác";
+        }
+
+        let status: "paid" | "pending" | "submitted" | "overdue" = "pending";
+        if (item.status === "PAID") {
+          status = "paid";
+        } else if (item.status === "SUBMITTED") {
+          status = "submitted";
+        } else if (
+          item.status === "UNPAID" &&
+          moment(item.due_date).isBefore(moment(), "day")
+        ) {
+          status = "overdue";
+        }
+
+        const invoiceDate = moment(item.time_invoiced || item.due_date);
+        const month = invoiceDate.format("MMMM, YYYY");
+
+        return {
+          id: item.id.toString(),
+          type,
+          title,
+          date: invoiceDate.format("DD/MM/YYYY"),
+          amount: formatCurrency(item.amount, "VND"),
+          status,
+          month,
+          originalData: item,
+        };
+      });
+
+      setAllTransactions(transactions);
+    } catch (err: any) {
+      console.error("Error loading transactions:", err);
+      setError("Không thể tải lịch sử giao dịch");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCurrentMonth = () => {
+    return moment().format("MMMM, YYYY");
+  };
 
   const filteredTransactions = allTransactions.filter((t) => {
     if (filter === "all") return true;
-    if (filter === "this_month") return t.month === "Tháng 10, 2024";
+    if (filter === "this_month") return t.month === getCurrentMonth();
     if (filter === "type") return false; // Demo empty state
     return true;
   });
@@ -92,8 +136,26 @@ const TransactionHistory = ({ navigation }: Props) => {
     }
   };
 
+  const getStatusDisplay = (status: Transaction["status"]) => {
+    switch (status) {
+      case "paid":
+        return { text: "Đã thanh toán", color: "#22c55e" };
+      case "submitted":
+        return { text: "Đã nộp", color: "#3b82f6" };
+      case "overdue":
+        return { text: "Quá hạn", color: "#ef4444" };
+      case "pending":
+        return { text: "Chờ thanh toán", color: "#f59e0b" };
+      default:
+        return { text: "Chờ thanh toán", color: "#f59e0b" };
+    }
+  };
+
   const renderItem = ({ item }: { item: Transaction }) => {
     const { icon, color, bg } = getIconInfo(item.type);
+    const { text: statusText, color: statusColor } = getStatusDisplay(
+      item.status
+    );
     return (
       <TouchableOpacity style={styles.transactionItem}>
         <View style={[styles.iconContainer, { backgroundColor: bg }]}>
@@ -105,13 +167,8 @@ const TransactionHistory = ({ navigation }: Props) => {
         </View>
         <View style={styles.transactionRight}>
           <Text style={styles.transactionAmount}>{item.amount}</Text>
-          <Text
-            style={[
-              styles.transactionStatus,
-              item.status === "paid" ? styles.statusPaid : styles.statusPending,
-            ]}
-          >
-            {item.status === "paid" ? "Đã thanh toán" : "Chờ thanh toán"}
+          <Text style={[styles.transactionStatus, { color: statusColor }]}>
+            {statusText}
           </Text>
         </View>
       </TouchableOpacity>
@@ -186,19 +243,37 @@ const TransactionHistory = ({ navigation }: Props) => {
         </TouchableOpacity>
       </View>
 
-      {/* List */}
-      <FlatList
-        data={filteredTransactions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <MaterialIcons name="receipt-long" size={64} color="#cbd5e1" />
-            <Text style={styles.emptyText}>Không có giao dịch nào</Text>
-          </View>
-        }
-      />
+      {/* Loading State */}
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#0ea5e9" />
+          <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.centerContainer}>
+          <MaterialIcons name="error-outline" size={64} color="#ef4444" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={loadTransactions}
+          >
+            <Text style={styles.retryButtonText}>Thử lại</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredTransactions}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialIcons name="receipt-long" size={64} color="#cbd5e1" />
+              <Text style={styles.emptyText}>Không có giao dịch nào</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 };
@@ -259,6 +334,35 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 32,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#64748b",
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#ef4444",
+    textAlign: "center",
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: "#0ea5e9",
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   transactionItem: {
     flexDirection: "row",

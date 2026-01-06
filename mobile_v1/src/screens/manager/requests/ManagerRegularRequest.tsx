@@ -73,7 +73,7 @@ const ManagerRegularRequest = ({ navigation }: Props) => {
       role="manager"
       title={t("supportRequest.manageSupportRequest")}
       data={requests}
-      onBackPress={() => navigation.goBack()}
+      onBackPress={() => navigation.navigate("ManagerServices")}
       onItemPress={(id) => navigation.navigate("RequestDetail", { id })}
     />
   );

@@ -70,7 +70,7 @@ const RequestHistory = ({ navigation }: Props) => {
       role="student"
       title={t("requestHistory.requestHistory")}
       data={requests}
-      onBackPress={() => navigation.goBack()}
+      onBackPress={() => navigation.navigate("Services")}
       onAddPress={() => navigation.navigate("CreateRequest")}
       onItemPress={(id) => navigation.navigate("RequestDetail", { id })}
     />
