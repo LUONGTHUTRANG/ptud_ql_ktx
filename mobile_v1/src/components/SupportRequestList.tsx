@@ -53,6 +53,7 @@ const SupportRequestList = ({
     building: "All",
   });
 
+  // Use internal keys for options and map them to localized labels for display.
   const statusOptions = ["All", "new", "pending", "completed", "rejected"];
 
   const statusLabelMap: Record<string, string> = {
@@ -62,13 +63,18 @@ const SupportRequestList = ({
     completed: t("supportRequestList.resolved"),
     rejected: t("supportRequestList.rejected"),
   };
-  const typeOptions = [
-    t("supportRequestList.all"),
-    t("supportRequestList.repair"),
-    t("supportRequestList.complaint"),
-    t("supportRequestList.proposal"),
-  ];
-  const buildingOptions = [t("supportRequestList.all"), "C1", "C2", "C3"];
+
+  // type options keep keys and map to labels
+  const typeOptions = ["All", "repair", "complaint", "proposal"];
+  const typeLabelMap: Record<string, string> = {
+    All: t("supportRequestList.all"),
+    repair: t("supportRequestList.repair"),
+    complaint: t("supportRequestList.complaint"),
+    proposal: t("supportRequestList.proposal"),
+  };
+
+  // building options use keys too (first is All)
+  const buildingOptions = ["All", "C1", "C2", "C3"];
 
   const handleOpenFilter = (type: "status" | "type" | "building") => {
     setActiveFilterType(type);
@@ -102,14 +108,9 @@ const SupportRequestList = ({
         if (item.status !== selectedFilters.status) return false;
       }
 
-      // 3. Type Filter
-      if (selectedFilters.type !== t("supportRequestList.all")) {
-        const typeMap: Record<string, string> = {
-          [t("supportRequestList.repair")]: "repair",
-          [t("supportRequestList.complaint")]: "complaint",
-          [t("supportRequestList.proposal")]: "proposal",
-        };
-        if (item.type !== typeMap[selectedFilters.type]) return false;
+      // 3. Type Filter (compare using internal keys)
+      if (selectedFilters.type !== "All") {
+        if (item.type !== selectedFilters.type) return false;
       }
 
       // 4. Building Filter
@@ -325,7 +326,8 @@ const SupportRequestList = ({
             >
               {selectedFilters.status === "All"
                 ? t("supportRequestList.status")
-                : selectedFilters.status}
+                : statusLabelMap[selectedFilters.status] ??
+                  selectedFilters.status}
             </Text>
             <MaterialIcons
               name="expand-more"
@@ -347,7 +349,9 @@ const SupportRequestList = ({
                 selectedFilters.type !== "All" && styles.activeFilterText,
               ]}
             >
-              {selectedFilters.type === "All" ? t("supportRequestList.type") : selectedFilters.type}
+              {selectedFilters.type === "All"
+                ? t("supportRequestList.type")
+                : typeLabelMap[selectedFilters.type] ?? selectedFilters.type}
             </Text>
             <MaterialIcons
               name="expand-more"
@@ -416,26 +420,38 @@ const SupportRequestList = ({
                     ? t("supportRequestList.type")
                     : t("supportRequestList.building")}
                 </Text>
-                {getActiveOptions().map((option, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.modalOption}
-                    onPress={() => handleSelectOption(option)}
-                  >
-                    <Text
-                      style={[
-                        styles.modalOptionText,
-                        selectedFilters[activeFilterType!] === option &&
-                          styles.selectedModalOptionText,
-                      ]}
+                {getActiveOptions().map((option, index) => {
+                  const optionLabel =
+                    activeFilterType === "status"
+                      ? statusLabelMap[option] ?? option
+                      : activeFilterType === "type"
+                      ? typeLabelMap[option] ?? option
+                      : // building
+                      option === "All"
+                      ? t("supportRequestList.all")
+                      : option;
+
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.modalOption}
+                      onPress={() => handleSelectOption(option)}
                     >
-                      {statusLabelMap[option] ?? option}
-                    </Text>
-                    {selectedFilters[activeFilterType!] === option && (
-                      <MaterialIcons name="check" size={20} color="#136dec" />
-                    )}
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.modalOptionText,
+                          selectedFilters[activeFilterType!] === option &&
+                            styles.selectedModalOptionText,
+                        ]}
+                      >
+                        {optionLabel}
+                      </Text>
+                      {selectedFilters[activeFilterType!] === option && (
+                        <MaterialIcons name="check" size={20} color="#136dec" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </TouchableWithoutFeedback>
           </View>

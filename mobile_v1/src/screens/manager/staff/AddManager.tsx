@@ -20,6 +20,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../../../types";
 import { Colors } from "@/constants/theme";
 import { managerApi } from "../../../services/managerApi";
+import { useTranslation } from "react-i18next";
 
 type AddManagerScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -47,6 +48,7 @@ const BUILDINGS = [
 ];
 
 const AddManager = ({ navigation }: Props) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     dateOfBirth: null,

@@ -373,7 +373,7 @@
     "invalidWaterIndex": "Chỉ số nước không hợp lệ",
     "successMessage": "Chỉ số đồng hồ đã được gửi thành công.",
     "errorMessage": "Gửi chỉ số đồng hồ thất bại. Vui lòng thử lại.",
-    "Recorded": "Đã ghi",
+    "recorded": "Đã ghi",
     "notRecorded": "Chưa ghi"
   },
   "manager": {
